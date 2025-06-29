@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Document, Types } from 'mongoose';
 
 export type JogoDocument = Jogo & Document;
 
@@ -49,6 +49,10 @@ export class Jogo {
   @ApiProperty({ description: 'Status do jogo', enum: ['aberto', 'encerrado'] })
   @Prop({ enum: ['aberto', 'encerrado'], default: 'aberto' })
   status: string;
+
+  @ApiProperty({ description: 'Palpites associados ao jogo', type: [String] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Palpite' }], default: [] })
+  palpites?: Types.ObjectId[];
 
   @ApiProperty({ description: 'Nome do campeonato' })
   @Prop({ required: true })

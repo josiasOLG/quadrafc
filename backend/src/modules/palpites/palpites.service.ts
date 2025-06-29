@@ -1,15 +1,20 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Palpite, PalpiteDocument } from '../../shared/schemas/palpite.schema';
 import { CreatePalpiteDto } from '../../shared/dto/create-palpite.dto';
+import { Palpite, PalpiteDocument } from '../../shared/schemas/palpite.schema';
 import { JogosService } from '../jogos/jogos.service';
 
 @Injectable()
 export class PalpitesService {
   constructor(
     @InjectModel(Palpite.name) private palpiteModel: Model<PalpiteDocument>,
-    private jogosService: JogosService,
+    private jogosService: JogosService
   ) {}
 
   async create(userId: string, createPalpiteDto: CreatePalpiteDto): Promise<Palpite> {
@@ -27,7 +32,7 @@ export class PalpitesService {
     // Verificar se o usuário já fez palpite para este jogo
     const existingPalpite = await this.palpiteModel.findOne({
       userId,
-      jogoId: createPalpiteDto.jogoId
+      jogoId: createPalpiteDto.jogoId,
     });
 
     if (existingPalpite) {
@@ -40,11 +45,17 @@ export class PalpitesService {
       jogoId: createPalpiteDto.jogoId,
       palpite: {
         timeA: createPalpiteDto.timeA,
-        timeB: createPalpiteDto.timeB
-      }
+        timeB: createPalpiteDto.timeB,
+      },
     });
 
-    return createdPalpite.save();
+    const savedPalpite = await createdPalpite.save();
+    // Adiciona o palpite ao array de palpites do jogo
+    await this.jogosService.addPalpiteToJogo(
+      createPalpiteDto.jogoId.toString(),
+      savedPalpite._id.toString()
+    );
+    return savedPalpite;
   }
 
   async findByUser(userId: string): Promise<Palpite[]> {
@@ -69,8 +80,7 @@ export class PalpitesService {
       let acertouResultado = false;
 
       // Verificar se acertou o placar exato
-      if (palpite.palpite.timeA === resultado.timeA && 
-          palpite.palpite.timeB === resultado.timeB) {
+      if (palpite.palpite.timeA === resultado.timeA && palpite.palpite.timeB === resultado.timeB) {
         acertouPlacar = true;
         pontos = 10;
         moedasGanhas = 50;
@@ -87,7 +97,7 @@ export class PalpitesService {
         acertouPlacar,
         acertouResultado,
         pontos,
-        moedasGanhas
+        moedasGanhas,
       });
     }
   }
