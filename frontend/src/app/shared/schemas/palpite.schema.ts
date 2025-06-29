@@ -12,7 +12,7 @@ export const PalpiteSchema = z.object({
     'primeiro_gol',
     'handicap',
   ]),
-  valor_palpite: z.any(),
+  palpite: z.any(),
   odds: z.number().min(1),
   valor_aposta: z.number().min(1),
   data_palpite: z.coerce.date(),

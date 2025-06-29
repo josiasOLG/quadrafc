@@ -65,7 +65,7 @@ interface JogoAPI {
 }
 
 interface JogoComPalpite extends JogoAPI {
-  palpite_usuario?: Palpite;
+  palpites?: Palpite[];
 }
 
 // Interface para campeonatos organizados (retornados da API)
@@ -256,7 +256,7 @@ export class JogosListComponent implements OnInit {
     return (
       agora < inicioJogo &&
       (jogo.status === 'agendado' || jogo.status === 'aberto') &&
-      !jogo.palpite_usuario
+      jogo.palpites?.length === 0
     );
   }
 
@@ -282,15 +282,15 @@ export class JogosListComponent implements OnInit {
     label: string;
     severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
   } | null {
-    if (!jogo.palpite_usuario) {
+    if (!jogo.palpites) {
       return null;
     }
 
     if ((jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado) {
-      const palpite = jogo.palpite_usuario;
+      const palpite = jogo.palpites.at(0) as Palpite;
       const resultado = jogo.resultado;
 
-      const palpiteValue = palpite.valor_palpite as { gols_casa: number; gols_visitante: number };
+      const palpiteValue = palpite.palpite as { gols_casa: number; gols_visitante: number };
       const acertouPlacar =
         palpiteValue.gols_casa === (resultado.gols_casa || 0) &&
         palpiteValue.gols_visitante === (resultado.gols_visitante || 0);
