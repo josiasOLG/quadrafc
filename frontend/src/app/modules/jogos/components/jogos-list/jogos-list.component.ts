@@ -1,27 +1,33 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
-import { TagModule } from 'primeng/tag';
-import { SkeletonModule } from 'primeng/skeleton';
-import { TooltipModule } from 'primeng/tooltip';
+import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
+import { SkeletonModule } from 'primeng/skeleton';
 import { TabViewModule } from 'primeng/tabview';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
-import { AppModalComponent } from '../../../../shared/components/app-modal/app-modal.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
+import { AppModalComponent } from '../../../../shared/components/app-modal/app-modal.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
-import { JogosService } from '../../services/jogos.service';
-import { PalpitesService } from '../../../../shared/services/palpites.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ToastService } from '../../../../shared/services/toast.service';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
-import { User } from '../../../../shared/schemas/user.schema';
 import { Palpite } from '../../../../shared/schemas/palpite.schema';
+import { User } from '../../../../shared/schemas/user.schema';
+import { PalpitesService } from '../../../../shared/services/palpites.service';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { JogosService } from '../../services/jogos.service';
 
 // Interface para jogos que vêm da API
 interface JogoAPI {
@@ -87,10 +93,10 @@ interface CampeonatoOrganizado {
     AppModalComponent,
     AppButtonComponent,
     PageHeaderComponent,
-    CurrencyFormatPipe
+    CurrencyFormatPipe,
   ],
   templateUrl: './jogos-list.component.html',
-  styleUrls: ['./jogos-list.component.scss']
+  styleUrls: ['./jogos-list.component.scss'],
 })
 export class JogosListComponent implements OnInit {
   jogos: JogoComPalpite[] = [];
@@ -112,7 +118,7 @@ export class JogosListComponent implements OnInit {
   ) {
     this.palpiteForm = this.fb.group({
       golsTimeA: ['', [Validators.required, Validators.min(0), Validators.max(20)]],
-      golsTimeB: ['', [Validators.required, Validators.min(0), Validators.max(20)]]
+      golsTimeB: ['', [Validators.required, Validators.min(0), Validators.max(20)]],
     });
   }
 
@@ -122,7 +128,7 @@ export class JogosListComponent implements OnInit {
   }
 
   private loadUser(): void {
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe((user) => {
       this.user = user;
     });
   }
@@ -141,7 +147,7 @@ export class JogosListComponent implements OnInit {
           this.campeonatos = response.campeonatos.map((campeonato: any) => ({
             nome: campeonato.nome,
             jogos: campeonato.jogos || [],
-            total: campeonato.total || campeonato.jogos?.length || 0
+            total: campeonato.total || campeonato.jogos?.length || 0,
           }));
 
           // Limpa a lista de jogos já que agora estamos usando campeonatos
@@ -165,23 +171,23 @@ export class JogosListComponent implements OnInit {
             this.toastService.show({ detail: 'Erro ao carregar jogos do dia', severity: 'error' });
             this.campeonatos = [];
             this.isLoading = false;
-          }
+          },
         });
-      }
+      },
     });
   }
 
   private organizarJogosEmCampeonatos(jogos: JogoComPalpite[]): void {
     const campeonatosMap = new Map<string, CampeonatoOrganizado>();
 
-    jogos.forEach(jogo => {
+    jogos.forEach((jogo) => {
       const nomeCampeonato = jogo.campeonato || 'Outros';
 
       if (!campeonatosMap.has(nomeCampeonato)) {
         campeonatosMap.set(nomeCampeonato, {
           nome: nomeCampeonato,
           jogos: [],
-          total: 0
+          total: 0,
         });
       }
 
@@ -218,29 +224,26 @@ export class JogosListComponent implements OnInit {
 
     try {
       const formData = this.palpiteForm.value;
-      await this.palpitesService.create({
-        jogo: this.selectedJogo._id || '',
-        tipo_palpite: 'placar_exato',
-        valor_palpite: {
-          gols_casa: parseInt(formData.golsTimeA),
-          gols_visitante: parseInt(formData.golsTimeB)
-        },
-        odds: 1,
-        valor_aposta: 1
-      }).toPromise();
+      // Enviar no formato esperado pelo backend: { jogoId, timeA, timeB }
+      await this.palpitesService
+        .create({
+          jogoId: this.selectedJogo._id || '',
+          timeA: parseInt(formData.golsTimeA, 10),
+          timeB: parseInt(formData.golsTimeB, 10),
+        })
+        .toPromise();
 
       this.toastService.show({
         detail: 'Palpite enviado com sucesso!',
-        severity: 'success'
+        severity: 'success',
       });
 
       this.closePalpiteDialog();
       this.loadJogos(); // Recarregar para atualizar status dos palpites
-
     } catch (error) {
       this.toastService.show({
         detail: 'Erro ao enviar palpite',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       this.isSubmittingPalpite = false;
@@ -250,10 +253,17 @@ export class JogosListComponent implements OnInit {
   canMakePalpite(jogo: JogoComPalpite): boolean {
     const agora = new Date();
     const inicioJogo = new Date(jogo.data);
-    return agora < inicioJogo && (jogo.status === 'agendado' || jogo.status === 'aberto') && !jogo.palpite_usuario;
+    return (
+      agora < inicioJogo &&
+      (jogo.status === 'agendado' || jogo.status === 'aberto') &&
+      !jogo.palpite_usuario
+    );
   }
 
-  getJogoStatus(jogo: JogoComPalpite): { label: string; severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' } {
+  getJogoStatus(jogo: JogoComPalpite): {
+    label: string;
+    severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
+  } {
     switch (jogo.status) {
       case 'agendado':
       case 'aberto':
@@ -268,7 +278,10 @@ export class JogosListComponent implements OnInit {
     }
   }
 
-  getPalpiteStatus(jogo: JogoComPalpite): { label: string; severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' } | null {
+  getPalpiteStatus(jogo: JogoComPalpite): {
+    label: string;
+    severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
+  } | null {
     if (!jogo.palpite_usuario) {
       return null;
     }
@@ -278,15 +291,17 @@ export class JogosListComponent implements OnInit {
       const resultado = jogo.resultado;
 
       const palpiteValue = palpite.valor_palpite as { gols_casa: number; gols_visitante: number };
-      const acertouPlacar = palpiteValue.gols_casa === (resultado.gols_casa || 0) &&
-                           palpiteValue.gols_visitante === (resultado.gols_visitante || 0);
+      const acertouPlacar =
+        palpiteValue.gols_casa === (resultado.gols_casa || 0) &&
+        palpiteValue.gols_visitante === (resultado.gols_visitante || 0);
 
       if (acertouPlacar) {
         return { label: 'Acertou o placar!', severity: 'success' };
       }
 
-      const acertouVencedor = this.getVencedor(palpiteValue.gols_casa, palpiteValue.gols_visitante) ===
-                             this.getVencedor(resultado.gols_casa || 0, resultado.gols_visitante || 0);
+      const acertouVencedor =
+        this.getVencedor(palpiteValue.gols_casa, palpiteValue.gols_visitante) ===
+        this.getVencedor(resultado.gols_casa || 0, resultado.gols_visitante || 0);
 
       if (acertouVencedor) {
         return { label: 'Acertou o vencedor', severity: 'info' };
@@ -310,7 +325,7 @@ export class JogosListComponent implements OnInit {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 

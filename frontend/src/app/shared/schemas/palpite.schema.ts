@@ -4,7 +4,14 @@ export const PalpiteSchema = z.object({
   _id: z.string().optional(),
   usuario: z.string(),
   jogo: z.string(),
-  tipo_palpite: z.enum(['resultado', 'placar_exato', 'ambas_marcam', 'total_gols', 'primeiro_gol', 'handicap']),
+  tipo_palpite: z.enum([
+    'resultado',
+    'placar_exato',
+    'ambas_marcam',
+    'total_gols',
+    'primeiro_gol',
+    'handicap',
+  ]),
   valor_palpite: z.any(),
   odds: z.number().min(1),
   valor_aposta: z.number().min(1),
@@ -14,19 +21,20 @@ export const PalpiteSchema = z.object({
   pontos_ganhos: z.number().optional(),
   data_resultado: z.coerce.date().optional(),
   multiplicador: z.number().optional(),
-  bonus_aplicado: z.object({
-    tipo: z.string(),
-    valor: z.number(),
-    motivo: z.string()
-  }).optional()
+  bonus_aplicado: z
+    .object({
+      tipo: z.string(),
+      valor: z.number(),
+      motivo: z.string(),
+    })
+    .optional(),
 });
 
+// Novo schema alinhado ao backend
 export const CreatePalpiteSchema = z.object({
-  jogo: z.string().min(1, 'Jogo é obrigatório'),
-  tipo_palpite: z.enum(['resultado', 'placar_exato', 'ambas_marcam', 'total_gols', 'primeiro_gol', 'handicap']),
-  valor_palpite: z.any(),
-  odds: z.number().min(1, 'Odds deve ser maior que 1'),
-  valor_aposta: z.number().min(1, 'Valor da aposta deve ser maior que 0')
+  jogoId: z.string().min(1, 'ID do jogo é obrigatório'),
+  timeA: z.number().min(0, 'Palpite para o time A deve ser maior ou igual a 0'),
+  timeB: z.number().min(0, 'Palpite para o time B deve ser maior ou igual a 0'),
 });
 
 export type Palpite = z.infer<typeof PalpiteSchema>;

@@ -29,7 +29,7 @@
           <h4>Sua Posição</h4>
           <div class="position-stats">
             <span class="position-number">#{{ getCurrentUserPosition() }}</span>
-            <span class="position-points">{{ user.pontos | currencyFormat }} pts</span>
+            <span class="position-points">{{ user.pontos }} pts</span>
           </div>
         </div>
         <div class="position-badge">
@@ -129,7 +129,7 @@
               <!-- Score e Avaliação -->
               <div class="user-score">
                 <div class="score-main">
-                  <span class="score-value">{{ item.pontos | currencyFormat }}</span>
+                  <span class="score-value">{{ item.pontos }}</span>
                   <span class="score-label">pontos</span>
                 </div>
                 <div class="score-rating">
@@ -212,7 +212,7 @@
                   </div>
                   <div class="stat-mini">
                     <i class="pi pi-chart-line"></i>
-                    <span>{{ item.media_pontuacao | currencyFormat }} média</span>
+                    <span>{{ item.media_pontuacao }} média</span>
                   </div>
                 </div>
               </div>
@@ -220,7 +220,7 @@
               <!-- Score e Avaliação -->
               <div class="bairro-score">
                 <div class="score-main">
-                  <span class="score-value">{{ item.pontos_totais | currencyFormat }}</span>
+                  <span class="score-value">{{ item.pontos_totais }}</span>
                   <span class="score-label">pontos</span>
                 </div>
                 <div class="score-rating">
@@ -295,7 +295,7 @@
           <i class="pi pi-star-fill"></i>
         </div>
         <div class="ranking-stat-content">
-          <span class="ranking-stat-value">{{ selectedUserDetails.pontos | currencyFormat }}</span>
+          <span class="ranking-stat-value">{{ selectedUserDetails.pontos }}</span>
           <span class="ranking-stat-label">Pontos</span>
         </div>
       </div>
@@ -393,7 +393,7 @@
           <i class="pi pi-star-fill"></i>
         </div>
         <div class="ranking-stat-content">
-          <span class="ranking-stat-value">{{ selectedBairroDetails.pontos_totais | currencyFormat }}</span>
+          <span class="ranking-stat-value">{{ selectedBairroDetails.pontos_totais }}</span>
           <span class="ranking-stat-label">Pontos Totais</span>
         </div>
       </div>
@@ -413,7 +413,7 @@
           <i class="pi pi-chart-line"></i>
         </div>
         <div class="ranking-stat-content">
-          <span class="ranking-stat-value">{{ selectedBairroDetails.media_pontuacao | currencyFormat }}</span>
+          <span class="ranking-stat-value">{{ selectedBairroDetails.media_pontuacao }}</span>
           <span class="ranking-stat-label">Média por Usuário</span>
         </div>
       </div>
