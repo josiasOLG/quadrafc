@@ -1,0 +1,334 @@
+{
+  // ===================================
+  // TASKS PARA AUTOMAÇÃO DE DESENVOLVIMENTO
+  // ===================================
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "install-dependencies",
+      "type": "shell",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Write-Host 'Instalando dependências do Frontend...' -ForegroundColor Green; cd frontend; npm install; Write-Host 'Instalando dependências do Backend...' -ForegroundColor Green; cd ../backend; npm install; Write-Host 'Dependências instaladas com sucesso!' -ForegroundColor Green"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Instalando dependências do Frontend...' && cd frontend && npm install && echo 'Instalando dependências do Backend...' && cd ../backend && npm install && echo 'Dependências instaladas com sucesso!'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Instalando dependências do Frontend...' && cd frontend && npm install && echo 'Instalando dependências do Backend...' && cd ../backend && npm install && echo 'Dependências instaladas com sucesso!'"
+        ]
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Angular: Serve",
+      "type": "shell",
+      "command": "ng",
+      "args": ["serve", "--open"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/frontend"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation complete"
+          }
+        }
+      }
+    },
+    {
+      "label": "Angular: Build",
+      "type": "shell",
+      "command": "ng",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "Angular: Build Production",
+      "type": "shell",
+      "command": "ng",
+      "args": ["build", "--configuration=production"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "Angular: Lint",
+      "type": "shell",
+      "command": "ng",
+      "args": ["lint"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$eslint-stylish"
+    },
+    {
+      "label": "NestJS: Start",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "start"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/backend"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "Nest application successfully started"
+          }
+        }
+      }
+    },
+    {
+      "label": "NestJS: Start Dev",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "start:dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/backend"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "Nest application successfully started"
+          }
+        }
+      }
+    },
+    {
+      "label": "NestJS: Build",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "NestJS: Lint",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "lint"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$eslint-stylish"
+    },
+    {
+      "label": "Format All Files",
+      "type": "shell",
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Write-Host 'Formatando Frontend...' -ForegroundColor Green; cd frontend; npx prettier --write 'src/**/*.{ts,html,scss,css,json}'; Write-Host 'Formatando Backend...' -ForegroundColor Green; cd ../backend; npx prettier --write 'src/**/*.{ts,json}'; Write-Host 'Formatação concluída!' -ForegroundColor Green"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Formatando Frontend...' && cd frontend && npx prettier --write 'src/**/*.{ts,html,scss,css,json}' && echo 'Formatando Backend...' && cd ../backend && npx prettier --write 'src/**/*.{ts,json}' && echo 'Formatação concluída!'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Formatando Frontend...' && cd frontend && npx prettier --write 'src/**/*.{ts,html,scss,css,json}' && echo 'Formatando Backend...' && cd ../backend && npx prettier --write 'src/**/*.{ts,json}' && echo 'Formatação concluída!'"
+        ]
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Full Stack: Start Development",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Angular: Serve",
+        "NestJS: Start Dev"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Full Stack: Build Production",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Angular: Build Production",
+        "NestJS: Build"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean All",
+      "type": "shell",
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Write-Host 'Limpando Frontend...' -ForegroundColor Yellow; cd frontend; Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force .angular -ErrorAction SilentlyContinue; Write-Host 'Limpando Backend...' -ForegroundColor Yellow; cd ../backend; Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue; Write-Host 'Limpeza concluída!' -ForegroundColor Green"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Limpando Frontend...' && cd frontend && rm -rf node_modules dist .angular && echo 'Limpando Backend...' && cd ../backend && rm -rf node_modules dist && echo 'Limpeza concluída!'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Limpando Frontend...' && cd frontend && rm -rf node_modules dist .angular && echo 'Limpando Backend...' && cd ../backend && rm -rf node_modules dist && echo 'Limpeza concluída!'"
+        ]
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "recommendations": [
+    // ===================================
+    // ESSENCIAIS PARA ANGULAR/TYPESCRIPT
+    // ===================================
+    "angular.ng-template",
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+
+    // ===================================
+    // FORMATAÇÃO E LINTING
+    // ===================================
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "stylelint.vscode-stylelint",
+
+    // ===================================
+    // PRODUTIVIDADE
+    // ===================================
+    "ms-vscode.vscode-json",
+    "christian-kohler.path-intellisense",
+    "formulahendry.auto-rename-tag",
+    "ms-vscode.vscode-typescript-next",
+
+    // ===================================
+    // GIT E VERSIONAMENTO
+    // ===================================
+    "mhutchie.git-graph",
+    "eamodio.gitlens",
+
+    // ===================================
+    // DESENVOLVIMENTO WEB
+    // ===================================
+    "ms-vscode.live-server",
+    "ritwickdey.liveserver",
+
+    // ===================================
+    // TEMAS E INTERFACE
+    // ===================================
+    "pkief.material-icon-theme",
+    "equinusocio.vsc-material-theme",
+
+    // ===================================
+    // GITHUB COPILOT
+    // ===================================
+    "github.copilot",
+    "github.copilot-chat",
+
+    // ===================================
+    // UTILIDADES
+    // ===================================
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.powershell",
+    "redhat.vscode-yaml",
+    "ms-vscode.hexeditor",
+
+    // ===================================
+    // ESPECÍFICAS PARA ANGULAR
+    // ===================================
+    "johnpapa.angular2",
+    "ms-vscode.vscode-typescript-next",
+
+    // ===================================
+    // SCSS/CSS
+    // ===================================
+    "mrmlnc.vscode-scss",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

@@ -1,0 +1,215 @@
+<div class="conquistas">
+  <div class="conquistas__header">
+    <h1 class="conquistas__title">Conquistas</h1>
+    <p class="conquistas__subtitle">
+      Complete desafios e ganhe recompensas especiais
+    </p>
+  </div>
+
+  <!-- Estatísticas -->
+  <div class="conquistas__stats" *ngIf="estatisticas">
+    <div class="conquistas__stat-card">
+      <div class="conquistas__stat-value">{{ estatisticas.conquistas_completadas }}</div>
+      <div class="conquistas__stat-label">Conquistas</div>
+    </div>
+    <div class="conquistas__stat-card">
+      <div class="conquistas__stat-value">{{ estatisticas.pontos_totais }}</div>
+      <div class="conquistas__stat-label">Pontos</div>
+    </div>
+    <div class="conquistas__stat-card">
+      <div class="conquistas__stat-value">{{ estatisticas.moedas_totais }}</div>
+      <div class="conquistas__stat-label">Moedas</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="conquistas__content">
+    <p-tabView [(activeIndex)]="activeTab">
+      <!-- Conquistas Completas -->
+      <p-tabPanel header="Completas" leftIcon="pi pi-check-circle">
+        <div class="conquistas__tab-content" *ngIf="!loading; else loadingTemplate">
+          <div class="conquistas__section" *ngFor="let categoria of categorias">
+            <div class="conquistas__category-header">
+              <i [class]="categoria.icon"></i>
+              <h3>{{ categoria.label }}</h3>
+              <span class="conquistas__category-count">
+                {{ getConquistasPorCategoria(categoria.value, conquistasCompletas).length }}
+              </span>
+            </div>
+
+            <div class="conquistas__grid">
+              <div
+                class="conquistas__item conquistas__item--completa"
+                *ngFor="let conquista of getConquistasPorCategoria(categoria.value, conquistasCompletas); trackBy: trackByConquistaId">
+
+                <div class="conquistas__item-header">
+                  <div class="conquistas__item-icon">
+                    <i [class]="conquista.conquista.icone"></i>
+                  </div>
+                  <div class="conquistas__item-tipo" [style.color]="getTipoInfo(conquista.conquista.tipo).color">
+                    <i [class]="getTipoInfo(conquista.conquista.tipo).icon"></i>
+                    {{ getTipoInfo(conquista.conquista.tipo).label }}
+                  </div>
+                </div>
+
+                <div class="conquistas__item-content">
+                  <h4 class="conquistas__item-name">{{ conquista.conquista.nome }}</h4>
+                  <p class="conquistas__item-description">{{ conquista.conquista.descricao }}</p>
+
+                  <div class="conquistas__item-rewards">
+                    <span class="conquistas__reward">
+                      <i class="pi pi-star"></i>
+                      {{ conquista.conquista.pontos_recompensa }} pts
+                    </span>
+                    <span class="conquistas__reward">
+                      <i class="pi pi-circle"></i>
+                      {{ conquista.conquista.moedas_recompensa }} moedas
+                    </span>
+                  </div>
+
+                  <div class="conquistas__item-date">
+                    Conquistado em {{ conquista.data_conquistada | date:'dd/MM/yyyy' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="conquistas__empty" *ngIf="getConquistasPorCategoria(categoria.value, conquistasCompletas).length === 0">
+              <p>Nenhuma conquista completa nesta categoria</p>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Em Progresso -->
+      <p-tabPanel header="Em Progresso" leftIcon="pi pi-clock">
+        <div class="conquistas__tab-content" *ngIf="!loading; else loadingTemplate">
+          <div class="conquistas__section" *ngFor="let categoria of categorias">
+            <div class="conquistas__category-header">
+              <i [class]="categoria.icon"></i>
+              <h3>{{ categoria.label }}</h3>
+              <span class="conquistas__category-count">
+                {{ getConquistasPorCategoria(categoria.value, conquistasProgresso).length }}
+              </span>
+            </div>
+
+            <div class="conquistas__grid">
+              <div
+                class="conquistas__item conquistas__item--progresso"
+                *ngFor="let conquista of getConquistasPorCategoria(categoria.value, conquistasProgresso); trackBy: trackByConquistaId">
+
+                <div class="conquistas__item-header">
+                  <div class="conquistas__item-icon">
+                    <i [class]="conquista.conquista.icone"></i>
+                  </div>
+                  <div class="conquistas__item-tipo" [style.color]="getTipoInfo(conquista.conquista.tipo).color">
+                    <i [class]="getTipoInfo(conquista.conquista.tipo).icon"></i>
+                    {{ getTipoInfo(conquista.conquista.tipo).label }}
+                  </div>
+                </div>
+
+                <div class="conquistas__item-content">
+                  <h4 class="conquistas__item-name">{{ conquista.conquista.nome }}</h4>
+                  <p class="conquistas__item-description">{{ conquista.conquista.descricao }}</p>
+
+                  <div class="conquistas__item-progress">
+                    <div class="conquistas__progress-info">
+                      <span>{{ conquista.progresso_atual }} / {{ conquista.progresso_necessario }}</span>
+                      <span>{{ getProgressoPercentual(conquista) | number:'1.0-0' }}%</span>
+                    </div>
+                    <p-progressBar
+                      [value]="getProgressoPercentual(conquista)"
+                      [style]="{ height: '8px' }">
+                    </p-progressBar>
+                  </div>
+
+                  <div class="conquistas__item-rewards">
+                    <span class="conquistas__reward">
+                      <i class="pi pi-star"></i>
+                      {{ conquista.conquista.pontos_recompensa }} pts
+                    </span>
+                    <span class="conquistas__reward">
+                      <i class="pi pi-circle"></i>
+                      {{ conquista.conquista.moedas_recompensa }} moedas
+                    </span>
+                  </div>
+
+                  <div class="conquistas__item-actions" *ngIf="getProgressoPercentual(conquista) === 100">
+                    <app-button
+                      label="Reivindicar"
+                      size="small"
+                      (click)="reivindicarConquista(conquista)">
+                    </app-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="conquistas__empty" *ngIf="getConquistasPorCategoria(categoria.value, conquistasProgresso).length === 0">
+              <p>Nenhuma conquista em progresso nesta categoria</p>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Disponíveis -->
+      <p-tabPanel header="Disponíveis" leftIcon="pi pi-list">
+        <div class="conquistas__tab-content" *ngIf="!loading; else loadingTemplate">
+          <div class="conquistas__section" *ngFor="let categoria of categorias">
+            <div class="conquistas__category-header">
+              <i [class]="categoria.icon"></i>
+              <h3>{{ categoria.label }}</h3>
+              <span class="conquistas__category-count">
+                {{ getConquistasPorCategoria(categoria.value, conquistasDisponiveis).length }}
+              </span>
+            </div>
+
+            <div class="conquistas__grid">
+              <div
+                class="conquistas__item conquistas__item--disponivel"
+                *ngFor="let conquista of getConquistasPorCategoria(categoria.value, conquistasDisponiveis); trackBy: trackByConquistaId">
+
+                <div class="conquistas__item-header">
+                  <div class="conquistas__item-icon">
+                    <i [class]="conquista.icone"></i>
+                  </div>
+                  <div class="conquistas__item-tipo" [style.color]="getTipoInfo(conquista.tipo).color">
+                    <i [class]="getTipoInfo(conquista.tipo).icon"></i>
+                    {{ getTipoInfo(conquista.tipo).label }}
+                  </div>
+                </div>
+
+                <div class="conquistas__item-content">
+                  <h4 class="conquistas__item-name">{{ conquista.nome }}</h4>
+                  <p class="conquistas__item-description">{{ conquista.descricao }}</p>
+
+                  <div class="conquistas__item-rewards">
+                    <span class="conquistas__reward">
+                      <i class="pi pi-star"></i>
+                      {{ conquista.pontos_recompensa }} pts
+                    </span>
+                    <span class="conquistas__reward">
+                      <i class="pi pi-circle"></i>
+                      {{ conquista.moedas_recompensa }} moedas
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="conquistas__empty" *ngIf="getConquistasPorCategoria(categoria.value, conquistasDisponiveis).length === 0">
+              <p>Nenhuma conquista disponível nesta categoria</p>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="conquistas__loading">
+      <p-progressSpinner strokeWidth="4" [style]="{ width: '50px', height: '50px' }"></p-progressSpinner>
+      <p>Carregando conquistas...</p>
+    </div>
+  </ng-template>
+</div>

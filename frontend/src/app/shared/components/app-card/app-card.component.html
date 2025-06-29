@@ -1,0 +1,18 @@
+<p-card [class]="cardClasses">
+  <ng-container ngProjectAs="header" *ngIf="showHeader && (header || subheader)">
+    <div class="app-card-header">
+      <h3 *ngIf="header" class="app-card-title m-0">{{ header }}</h3>
+      <p *ngIf="subheader" class="app-card-subtitle m-0 mt-1 text-600">{{ subheader }}</p>
+    </div>
+  </ng-container>
+
+  <div class="app-card-content">
+    <ng-content></ng-content>
+  </div>
+
+  <ng-container ngProjectAs="footer" *ngIf="showFooter && footer">
+    <div class="app-card-footer">
+      {{ footer }}
+    </div>
+  </ng-container>
+</p-card>

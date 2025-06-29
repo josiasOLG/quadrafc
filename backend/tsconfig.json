@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2020",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@/shared/*": ["src/shared/*"],
+      "@/modules/*": ["src/modules/*"],
+      "@/schemas": ["src/shared/schemas"],
+      "@/dto": ["src/shared/dto"],
+      "@/guards": ["src/shared/guards"],
+      "@/decorators": ["src/shared/decorators"],
+      "@/interfaces": ["src/shared/interfaces"],
+      "@/utils": ["src/shared/utils"],
+      "@/filters": ["src/shared/filters"],
+      "@/interceptors": ["src/shared/interceptors"]
+    }
+  }
+}

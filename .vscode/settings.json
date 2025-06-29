@@ -1,0 +1,231 @@
+{
+  // ===================================
+  // CONFIGURAÇÕES GERAIS DO WORKSPACE
+  // ===================================
+
+  // Editor
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.wordWrap": "on",
+  "editor.lineNumbers": "on",
+  "editor.minimap.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.suggestSelection": "first",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+
+  // Files
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.eol": "\n",
+  "files.encoding": "utf8",
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.angular": true,
+    "**/coverage": true,
+    "**/.nyc_output": true
+  },
+
+  // ===================================
+  // CONFIGURAÇÕES ESPECÍFICAS POR LINGUAGEM
+  // ===================================
+
+  // TypeScript
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+
+  // TypeScript React (TSX)
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // JavaScript
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // JSON
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // JSONC (JSON with Comments)
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // HTML
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.suggest.insertMode": "replace"
+  },
+
+  // SCSS
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.suggest.insertMode": "replace"
+  },
+
+  // CSS
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Markdown
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+
+  // ===================================
+  // CONFIGURAÇÕES DO TYPESCRIPT
+  // ===================================
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "typescript.suggest.includeCompletionsForModuleExports": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": false,
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.variableTypes.enabled": false,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+
+  // ===================================
+  // CONFIGURAÇÕES DO ANGULAR
+  // ===================================
+  "html.suggest.angular1": false,
+  "html.suggest.ionic": false,
+  "angular.enable-strict-mode-prompt": false,
+
+  // ===================================
+  // CONFIGURAÇÕES DO ESLINT
+  // ===================================
+  "eslint.enable": true,
+  "eslint.validate": ["javascript", "typescript", "html"],
+  "eslint.format.enable": false,
+  "eslint.lintTask.enable": true,
+
+  // ===================================
+  // CONFIGURAÇÕES DO PRETTIER
+  // ===================================
+  "prettier.enable": true,
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": false,
+
+  // ===================================
+  // CONFIGURAÇÕES DO EMMET
+  // ===================================
+  "emmet.includeLanguages": {
+    "typescript": "html",
+    "javascript": "html"
+  },
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.showExpandedAbbreviation": "always",
+
+  // ===================================
+  // CONFIGURAÇÕES DE BUSCA
+  // ===================================
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.angular": true,
+    "**/coverage": true,
+    "**/.nyc_output": true
+  },
+  "search.useIgnoreFiles": true,
+  "search.smartCase": true,
+
+  // ===================================
+  // CONFIGURAÇÕES DO EXPLORER
+  // ===================================
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": false,
+
+  // ===================================
+  // CONFIGURAÇÕES DO TERMINAL
+  // ===================================
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontFamily": "Consolas, 'Courier New', monospace",
+
+  // ===================================
+  // CONFIGURAÇÕES DO GIT
+  // ===================================
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.ignoreMissingGitWarning": true,
+
+  // ===================================
+  // CONFIGURAÇÕES DE PERFORMANCE
+  // ===================================
+  "extensions.ignoreRecommendations": false,
+  "telemetry.telemetryLevel": "off",
+
+  // ===================================
+  // CONFIGURAÇÕES DO COPILOT
+  // ===================================
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": false,
+    "markdown": true,
+    "typescript": true,
+    "javascript": true,
+    "html": true,
+    "css": true,
+    "scss": true,
+    "json": true
+  },
+
+  // ===================================
+  // CONFIGURAÇÕES DE BRACKETPAIR
+  // ===================================
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+
+  // ===================================
+  // CONFIGURAÇÕES DE PATH INTELLISENSE
+  // ===================================
+  "typescript.suggest.paths": true,
+  "path-intellisense.autoSlashAfterDirectory": true,
+  "path-intellisense.extensionOnImport": true,
+
+  // ===================================
+  // CONFIGURAÇÕES ESPECÍFICAS DO PROJETO
+  // ===================================
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#333",
+    "titleBar.activeForeground": "#ffffff"
+  },
+  "chat.instructionsFilesLocations": {
+    ".github/.instructions.md": true
+  }
+}

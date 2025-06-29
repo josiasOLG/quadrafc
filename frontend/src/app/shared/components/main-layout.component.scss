@@ -1,0 +1,327 @@
+// ===================================
+// MAIN LAYOUT - HEADER FIXO + BOTTOM NAV
+// ===================================
+
+.main-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--qfc-bg-secondary);
+
+  ::ng-deep {
+    .p-avatar {
+      background-color: white;
+      color: #333;
+    }
+  }
+
+  // Header fixo com stats do usuário
+  &__header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--qfc-gradient-primary);
+    color: var(--qfc-text-inverse);
+    padding: var(--qfc-spacing-lg);
+    box-shadow: var(--qfc-shadow-lg);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--qfc-spacing-md);
+
+    // 1. Dashboard Icon + Avatar (topo)
+    .main-layout__header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .main-layout__dashboard-icon {
+      font-size: 1rem;
+      color: var(--qfc-text-inverse);
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+    }
+
+    .main-layout__avatar {
+      background: white !important;
+      color: var(--qfc-primary) !important;
+      box-shadow: var(--qfc-shadow-md);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50% !important;
+    }
+
+    // 2. Nome em negrito
+    .main-layout__user-name {
+      color: var(--qfc-text-inverse);
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: left;
+      width: 100%;
+      margin: 0;
+    }
+
+    // 3. Cidade e Estado
+    .main-layout__user-location {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      text-align: left;
+      width: 100%;
+      display: flex;
+      gap: 6px;
+      margin: 0;
+
+      .pi-map-marker {
+        font-size: 1rem;
+      }
+    }
+
+    // 4. Barra de Progresso
+    .main-layout__level-progress {
+      width: 100%;
+
+      .main-layout__level-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        width: 100%;
+      }
+
+      .main-layout__level-text,
+      .main-layout__progress-text {
+        color: var(--qfc-text-inverse);
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      .main-layout__progress-text {
+        opacity: 0.8;
+      }
+    }
+
+    // 5. Cards de Stats
+    .main-layout__stats {
+      display: flex;
+      gap: var(--qfc-spacing-md);
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .main-layout__stat-card {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--qfc-radius-lg);
+      padding: var(--qfc-spacing-md);
+      text-align: center;
+      flex: 1;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.25);
+      }
+    }
+
+    .main-layout__stat-value {
+      color: var(--qfc-text-inverse);
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .main-layout__stat-label {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    ::ng-deep .main-layout__progress-bar {
+      .p-progressbar {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--qfc-radius-full);
+        height: 8px;
+
+        .p-progressbar-value {
+          background: var(--qfc-text-inverse);
+          border-radius: var(--qfc-radius-full);
+        }
+      }
+    }
+  }
+
+  // Conteúdo principal
+  &__content {
+    flex: 1;
+    padding-top: 220px; // Espaço para o header fixo reorganizado
+    padding-bottom: 80px; // Espaço para o bottom nav
+    background: var(--qfc-bg-secondary);
+    width: 100%;
+  }
+
+  // Bottom Navigation Customizado
+  &__bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--qfc-bg-primary);
+    border-top: 1px solid var(--qfc-border-primary);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    width: 100vw;
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__nav-button {
+    flex: 1;
+    width: 20%; // 5 botões = 100% / 5 = 20% cada
+    background: transparent;
+    border: none;
+    color: var(--qfc-text-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--qfc-spacing-md);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 60px;
+
+    &:hover {
+      background: rgba(var(--qfc-primary), 0.1);
+      color: var(--qfc-primary);
+    }
+
+    &--active {
+      color: var(--qfc-primary);
+      background: rgba(var(--qfc-primary), 0.1);
+
+      .main-layout__nav-icon {
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  &__nav-icon {
+    font-size: 1rem !important; // Ícones grandes
+    transition: transform 0.3s ease;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .main-layout {
+    &__header {
+      padding: var(--qfc-spacing-md);
+      gap: var(--qfc-spacing-sm);
+
+      .main-layout__dashboard-icon {
+        font-size: 1.3rem;
+      }
+
+      .main-layout__user-name {
+        font-size: 1.25rem;
+      }
+
+      .main-layout__user-location {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+      }
+
+      .main-layout__stats {
+        gap: var(--qfc-spacing-sm);
+      }
+
+      .main-layout__stat-card {
+        padding: var(--qfc-spacing-sm);
+      }
+
+      .main-layout__stat-value {
+        font-size: 1.25rem;
+      }
+
+      .main-layout__stat-label {
+        font-size: 0.7rem;
+      }
+    }
+
+    &__content {
+      padding-top: 240px; // Mais espaço no mobile
+    }
+
+    // Bottom nav customizado no mobile
+    &__nav-button {
+      padding: var(--qfc-spacing-lg);
+      min-height: 65px;
+
+      .main-layout__nav-icon {
+        font-size: 2rem !important; // Ícones ainda maiores no mobile
+      }
+    }
+  }
+}
+
+// Estados especiais
+.main-layout__content {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--qfc-bg-tertiary);
+    border-radius: var(--qfc-radius-sm);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--qfc-border-secondary);
+    border-radius: var(--qfc-radius-sm);
+
+    &:hover {
+      background: var(--qfc-text-tertiary);
+    }
+  }
+}
+
+// Animações
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.main-layout__bottom-nav {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.main-layout__header {
+  animation: slideDown 0.3s ease-out;
+}

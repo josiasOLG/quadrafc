@@ -1,0 +1,36 @@
+<p-dialog
+  [(visible)]="visible"
+  [header]="header"
+  [modal]="modal"
+  [breakpoints]="responsiveOptions"
+  [style]="{width: width, height: height}"
+  [dismissableMask]="dismissableMask"
+  [closable]="closable"
+  [showHeader]="showHeader"
+  styleClass="app-modal"
+  (onShow)="handleShow()"
+  (onHide)="handleHide()">
+
+  <div class="app-modal-content">
+    <ng-content></ng-content>
+  </div>
+
+  <ng-container ngProjectAs="footer" *ngIf="showFooter">
+    <div class="app-modal-footer flex justify-content-end gap-2 pt-3">
+      <p-button
+        [label]="cancelLabel"
+        [icon]="cancelIcon"
+        severity="secondary"
+        (onClick)="handleCancel()"
+        [disabled]="loading"
+      ></p-button>
+
+      <p-button
+        [label]="confirmLabel"
+        [icon]="confirmIcon"
+        [loading]="loading"
+        (onClick)="handleConfirm()"
+      ></p-button>
+    </div>
+  </ng-container>
+</p-dialog>

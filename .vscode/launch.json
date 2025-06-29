@@ -1,0 +1,114 @@
+{
+  // ===================================
+  // CONFIGURAÇÕES DE LAUNCH PARA DEBUG
+  // ===================================
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Angular: Serve",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "program": "${workspaceFolder}/frontend/node_modules/@angular/cli/bin/ng",
+      "args": ["serve"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Angular: Test",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "program": "${workspaceFolder}/frontend/node_modules/@angular/cli/bin/ng",
+      "args": ["test"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Angular: Build",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "program": "${workspaceFolder}/frontend/node_modules/@angular/cli/bin/ng",
+      "args": ["build"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "NestJS: Start",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/@nestjs/cli/bin/nest.js",
+      "args": ["start"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "NestJS: Start Dev",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/@nestjs/cli/bin/nest.js",
+      "args": ["start", "--watch"],
+      "console": "integratedTerminal",
+      "restart": true,
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "name": "NestJS: Debug",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/src/main.ts",
+      "args": [],
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "restart": true,
+      "internalConsoleOptions": "openOnSessionStart",
+      "envFile": "${workspaceFolder}/backend/.env"
+    },
+    {
+      "name": "Chrome: Angular App",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "sourceMapPathOverrides": {
+        "webpack:/*": "${webRoot}/*",
+        "/./*": "${webRoot}/*",
+        "/src/*": "${webRoot}/*",
+        "/*": "*",
+        "/./~/*": "${webRoot}/node_modules/*"
+      }
+    },
+    {
+      "name": "Attach to Chrome",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}/frontend/src"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack: Frontend + Backend",
+      "configurations": [
+        "Angular: Serve",
+        "NestJS: Start Dev"
+      ],
+      "preLaunchTask": "install-dependencies",
+      "stopAll": true
+    },
+    {
+      "name": "Debug Full Stack",
+      "configurations": [
+        "Chrome: Angular App",
+        "NestJS: Debug"
+      ],
+      "preLaunchTask": "install-dependencies",
+      "stopAll": true
+    }
+  ]
+}

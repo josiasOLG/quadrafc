@@ -1,0 +1,258 @@
+<div class="loja">
+  <div class="loja__header">
+    <h1 class="loja__title">
+      <i class="pi pi-shopping-cart text-primary"></i>
+      Loja QuadraFC
+    </h1>
+
+    <div class="loja__user-balance" *ngIf="user">
+      <div class="balance-item">
+        <i class="pi pi-circle-fill text-primary"></i>
+        <span class="balance-value">{{ user.moedas || 0 | currencyFormat }}</span>
+        <span class="balance-label">moedas</span>
+      </div>
+      <div class="balance-item">
+        <i class="pi pi-star-fill text-yellow-500"></i>
+        <span class="balance-value">{{ user.pontos || 0 | currencyFormat }}</span>
+        <span class="balance-label">pontos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loja__loading">
+    <div class="loading-tabs">
+      <p-skeleton width="8rem" height="3rem" styleClass="mr-3"></p-skeleton>
+      <p-skeleton width="8rem" height="3rem" styleClass="mr-3"></p-skeleton>
+      <p-skeleton width="8rem" height="3rem"></p-skeleton>
+    </div>
+    <div class="loading-grid">
+      <div *ngFor="let item of [1,2,3,4,5,6]" class="loading-item">
+        <p-skeleton height="8rem" styleClass="mb-3"></p-skeleton>
+        <p-skeleton width="70%" height="1rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="50%" height="0.8rem"></p-skeleton>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading" class="loja__content">
+    <!-- Empty State -->
+    <div *ngIf="categorias.length === 0" class="empty-state">
+      <div class="empty-state__icon">
+        <i class="pi pi-shopping-cart"></i>
+      </div>
+      <h3>Loja em manutenção</h3>
+      <p>A loja está temporariamente indisponível. Volte em breve!</p>
+    </div>
+
+    <!-- Tabs por categoria -->
+    <div *ngIf="categorias.length > 0" class="loja__categories">
+      <p-tabView styleClass="loja-tabs">
+        <p-tabPanel
+          *ngFor="let categoria of categorias; trackBy: trackByCategoria"
+          [header]="categoria.nome"
+          [leftIcon]="'pi ' + categoria.icone">
+
+          <div class="categoria-content">
+            <!-- Empty categoria -->
+            <div *ngIf="categoria.itens.length === 0" class="empty-categoria">
+              <div class="empty-categoria__icon">
+                <i [class]="'pi ' + categoria.icone"></i>
+              </div>
+              <h4>Categoria vazia</h4>
+              <p>Não há itens disponíveis nesta categoria no momento.</p>
+            </div>
+
+            <!-- Grid de itens -->
+            <div *ngIf="categoria.itens.length > 0" class="itens-grid">
+              <div
+                *ngFor="let item of categoria.itens; trackBy: trackByItem"
+                class="item-card"
+                [ngClass]="{
+                  'item-card--possessed': item.ja_possui,
+                  'item-card--unavailable': !item.disponivel || isItemExpired(item),
+                  'item-card--limited': item.limitado
+                }">
+
+                <p-card styleClass="item-card-content">
+                  <ng-template pTemplate="header">
+                    <div class="item-header">
+                      <!-- Ícone/Imagem do item -->
+                      <div class="item-icon">
+                        <i *ngIf="item.icone" [class]="'pi ' + item.icone"></i>
+                        <img *ngIf="item.imagem" [src]="item.imagem" [alt]="item.nome" />
+                      </div>
+
+                      <!-- Badges de status -->
+                      <div class="item-badges">
+                        <p-tag
+                          [value]="item.raridade"
+                          [severity]="getRaridadeSeverity(item.raridade)"
+                          styleClass="raridade-tag">
+                        </p-tag>
+
+                        <p-tag
+                          *ngIf="getItemStatusLabel(item) as status"
+                          [value]="status.label"
+                          [severity]="status.severity"
+                          styleClass="status-tag">
+                        </p-tag>
+                      </div>
+                    </div>
+                  </ng-template>
+
+                  <div class="item-info">
+                    <h3 class="item-name">{{ item.nome }}</h3>
+                    <p class="item-description">{{ item.descricao }}</p>
+
+                    <!-- Efeito especial -->
+                    <div *ngIf="item.efeito" class="item-effect">
+                      <i class="pi pi-info-circle text-blue-500"></i>
+                      <span>{{ item.efeito }}</span>
+                    </div>
+
+                    <!-- Data limite para itens limitados -->
+                    <div *ngIf="item.limitado && item.data_limite && !isItemExpired(item)" class="item-countdown">
+                      <i class="pi pi-clock text-orange-500"></i>
+                      <span>Expira em {{ item.data_limite | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+
+                  <ng-template pTemplate="footer">
+                    <div class="item-footer">
+                      <div class="item-price">
+                        <div class="price-moedas">
+                          <i class="pi pi-circle-fill text-primary"></i>
+                          <span class="price-value">{{ item.preco_moedas | currencyFormat }}</span>
+                        </div>
+                        <div *ngIf="item.preco_pontos" class="price-pontos">
+                          <i class="pi pi-star-fill text-yellow-500"></i>
+                          <span class="price-value">{{ item.preco_pontos | currencyFormat }}</span>
+                        </div>
+                      </div>
+
+                      <div class="item-actions">
+                        <p-button
+                          *ngIf="!item.ja_possui && item.disponivel && !isItemExpired(item)"
+                          [label]="canBuyItem(item) ? 'Comprar' : 'Sem moedas'"
+                          [icon]="canBuyItem(item) ? 'pi pi-shopping-cart' : 'pi pi-ban'"
+                          [severity]="canBuyItem(item) ? 'success' : 'danger'"
+                          size="small"
+                          [disabled]="!canBuyItem(item)"
+                          (onClick)="openConfirmDialog(item)"
+                          styleClass="buy-button">
+                        </p-button>
+
+                        <p-button
+                          *ngIf="item.ja_possui"
+                          label="Possuído"
+                          icon="pi pi-check"
+                          severity="secondary"
+                          size="small"
+                          [disabled]="true"
+                          styleClass="possessed-button">
+                        </p-button>
+
+                        <p-button
+                          *ngIf="!item.disponivel || isItemExpired(item)"
+                          [label]="isItemExpired(item) ? 'Expirado' : 'Indisponível'"
+                          icon="pi pi-ban"
+                          severity="secondary"
+                          size="small"
+                          [disabled]="true"
+                          styleClass="unavailable-button">
+                        </p-button>
+                      </div>
+                    </div>
+                  </ng-template>
+                </p-card>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog de Confirmação de Compra -->
+<p-dialog
+  [(visible)]="showConfirmDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  header="Confirmar Compra"
+  styleClass="confirm-buy-dialog"
+  (onHide)="closeConfirmDialog()">
+
+  <div class="confirm-content" *ngIf="selectedItem">
+    <div class="item-preview">
+      <div class="preview-icon">
+        <i *ngIf="selectedItem.icone" [class]="'pi ' + selectedItem.icone"></i>
+        <img *ngIf="selectedItem.imagem" [src]="selectedItem.imagem" [alt]="selectedItem.nome" />
+      </div>
+      <div class="preview-info">
+        <h4>{{ selectedItem.nome }}</h4>
+        <p>{{ selectedItem.descricao }}</p>
+        <p-tag
+          [value]="selectedItem.raridade"
+          [severity]="getRaridadeSeverity(selectedItem.raridade)"
+          styleClass="preview-raridade">
+        </p-tag>
+      </div>
+    </div>
+
+    <div class="purchase-details">
+      <div class="price-breakdown">
+        <div class="price-item">
+          <span class="price-label">Preço:</span>
+          <div class="price-value">
+            <i class="pi pi-circle-fill text-primary"></i>
+            <span>{{ selectedItem.preco_moedas | currencyFormat }} moedas</span>
+          </div>
+        </div>
+
+        <div class="balance-info" *ngIf="user">
+          <div class="balance-current">
+            <span class="balance-label">Suas moedas:</span>
+            <span class="balance-value">{{ user.moedas || 0 | currencyFormat }}</span>
+          </div>
+          <div class="balance-after">
+            <span class="balance-label">Após compra:</span>
+            <span class="balance-value">{{ (user.moedas || 0) - selectedItem.preco_moedas | currencyFormat }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="selectedItem.efeito" class="effect-info">
+        <h5>Efeito:</h5>
+        <p>{{ selectedItem.efeito }}</p>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-actions">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        size="small"
+        (onClick)="closeConfirmDialog()"
+        [disabled]="isComprandoItem">
+      </p-button>
+
+      <p-button
+        label="Confirmar Compra"
+        icon="pi pi-check"
+        size="small"
+        (onClick)="comprarItem()"
+        [loading]="isComprandoItem"
+        [disabled]="!selectedItem || !canBuyItem(selectedItem)">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

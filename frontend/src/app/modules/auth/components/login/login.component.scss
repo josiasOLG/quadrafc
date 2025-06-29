@@ -1,0 +1,110 @@
+
+
+.login {
+  min-height: 100vh;
+  background: var(--qfc-gradient-primary);
+
+  &__card {
+    // Usa PrimeFlex: border-round-lg shadow-3 bg-white
+    max-width: 400px;
+    animation: qfc-fade-in 0.3s ease-out;
+  }
+
+  &__title {
+    color: var(--qfc-primary);
+    font-weight: 700;
+  }
+
+  &__subtitle {
+    color: var(--qfc-text-secondary);
+  }
+
+  &__input-wrapper {
+    // Custom styling for form controls
+    .p-inputtext,
+    .p-password input {
+      border: 2px solid var(--qfc-border-primary);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      &:focus {
+        border-color: var(--qfc-primary);
+        box-shadow: 0 0 0 3px rgba(255, 106, 61, 0.1);
+      }
+    }
+
+    .p-password {
+      width: 100%;
+
+      .p-inputtext {
+        width: 100%;
+      }
+    }
+  }
+
+  &__error {
+    color: var(--qfc-error);
+    font-size: 0.875rem;
+  }
+
+  &__button {
+    background: var(--qfc-primary) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:enabled:hover {
+      background: var(--qfc-primary-hover) !important;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      background: var(--qfc-text-tertiary) !important;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  &__link {
+    color: var(--qfc-primary);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--qfc-primary-hover);
+      text-decoration: underline;
+    }
+  }
+}
+
+// ===================================
+// FORM VALIDATION STYLES
+// ===================================
+::ng-deep {
+  .login__input-wrapper {
+    .ng-invalid.ng-touched {
+      .p-inputtext,
+      .p-password input {
+        border-color: var(--qfc-error) !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+      }
+    }
+  }
+}
+
+// ===================================
+// ANIMATIONS
+// ===================================
+@keyframes qfc-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

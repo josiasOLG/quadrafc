@@ -1,0 +1,193 @@
+
+@import 'mixins';
+
+.bairros-selection {
+  @include container-mobile;
+  padding: 1rem;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  &__title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+  }
+
+  &__subtitle {
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  &__search {
+    margin-bottom: 1.5rem;
+  }
+
+  &__content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+    gap: 0.75rem;
+    display: flex;
+    flex-direction: column;
+
+    @include scrollbar-thin;
+  }
+
+  &__item {
+    @include card-base;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &:hover {
+      @include shadow-medium;
+      transform: translateY(-1px);
+    }
+
+    &--selected {
+      border: 2px solid var(--primary-color);
+      background: var(--primary-color-light);
+    }
+  }
+
+  &__item-content {
+    flex: 1;
+  }
+
+  &__item-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+  }
+
+  &__item-location {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  &__item-stats {
+    display: flex;
+    gap: 1rem;
+  }
+
+  &__stat {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    i {
+      font-size: 0.75rem;
+    }
+  }
+
+  &__item-check {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    margin-left: 1rem;
+  }
+
+  &__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-color-secondary);
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--text-color-disabled);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
+  }
+
+  &__loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-color-secondary);
+
+    p {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  &__actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+
+    app-button {
+      flex: 1;
+    }
+  }
+
+  @include tablet-up {
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+
+    &__title {
+      font-size: 2rem;
+    }
+
+    &__item {
+      padding: 1.25rem;
+    }
+
+    &__actions {
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  @include desktop-up {
+    padding: 3rem;
+
+    &__list {
+      gap: 1rem;
+    }
+
+    &__item {
+      padding: 1.5rem;
+    }
+  }
+}

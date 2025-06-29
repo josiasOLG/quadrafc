@@ -1,0 +1,33 @@
+.app-card {
+  &.no-elevation {
+    box-shadow: none;
+    border: 1px solid var(--surface-border);
+  }
+
+  &.padding-none ::ng-deep .p-card-body {
+    padding: 0;
+  }
+
+  &.padding-small ::ng-deep .p-card-body {
+    padding: 0.75rem;
+  }
+
+  &.padding-medium ::ng-deep .p-card-body {
+    padding: 1.25rem;
+  }
+
+  &.padding-large ::ng-deep .p-card-body {
+    padding: 2rem;
+  }
+
+  .app-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .app-card-subtitle {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}

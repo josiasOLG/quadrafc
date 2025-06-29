@@ -1,0 +1,383 @@
+<div class="premium-store">
+  <!-- Header -->
+  <app-page-header
+    title="Loja Premium"
+    subtitle="Adquira acessos exclusivos e desbloqueie novos rankings!"
+    icon="pi pi-shopping-cart"
+    [user]="user"
+    customClass="page-header--premium">
+    <button
+      pButton
+      type="button"
+      icon="pi pi-arrow-left"
+      label="Voltar"
+      class="p-button-outlined p-button-secondary"
+      (click)="voltarParaConfiguracoes()"></button>
+  </app-page-header>
+
+  <!-- Saldo atual -->
+  <div class="premium-store__balance" *ngIf="user">
+    <div class="premium-store__balance-card p-d-flex p-ai-center p-p-3">
+      <i class="pi pi-coins premium-store__balance-icon"></i>
+      <div class="premium-store__balance-info">
+        <span class="premium-store__balance-label">Seu saldo atual:</span>
+        <span class="premium-store__balance-value">{{ user.moedas | currencyFormat }} moedas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Premium Atual -->
+  <div class="premium-store__status">
+    <div class="premium-store__status-card">
+      <h3 class="premium-store__status-title">
+        <i class="pi pi-crown premium-store__status-icon"></i>
+        Status dos Seus Acessos
+      </h3>
+      <div class="premium-store__status-grid">
+        <!-- Assinatura Premium -->
+        <div class="premium-store__status-item">
+          <div class="premium-store__status-header">
+            <i class="pi pi-star"></i>
+            <span>Assinatura Premium</span>
+          </div>
+          <p-tag
+            [value]="acessosUsuario.assinaturaPremium ? 'ATIVA' : 'INATIVA'"
+            [severity]="acessosUsuario.assinaturaPremium ? 'success' : 'danger'"></p-tag>
+          <div
+            *ngIf="acessosUsuario.assinaturaPremium && acessosUsuario.dataVencimentoPremium"
+            class="premium-store__status-expiry">
+            Válida até: {{ acessosUsuario.dataVencimentoPremium | date : 'dd/MM/yyyy' }}
+          </div>
+        </div>
+        <!-- Acesso Nacional -->
+        <div class="premium-store__status-item">
+          <div class="premium-store__status-header">
+            <i class="pi pi-globe"></i>
+            <span>Acesso Nacional</span>
+          </div>
+          <p-tag
+            [value]="jaTemAcessoNacional() ? 'LIBERADO' : 'BLOQUEADO'"
+            [severity]="jaTemAcessoNacional() ? 'success' : 'warning'"></p-tag>
+        </div>
+        <!-- Estados Acessíveis -->
+        <div class="premium-store__status-item">
+          <div class="premium-store__status-header">
+            <i class="pi pi-map"></i>
+            <span>Estados Liberados</span>
+          </div>
+          <div class="premium-store__estados-list">
+            <p-tag
+              *ngFor="let estado of acessosUsuario.estadosAcessiveis; trackBy: trackByEstado"
+              [value]="estado"
+              severity="info"
+              class="premium-store__estado-tag"></p-tag>
+            <span *ngIf="acessosUsuario.estadosAcessiveis.length === 0" class="premium-store__no-access">
+              Nenhum estado liberado
+            </span>
+          </div>
+        </div>
+        <!-- Cidades Acessíveis -->
+        <div class="premium-store__status-item">
+          <div class="premium-store__status-header">
+            <i class="pi pi-building"></i>
+            <span>Cidades Liberadas</span>
+          </div>
+          <div class="premium-store__cidades-list">
+            <p-tag
+              *ngFor="let cidade of acessosUsuario.cidadesAcessiveis; trackBy: trackByCidade"
+              [value]="cidade.cidade + ' - ' + cidade.estado"
+              severity="info"
+              class="premium-store__cidade-tag"></p-tag>
+            <span *ngIf="acessosUsuario.cidadesAcessiveis.length === 0" class="premium-store__no-access">
+              Nenhuma cidade liberada
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Produtos Disponíveis -->
+  <div class="premium-store__products">
+    <h2 class="premium-store__products-title">
+      <i class="pi pi-shopping-bag"></i>
+      Produtos Disponíveis
+    </h2>
+    <div class="premium-store__products-grid">
+      <!-- Assinatura Premium -->
+      <div class="premium-store__product-card premium-store__product-card--premium">
+        <div class="premium-store__product-header">
+          <i class="pi pi-crown premium-store__product-icon premium-store__product-icon--premium"></i>
+          <h3>Assinatura Premium</h3>
+          <p-tag value="MELHOR OFERTA" severity="success" class="premium-store__best-offer-tag"></p-tag>
+        </div>
+        <div class="premium-store__product-description">
+          <p>Acesso completo a todos os rankings por 1 mês!</p>
+          <ul class="premium-store__benefits-list">
+            <li>
+              <i class="pi pi-check"></i>
+              Rankings de todos os estados
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Rankings de todas as cidades
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Ranking nacional
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Sem limitações
+            </li>
+          </ul>
+        </div>
+        <div class="premium-store__product-price">
+          <span class="premium-store__price-value">{{ custos.assinaturaPremiumMensal | currencyFormat }}</span>
+          <span class="premium-store__price-label">moedas/mês</span>
+        </div>
+        <div class="premium-store__product-actions">
+          <button
+            pButton
+            type="button"
+            label="Contratar Assinatura"
+            icon="pi pi-star"
+            class="p-button-success premium-store__product-button"
+            [disabled]="
+              acessosUsuario.assinaturaPremium || !temSaldoSuficiente(custos.assinaturaPremiumMensal) || isLoading
+            "
+            (click)="confirmarAssinaturaPremium()"></button>
+          <div *ngIf="acessosUsuario.assinaturaPremium" class="premium-store__already-purchased">
+            <i class="pi pi-check-circle"></i>
+            <span>Você já tem esta assinatura</span>
+          </div>
+          <div
+            *ngIf="!acessosUsuario.assinaturaPremium && !temSaldoSuficiente(custos.assinaturaPremiumMensal)"
+            class="premium-store__insufficient-balance">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>Saldo insuficiente</span>
+          </div>
+        </div>
+      </div>
+      <!-- Acesso Nacional -->
+      <div class="premium-store__product-card premium-store__product-card--nacional">
+        <div class="premium-store__product-header">
+          <i class="pi pi-globe premium-store__product-icon premium-store__product-icon--nacional"></i>
+          <h3>Acesso Nacional</h3>
+        </div>
+        <div class="premium-store__product-description">
+          <p>Acesso permanente ao ranking nacional de bairros.</p>
+          <ul class="premium-store__benefits-list">
+            <li>
+              <i class="pi pi-check"></i>
+              Ranking nacional completo
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Acesso permanente
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Compra única
+            </li>
+          </ul>
+        </div>
+        <div class="premium-store__product-price">
+          <span class="premium-store__price-value">{{ custos.nacional | currencyFormat }}</span>
+          <span class="premium-store__price-label">moedas</span>
+        </div>
+        <div class="premium-store__product-actions">
+          <button
+            pButton
+            type="button"
+            label="Comprar Acesso"
+            icon="pi pi-globe"
+            class="p-button-primary premium-store__product-button"
+            [disabled]="jaTemAcessoNacional() || !temSaldoSuficiente(custos.nacional) || isLoading"
+            (click)="confirmarCompraNacional()"></button>
+          <div *ngIf="jaTemAcessoNacional()" class="premium-store__already-purchased">
+            <i class="pi pi-check-circle"></i>
+            <span>Você já tem este acesso</span>
+          </div>
+          <div
+            *ngIf="!jaTemAcessoNacional() && !temSaldoSuficiente(custos.nacional)"
+            class="premium-store__insufficient-balance">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>Saldo insuficiente</span>
+          </div>
+        </div>
+      </div>
+      <!-- Acesso por Estado -->
+      <div class="premium-store__product-card premium-store__product-card--estado">
+        <div class="premium-store__product-header">
+          <i class="pi pi-map premium-store__product-icon premium-store__product-icon--estado"></i>
+          <h3>Acesso por Estado</h3>
+        </div>
+        <div class="premium-store__product-description">
+          <p>Acesso permanente ao ranking de um estado específico.</p>
+          <ul class="premium-store__benefits-list">
+            <li>
+              <i class="pi pi-check"></i>
+              Todas as cidades do estado
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Acesso permanente
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Compra única
+            </li>
+          </ul>
+        </div>
+        <div class="premium-store__product-price">
+          <span class="premium-store__price-value">{{ custos.estado | currencyFormat }}</span>
+          <span class="premium-store__price-label">moedas</span>
+        </div>
+        <div class="premium-store__product-form">
+          <p-dropdown
+            [options]="estadosDisponiveis"
+            [(ngModel)]="estadoSelecionado"
+            placeholder="Selecione um estado"
+            optionLabel="label"
+            styleClass="premium-store__estado-dropdown"></p-dropdown>
+        </div>
+        <div class="premium-store__product-actions">
+          <button
+            pButton
+            type="button"
+            label="Comprar Acesso"
+            icon="pi pi-map"
+            class="p-button-info premium-store__product-button"
+            [disabled]="
+              !estadoSelecionado ||
+              (estadoSelecionado && jaTemAcessoEstado(estadoSelecionado.value)) ||
+              !temSaldoSuficiente(custos.estado) ||
+              isLoading
+            "
+            (click)="confirmarCompraEstado()"></button>
+          <div
+            *ngIf="estadoSelecionado && jaTemAcessoEstado(estadoSelecionado.value)"
+            class="premium-store__already-purchased">
+            <i class="pi pi-check-circle"></i>
+            <span>Você já tem acesso a este estado</span>
+          </div>
+          <div
+            *ngIf="
+              estadoSelecionado && !jaTemAcessoEstado(estadoSelecionado.value) && !temSaldoSuficiente(custos.estado)
+            "
+            class="premium-store__insufficient-balance">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>Saldo insuficiente</span>
+          </div>
+        </div>
+      </div>
+      <!-- Acesso por Cidade -->
+      <div class="premium-store__product-card premium-store__product-card--cidade">
+        <div class="premium-store__product-header">
+          <i class="pi pi-building premium-store__product-icon premium-store__product-icon--cidade"></i>
+          <h3>Acesso por Cidade</h3>
+        </div>
+        <div class="premium-store__product-description">
+          <p>Acesso permanente ao ranking de uma cidade específica.</p>
+          <ul class="premium-store__benefits-list">
+            <li>
+              <i class="pi pi-check"></i>
+              Ranking da cidade escolhida
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Acesso permanente
+            </li>
+            <li>
+              <i class="pi pi-check"></i>
+              Compra única
+            </li>
+          </ul>
+        </div>
+        <div class="premium-store__product-price">
+          <span class="premium-store__price-value">{{ custos.cidade | currencyFormat }}</span>
+          <span class="premium-store__price-label">moedas</span>
+        </div>
+        <div class="premium-store__product-form">
+          <p-dropdown
+            [options]="cidadesDisponiveis"
+            [(ngModel)]="cidadeSelecionada"
+            placeholder="Selecione uma cidade"
+            optionLabel="label"
+            styleClass="premium-store__cidade-dropdown"></p-dropdown>
+        </div>
+        <div class="premium-store__product-actions">
+          <button
+            pButton
+            type="button"
+            label="Comprar Acesso"
+            icon="pi pi-building"
+            class="p-button-secondary premium-store__product-button"
+            [disabled]="
+              !cidadeSelecionada ||
+              (cidadeSelecionada && jaTemAcessoCidade(cidadeSelecionada.value, cidadeSelecionada.estado)) ||
+              !temSaldoSuficiente(custos.cidade) ||
+              isLoading
+            "
+            (click)="confirmarCompraCidade()"></button>
+          <div
+            *ngIf="cidadeSelecionada && jaTemAcessoCidade(cidadeSelecionada.value, cidadeSelecionada.estado)"
+            class="premium-store__already-purchased">
+            <i class="pi pi-check-circle"></i>
+            <span>Você já tem acesso a esta cidade</span>
+          </div>
+          <div
+            *ngIf="
+              cidadeSelecionada &&
+              !jaTemAcessoCidade(cidadeSelecionada.value, cidadeSelecionada.estado) &&
+              !temSaldoSuficiente(custos.cidade)
+            "
+            class="premium-store__insufficient-balance">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>Saldo insuficiente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmação -->
+<p-dialog
+  [(visible)]="showConfirmDialog"
+  [header]="confirmTitle"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [breakpoints]="{ '575px': '95vw' }"
+  [style]="{ width: '450px' }"
+  styleClass="premium-store__confirm-dialog"
+  (onHide)="fecharConfirmDialog()">
+  <div class="premium-store__confirm-content">
+    <div class="premium-store__confirm-message">
+      <i class="pi pi-question-circle premium-store__confirm-icon"></i>
+      <p>{{ confirmMessage }}</p>
+    </div>
+    <div class="premium-store__confirm-actions">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-outlined p-button-secondary"
+        (click)="fecharConfirmDialog()"></button>
+      <button
+        pButton
+        type="button"
+        label="Confirmar"
+        icon="pi pi-check"
+        class="p-button-success"
+        [loading]="isLoading"
+        (click)="confirmarAcao()"></button>
+    </div>
+  </div>
+</p-dialog>

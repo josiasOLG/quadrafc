@@ -1,0 +1,11 @@
+<p-button
+  [type]="type"
+  [disabled]="disabled || loading"
+  [loading]="loading"
+  [icon]="icon"
+  [iconPos]="iconPosition"
+  [label]="label"
+  [class]="buttonClasses"
+  (onClick)="handleClick($event)">
+  <ng-content></ng-content>
+</p-button>

@@ -1,0 +1,106 @@
+<div class="register" [formGroup]="registerForm">
+  <div class="register__card">
+    <!-- Header -->
+    <div class="register__header">
+      <h1 class="register__title">Criar Conta</h1>
+      <p class="register__subtitle">
+        Junte-se à comunidade QuadraFC e comece a fazer seus palpites
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form>
+      <!-- Nome -->
+      <div class="register__field">
+        <label for="nome" class="register__label">Nome completo</label>
+        <input
+          type="text"
+          id="nome"
+          pInputText
+          formControlName="nome"
+          placeholder="Seu nome completo"
+          class="register__input"
+          [class.ng-invalid]="registerForm.get('nome')?.invalid && registerForm.get('nome')?.touched"
+        />
+        <small class="register__error" *ngIf="getFieldError('nome')">
+          {{ getFieldError('nome') }}
+        </small>
+      </div>
+
+      <!-- Email -->
+      <div class="register__field">
+        <label for="email" class="register__label">Email</label>
+        <input
+          type="email"
+          id="email"
+          pInputText
+          formControlName="email"
+          placeholder="seu@email.com"
+          class="register__input"
+          [class.ng-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+        />
+        <small class="register__error" *ngIf="getFieldError('email')">
+          {{ getFieldError('email') }}
+        </small>
+      </div>
+
+      <!-- Senha -->
+      <div class="register__field">
+        <label for="password" class="register__label">Senha</label>
+        <p-password
+          id="password"
+          formControlName="password"
+          placeholder="Mínimo 6 caracteres"
+          [toggleMask]="true"
+          [feedback]="false"
+          styleClass="register__input"
+          [class.ng-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+        ></p-password>
+        <small class="register__error" *ngIf="getFieldError('password')">
+          {{ getFieldError('password') }}
+        </small>
+      </div>
+
+      <!-- Confirmar Senha -->
+      <div class="register__field">
+        <label for="confirmPassword" class="register__label">Confirmar Senha</label>
+        <p-password
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          placeholder="Confirme sua senha"
+          [toggleMask]="true"
+          [feedback]="false"
+          styleClass="register__input"
+          [class.ng-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+        ></p-password>
+        <small class="register__error" *ngIf="getFieldError('confirmPassword')">
+          {{ getFieldError('confirmPassword') }}
+        </small>
+      </div>
+
+      <!-- Actions -->
+      <div class="register__actions">
+        <p-button
+          (click)="onSubmit()"
+          type="submit"
+          label="Criar Conta"
+          [loading]="isLoading"
+          [disabled]="registerForm.invalid || isLoading"
+          styleClass="register__button w-full"
+        ></p-button>
+      </div>
+
+      <!-- Login Link -->
+      <div class="register__login-link">
+        <span class="register__login-text">Já tem uma conta?</span>
+        <button
+          type="button"
+          class="register__login-action"
+          (click)="navigateToLogin()"
+        >
+          Fazer Login
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

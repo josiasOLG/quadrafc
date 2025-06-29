@@ -1,0 +1,435 @@
+<div class="ranking">
+  <!-- Header Section -->
+  <app-page-header
+    title="Rankings"
+    subtitle="Veja sua posição nos rankings!"
+    icon="pi pi-chart-line"
+    [user]="user"
+    customClass="page-header--ranking"></app-page-header>
+
+  <!-- Filters Section -->
+  <div class="ranking__filters">
+    <p-dropdown
+      [(ngModel)]="filtroSelecionado"
+      [options]="filtros"
+      optionLabel="label"
+      placeholder="Selecione o escopo"
+      (onChange)="onFiltroChange()"
+      styleClass="filter-dropdown"></p-dropdown>
+  </div>
+
+  <!-- User Position Highlight -->
+  <div class="user-position" *ngIf="user && getCurrentUserPosition()">
+    <p-card styleClass="position-card">
+      <div class="position-info">
+        <div class="position-avatar">
+          <p-avatar [label]="getAvatarLabel(user.nome)" styleClass="user-avatar" shape="circle"></p-avatar>
+        </div>
+        <div class="position-details">
+          <h4>Sua Posição</h4>
+          <div class="position-stats">
+            <span class="position-number">#{{ getCurrentUserPosition() }}</span>
+            <span class="position-points">{{ user.pontos | currencyFormat }} pts</span>
+          </div>
+        </div>
+        <div class="position-badge">
+          <p-badge value="VOCÊ" severity="success" styleClass="user-badge"></p-badge>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="ranking__loading">
+    <div *ngFor="let item of [1, 2, 3, 4, 5]" class="loading-item">
+      <p-skeleton width="3rem" height="3rem" shape="circle" styleClass="mr-3"></p-skeleton>
+      <div class="loading-content">
+        <p-skeleton width="8rem" height="1rem" styleClass="mb-1"></p-skeleton>
+        <p-skeleton width="6rem" height="0.8rem"></p-skeleton>
+      </div>
+      <p-skeleton width="4rem" height="1.5rem" styleClass="ml-auto"></p-skeleton>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div *ngIf="!isLoading" class="ranking__content">
+    <p-tabView [(activeIndex)]="activeTab" (onChange)="onTabChange($event)" styleClass="ranking-tabs">
+      <!-- Tab: Ranking de Usuários -->
+      <p-tabPanel header="Usuários" leftIcon="pi pi-users">
+        <div class="ranking-usuarios">
+          <!-- Empty State -->
+          <div *ngIf="rankingUsuarios.length === 0" class="empty-state">
+            <div class="empty-state__icon">
+              <i class="pi pi-users"></i>
+            </div>
+            <h3>Nenhum usuário encontrado</h3>
+            <p>Não há usuários no ranking selecionado.</p>
+          </div>
+
+          <!-- Lista de Usuários -->
+          <div *ngIf="rankingUsuarios.length > 0" class="ranking-list">
+            <div
+              *ngFor="let item of rankingUsuarios; trackBy: trackByUsuario"
+              class="ranking-user-card"
+              [ngClass]="{
+                'ranking-user-card--current-user': item.isCurrentUser,
+                'ranking-user-card--podium': item.posicao <= 3
+              }"
+              (click)="openUserDetailsModal(item)"
+              (keyup.enter)="openUserDetailsModal(item)"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'Ver detalhes de ' + item.usuario.nome">
+              <!-- Badge de Posição -->
+              <div class="ranking-badge" [ngClass]="getRankingBadgeClass(item.posicao)">
+                <span class="ranking-position">#{{ item.posicao }}</span>
+                <i
+                  *ngIf="getUserMedalha(item.posicao) as medalha"
+                  [class]="'pi ' + medalha.icon"
+                  [style.color]="medalha.color"></i>
+              </div>
+
+              <!-- Avatar do Usuário -->
+              <div class="user-avatar-container">
+                <p-avatar
+                  [label]="getAvatarLabel(item.usuario.nome)"
+                  shape="circle"
+                  styleClass="user-avatar"></p-avatar>
+                <div *ngIf="item.isCurrentUser" class="user-badge-overlay">
+                  <p-badge value="VOCÊ" severity="success" styleClass="you-badge"></p-badge>
+                </div>
+              </div>
+
+              <!-- Informações do Usuário -->
+              <div class="user-info">
+                <div class="user-primary-info">
+                  <h4 class="user-name">{{ item.usuario.nome }}</h4>
+                  <div class="user-location">
+                    <i class="pi pi-map-marker"></i>
+                    <span>{{ item.usuario.bairro }}</span>
+                  </div>
+                </div>
+
+                <div class="user-stats-mini">
+                  <div class="stat-mini">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{ item.palpites_corretos }}/{{ item.total_palpites }}</span>
+                  </div>
+                  <div class="stat-mini" *ngIf="item.taxa_acerto > 0">
+                    <i class="pi pi-percentage"></i>
+                    <span>{{ item.taxa_acerto }}%</span>
+                  </div>
+                  <div class="stat-mini" *ngIf="item.sequencia_atual > 0">
+                    <i class="pi pi-bolt"></i>
+                    <span>{{ item.sequencia_atual }} seguidas</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Score e Avaliação -->
+              <div class="user-score">
+                <div class="score-main">
+                  <span class="score-value">{{ item.pontos | currencyFormat }}</span>
+                  <span class="score-label">pontos</span>
+                </div>
+                <div class="score-rating">
+                  <div class="rating-stars">
+                    <i
+                      *ngFor="let star of getStarsArray(item.taxa_acerto)"
+                      class="pi pi-star-fill"
+                      [class.star-active]="star <= getRatingFromPercent(item.taxa_acerto)"></i>
+                  </div>
+                  <span class="rating-text">{{ getRatingFromPercent(item.taxa_acerto) }}/5</span>
+                </div>
+              </div>
+
+              <!-- Menu de Ação -->
+              <div class="user-actions">
+                <p-button
+                  icon="pi pi-ellipsis-v"
+                  styleClass="p-button-text p-button-outlined  action-btn"
+                  pTooltip="Ver detalhes"
+                  tooltipPosition="left"></p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+
+      <!-- Tab: Ranking de Bairros -->
+      <p-tabPanel header="Bairros" leftIcon="pi pi-home">
+        <div class="ranking-bairros">
+          <!-- Empty State -->
+          <div *ngIf="rankingBairros.length === 0" class="empty-state">
+            <div class="empty-state__icon">
+              <i class="pi pi-home"></i>
+            </div>
+            <h3>Nenhum bairro encontrado</h3>
+            <p>Não há bairros no ranking selecionado.</p>
+          </div>
+
+          <!-- Lista de Bairros -->
+          <div *ngIf="rankingBairros.length > 0" class="ranking-list">
+            <div
+              *ngFor="let item of rankingBairros; trackBy: trackByBairro"
+              class="ranking-bairro-card"
+              [ngClass]="{ 'ranking-bairro-card--podium': item.posicao <= 3 }"
+              (click)="openBairroDetailsModal(item)"
+              (keyup.enter)="openBairroDetailsModal(item)"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'Ver detalhes do bairro ' + item.bairro.nome">
+              <!-- Badge de Posição -->
+              <div class="ranking-badge" [ngClass]="getRankingBadgeClass(item.posicao)">
+                <span class="ranking-position">#{{ item.posicao }}</span>
+                <i
+                  *ngIf="getBairroMedalha(item.posicao) as medalha"
+                  [class]="'pi ' + medalha.icon"
+                  [style.color]="medalha.color"></i>
+              </div>
+
+              <!-- Ícone do Bairro -->
+              <div class="bairro-avatar-container">
+                <div class="bairro-avatar-icon">
+                  <i class="pi pi-map"></i>
+                </div>
+              </div>
+
+              <!-- Informações do Bairro -->
+              <div class="bairro-info">
+                <div class="bairro-primary-info">
+                  <h4 class="bairro-name">{{ item.bairro.nome }}</h4>
+                  <div class="bairro-location">
+                    <i class="pi pi-map-marker"></i>
+                    <span>{{ item.bairro.cidade }} - {{ item.bairro.estado }}</span>
+                  </div>
+                </div>
+
+                <div class="bairro-stats-mini">
+                  <div class="stat-mini">
+                    <i class="pi pi-users"></i>
+                    <span>{{ item.usuarios_ativos }} usuários</span>
+                  </div>
+                  <div class="stat-mini">
+                    <i class="pi pi-chart-line"></i>
+                    <span>{{ item.media_pontuacao | currencyFormat }} média</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Score e Avaliação -->
+              <div class="bairro-score">
+                <div class="score-main">
+                  <span class="score-value">{{ item.pontos_totais | currencyFormat }}</span>
+                  <span class="score-label">pontos</span>
+                </div>
+                <div class="score-rating">
+                  <div class="rating-stars">
+                    <i
+                      *ngFor="let star of getStarsArray(0)"
+                      class="pi pi-star-fill"
+                      [class.star-active]="star <= getBairroRating(item)"></i>
+                  </div>
+                  <span class="rating-text">{{ getBairroRating(item) }}/5</span>
+                </div>
+              </div>
+
+              <!-- Menu de Ação -->
+              <div class="bairro-actions">
+                <p-button
+                  icon="pi pi-ellipsis-v"
+                  styleClass="p-button-text p-button-outlined  action-btn"
+                  pTooltip="Ver detalhes"
+                  tooltipPosition="left"></p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>
+
+<!-- Modal de Detalhes do Usuário -->
+<p-dialog
+  [(visible)]="showUserDetailsModal"
+  header="Detalhes do Usuário"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [breakpoints]="{
+    '1199px': '75vw',
+    '575px': '95vw'
+  }"
+  [style]="{ width: '450px' }"
+  styleClass="ranking-modal"
+  (onHide)="closeUserDetailsModal()">
+  <div *ngIf="selectedUserDetails" class="ranking-modal-content">
+    <!-- Header do Modal -->
+    <div class="ranking-modal-header">
+      <div class="ranking-modal-user">
+        <p-avatar
+          [label]="getAvatarLabel(selectedUserDetails.usuario.nome)"
+          shape="circle"
+          styleClass="ranking-modal-avatar"></p-avatar>
+        <div class="ranking-modal-info">
+          <h3 class="ranking-modal-name">{{ selectedUserDetails.usuario.nome }}</h3>
+          <div class="ranking-modal-position">
+            <i class="pi pi-trophy"></i>
+            <span>#{{ selectedUserDetails.posicao }} no ranking</span>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="selectedUserDetails.isCurrentUser" class="ranking-modal-badge">
+        <p-badge value="VOCÊ" severity="success"></p-badge>
+      </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="ranking-modal-stats">
+      <div class="ranking-stat-card">
+        <div class="ranking-stat-icon">
+          <i class="pi pi-star-fill"></i>
+        </div>
+        <div class="ranking-stat-content">
+          <span class="ranking-stat-value">{{ selectedUserDetails.pontos | currencyFormat }}</span>
+          <span class="ranking-stat-label">Pontos</span>
+        </div>
+      </div>
+
+      <div class="ranking-stat-card">
+        <div class="ranking-stat-icon">
+          <i class="pi pi-check-circle"></i>
+        </div>
+        <div class="ranking-stat-content">
+          <span class="ranking-stat-value">
+            {{ selectedUserDetails.palpites_corretos }}/{{ selectedUserDetails.total_palpites }}
+          </span>
+          <span class="ranking-stat-label">Acertos</span>
+        </div>
+      </div>
+
+      <div class="ranking-stat-card">
+        <div class="ranking-stat-icon">
+          <i class="pi pi-percentage"></i>
+        </div>
+        <div class="ranking-stat-content">
+          <span class="ranking-stat-value">{{ selectedUserDetails.taxa_acerto }}%</span>
+          <span class="ranking-stat-label">Taxa de Acerto</span>
+        </div>
+      </div>
+
+      <div class="ranking-stat-card" *ngIf="selectedUserDetails.sequencia_atual > 0">
+        <div class="ranking-stat-icon">
+          <i class="pi pi-bolt"></i>
+        </div>
+        <div class="ranking-stat-content">
+          <span class="ranking-stat-value">{{ selectedUserDetails.sequencia_atual }}</span>
+          <span class="ranking-stat-label">Sequência Atual</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Localização -->
+    <div class="ranking-modal-location">
+      <h4 class="ranking-modal-section-title">
+        <i class="pi pi-map-marker"></i>
+        Localização
+      </h4>
+      <div class="ranking-location-info">
+        <span class="ranking-location-text">{{ selectedUserDetails.usuario.bairro }}</span>
+        <span *ngIf="selectedUserDetails.usuario.cidade" class="ranking-location-text">
+          - {{ selectedUserDetails.usuario.cidade }}
+        </span>
+        <span *ngIf="selectedUserDetails.usuario.estado" class="ranking-location-text">
+          / {{ selectedUserDetails.usuario.estado }}
+        </span>
+      </div>
+    </div>
+  </div>
+</p-dialog>
+
+<!-- Modal de Detalhes do Bairro -->
+<p-dialog
+  [(visible)]="showBairroDetailsModal"
+  header="Detalhes do Bairro"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [breakpoints]="{
+    '1199px': '75vw',
+    '575px': '95vw'
+  }"
+  [style]="{ width: '450px' }"
+  styleClass="ranking-modal"
+  (onHide)="closeBairroDetailsModal()">
+  <div *ngIf="selectedBairroDetails" class="ranking-modal-content">
+    <!-- Header do Modal -->
+    <div class="ranking-modal-header">
+      <div class="ranking-modal-user">
+        <div class="ranking-modal-bairro-icon">
+          <i class="pi pi-map"></i>
+        </div>
+        <div class="ranking-modal-info">
+          <h3 class="ranking-modal-name">{{ selectedBairroDetails.bairro.nome }}</h3>
+          <div class="ranking-modal-position">
+            <i class="pi pi-trophy"></i>
+            <span>#{{ selectedBairroDetails.posicao }} no ranking</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="ranking-modal-stats">
+      <div class="ranking-stat-card">
+        <div class="ranking-stat-icon">
+          <i class="pi pi-star-fill"></i>
+        </div>
+        <div class="ranking-stat-content">
+          <span class="ranking-stat-value">{{ selectedBairroDetails.pontos_totais | currencyFormat }}</span>
+          <span class="ranking-stat-label">Pontos Totais</span>
+        </div>
+      </div>
+
+      <div class="ranking-stat-card">
+        <div class="ranking-stat-icon">
+          <i class="pi pi-users"></i>
+        </div>
+        <div class="ranking-stat-content">
+          <span class="ranking-stat-value">{{ selectedBairroDetails.usuarios_ativos }}</span>
+          <span class="ranking-stat-label">Usuários Ativos</span>
+        </div>
+      </div>
+
+      <div class="ranking-stat-card">
+        <div class="ranking-stat-icon">
+          <i class="pi pi-chart-line"></i>
+        </div>
+        <div class="ranking-stat-content">
+          <span class="ranking-stat-value">{{ selectedBairroDetails.media_pontuacao | currencyFormat }}</span>
+          <span class="ranking-stat-label">Média por Usuário</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Localização -->
+    <div class="ranking-modal-location">
+      <h4 class="ranking-modal-section-title">
+        <i class="pi pi-map-marker"></i>
+        Localização
+      </h4>
+      <div class="ranking-location-info">
+        <span class="ranking-location-text">
+          {{ selectedBairroDetails.bairro.cidade }} - {{ selectedBairroDetails.bairro.estado }}
+        </span>
+      </div>
+    </div>
+  </div>
+</p-dialog>

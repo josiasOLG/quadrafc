@@ -1,0 +1,245 @@
+// ===================================
+// VARIÁVEIS GLOBAIS DO QUADRAFC
+// ===================================
+
+:root {
+  // Cores principais do QuadraFC
+  --qfc-primary: #1e3a8a;
+  --qfc-primary-hover: #003366;
+  --qfc-primary-light: #60a5fa;
+  --qfc-primary-dark: #1e3a8a;
+
+  // Cores secundárias
+  --qfc-secondary: #34d399;
+  --qfc-secondary-hover: #10b981;
+  --qfc-accent: #3b82f6;
+  --qfc-accent-hover: #2563eb;
+
+  // Cores do sistema
+  --qfc-success: #10b981;
+  --qfc-warning: #f59e0b;
+  --qfc-error: #ef4444;
+  --qfc-info: #3b82f6;
+
+  // Cores de fundo - Tema Claro
+  --qfc-bg-primary: #ffffff;
+  --qfc-bg-secondary: #f8fafc;
+  --qfc-bg-tertiary: #f1f5f9;
+  --qfc-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  // Cores de texto - Tema Claro
+  --qfc-text-primary: #1e293b;
+  --qfc-text-secondary: #64748b;
+  --qfc-text-tertiary: #94a3b8;
+  --qfc-text-inverse: #ffffff;
+
+  // Cores de borda
+  --qfc-border-primary: #e2e8f0;
+  --qfc-border-secondary: #cbd5e1;
+  --qfc-border-focus: var(--qfc-primary);
+
+  // Sombras
+  --qfc-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --qfc-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --qfc-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --qfc-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  // Gradientes
+  --qfc-gradient-primary: linear-gradient(135deg, var(--qfc-primary) 0%, var(--qfc-primary-light) 100%);
+  --qfc-gradient-secondary: linear-gradient(135deg, var(--qfc-secondary) 0%, var(--qfc-accent) 100%);
+
+  // Bordas radius
+  --qfc-radius-sm: 4px;
+  --qfc-radius-md: 6px;
+  --qfc-radius-lg: 8px;
+  --qfc-radius-xl: 12px;
+  --qfc-radius-full: 9999px;
+
+  // Espaçamentos
+  --qfc-spacing-xs: 0.25rem;
+  --qfc-spacing-sm: 0.5rem;
+  --qfc-spacing-md: 1rem;
+  --qfc-spacing-lg: 1.5rem;
+  --qfc-spacing-xl: 2rem;
+  --qfc-spacing-2xl: 3rem;
+
+  // Breakpoints (para uso em JS)
+  --qfc-breakpoint-sm: 640px;
+  --qfc-breakpoint-md: 768px;
+  --qfc-breakpoint-lg: 1024px;
+  --qfc-breakpoint-xl: 1280px;
+
+  // Tipografia
+  --qfc-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --qfc-font-size-xs: 0.75rem;
+  --qfc-font-size-sm: 0.875rem;
+  --qfc-font-size-base: 1rem;
+  --qfc-font-size-lg: 1.125rem;
+  --qfc-font-size-xl: 1.25rem;
+  --qfc-font-size-2xl: 1.5rem;
+  --qfc-font-size-3xl: 1.875rem;
+  --qfc-font-weight-light: 300;
+  --qfc-font-weight-normal: 400;
+  --qfc-font-weight-medium: 500;
+  --qfc-font-weight-semibold: 600;
+  --qfc-font-weight-bold: 700;
+}
+
+// ===================================
+// TEMA ESCURO
+// ===================================
+[data-theme='dark'] {
+  // Cores de fundo - Tema Escuro
+  --qfc-bg-primary: #0f172a;
+  --qfc-bg-secondary: #1e293b;
+  --qfc-bg-tertiary: #334155;
+  --qfc-bg-overlay: rgba(0, 0, 0, 0.7);
+
+  // Cores de texto - Tema Escuro
+  --qfc-text-primary: #f8fafc;
+  --qfc-text-secondary: #cbd5e1;
+  --qfc-text-tertiary: #94a3b8;
+  --qfc-text-inverse: #0f172a;
+
+  // Cores de borda - Tema Escuro
+  --qfc-border-primary: #334155;
+  --qfc-border-secondary: #475569;
+
+  // Sombras - Tema Escuro
+  --qfc-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --qfc-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --qfc-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --qfc-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+// ===================================
+// CLASSES UTILITÁRIAS GLOBAIS
+// ===================================
+
+// Texto
+.qfc-text {
+  &--primary {
+    color: var(--qfc-text-primary);
+  }
+  &--secondary {
+    color: var(--qfc-text-secondary);
+  }
+  &--tertiary {
+    color: var(--qfc-text-tertiary);
+  }
+  &--inverse {
+    color: var(--qfc-text-inverse);
+  }
+  &--brand {
+    color: var(--qfc-primary);
+  }
+}
+
+// Background
+.qfc-bg {
+  &--primary {
+    background-color: var(--qfc-bg-primary);
+  }
+  &--secondary {
+    background-color: var(--qfc-bg-secondary);
+  }
+  &--tertiary {
+    background-color: var(--qfc-bg-tertiary);
+  }
+  &--brand {
+    background: var(--qfc-gradient-primary);
+  }
+}
+
+// Bordas
+.qfc-border {
+  &--primary {
+    border: 1px solid var(--qfc-border-primary);
+  }
+  &--secondary {
+    border: 1px solid var(--qfc-border-secondary);
+  }
+  &--focus {
+    border: 2px solid var(--qfc-border-focus);
+  }
+}
+
+// Sombras
+.qfc-shadow {
+  &--sm {
+    box-shadow: var(--qfc-shadow-sm);
+  }
+  &--md {
+    box-shadow: var(--qfc-shadow-md);
+  }
+  &--lg {
+    box-shadow: var(--qfc-shadow-lg);
+  }
+  &--xl {
+    box-shadow: var(--qfc-shadow-xl);
+  }
+}
+
+// Radius
+.qfc-radius {
+  &--sm {
+    border-radius: var(--qfc-radius-sm);
+  }
+  &--md {
+    border-radius: var(--qfc-radius-md);
+  }
+  &--lg {
+    border-radius: var(--qfc-radius-lg);
+  }
+  &--xl {
+    border-radius: var(--qfc-radius-xl);
+  }
+  &--full {
+    border-radius: var(--qfc-radius-full);
+  }
+}
+
+// Tipografia
+.qfc-font {
+  &--xs {
+    font-size: var(--qfc-font-size-xs);
+  }
+  &--sm {
+    font-size: var(--qfc-font-size-sm);
+  }
+  &--base {
+    font-size: var(--qfc-font-size-base);
+  }
+  &--lg {
+    font-size: var(--qfc-font-size-lg);
+  }
+  &--xl {
+    font-size: var(--qfc-font-size-xl);
+  }
+  &--2xl {
+    font-size: var(--qfc-font-size-2xl);
+  }
+  &--3xl {
+    font-size: var(--qfc-font-size-3xl);
+  }
+
+  &--light {
+    font-weight: var(--qfc-font-weight-light);
+  }
+  &--normal {
+    font-weight: var(--qfc-font-weight-normal);
+  }
+  &--medium {
+    font-weight: var(--qfc-font-weight-medium);
+  }
+  &--semibold {
+    font-weight: var(--qfc-font-weight-semibold);
+  }
+  &--bold {
+    font-weight: var(--qfc-font-weight-bold);
+  }
+
+  &--inter {
+    font-family: var(--qfc-font-family);
+  }
+}

@@ -1,0 +1,28 @@
+.app-input {
+  .app-input-label {
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+  }
+
+  .app-input-field {
+    &.ng-invalid.ng-dirty {
+      border-color: #e24c4c;
+
+      &:focus {
+        border-color: #e24c4c;
+        box-shadow: 0 0 0 0.2rem rgba(226, 76, 76, 0.25);
+      }
+    }
+  }
+
+  .app-input-help {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .app-input-error {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+  }
+}

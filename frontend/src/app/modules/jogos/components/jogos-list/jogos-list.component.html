@@ -1,0 +1,316 @@
+<div class="jogos-page">
+  <!-- Header Section -->
+  <app-page-header
+    title="Jogos de Hoje"
+    subtitle="Faça seus palpites e ganhe pontos!"
+    icon="pi pi-trophy"
+    [user]="user"
+    customClass="page-header--jogos">
+  </app-page-header>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="jogos-page__loading">
+    <div *ngFor="let item of [1,2,3]" class="jogos-page__loading-card">
+      <p-card styleClass="h-full">
+        <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+        <p-skeleton height="8rem" styleClass="mb-3"></p-skeleton>
+        <p-skeleton height="2rem" width="70%"></p-skeleton>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div *ngIf="!isLoading" class="jogos-page__content">
+    <!-- Empty State -->
+    <div *ngIf="campeonatos.length === 0" class="jogos-page__empty-state">
+      <div class="jogos-page__empty-icon">
+        <i class="pi pi-calendar-times"></i>
+      </div>
+      <h3 class="jogos-page__empty-title">Nenhum jogo hoje</h3>
+      <p class="jogos-page__empty-subtitle">Volte amanhã para fazer seus palpites!</p>
+    </div>
+
+    <!-- Tabs de Campeonatos -->
+    <div *ngIf="campeonatos.length > 0" class="jogos-page__championships">
+      <p-tabView
+        [(activeIndex)]="activeTabIndex"
+        styleClass="jogos-tabs"
+        scrollable="true">
+
+        <p-tabPanel
+          *ngFor="let campeonato of campeonatos; trackBy: trackByCampeonato"
+          [header]="campeonato.nome"
+          styleClass="championship-tab">
+
+          <!-- Header do campeonato -->
+          <div class="championship-header">
+            <div class="championship-info">
+              <h3 class="championship-title">{{ campeonato.nome }}</h3>
+              <p class="championship-subtitle">{{ campeonato.total }} jogo{{ campeonato.total !== 1 ? 's' : '' }}</p>
+            </div>
+            <div class="championship-badge">
+              <p-badge
+                [value]="campeonato.total.toString()"
+                severity="info">
+              </p-badge>
+            </div>
+          </div>
+
+          <!-- Games Grid do campeonato -->
+          <div class="jogos-page__games-grid">
+            <div
+              *ngFor="let jogo of campeonato.jogos; trackBy: trackByJogo"
+              class="jogos-page__game-item">
+
+              <p-card
+                styleClass="h-full game-card"
+                [ngClass]="{
+                  'border-green-200 bg-green-50': jogo.status === 'finalizado' || jogo.status === 'encerrado',
+                  'border-orange-200 bg-orange-50': jogo.status === 'ao_vivo',
+                  'border-200': jogo.status === 'aberto' || jogo.status === 'agendado'
+                }">
+
+                <!-- Card Header -->
+                <ng-template pTemplate="header">
+                  <div class="flex align-items-center justify-content-between p-2 bg-primary-50 border-bottom-1 border-primary-100">
+                    <div class="flex flex-column gap-1">
+                      <span class="text-primary font-semibold text-sm">{{ jogo.campeonato || campeonato.nome }}</span>
+                      <span class="text-xs text-600" *ngIf="jogo.rodadaId">{{ jogo.rodadaId.nome }}</span>
+                    </div>
+                    <p-tag
+                      [value]="getJogoStatus(jogo).label"
+                      [severity]="getJogoStatus(jogo).severity"
+                      styleClass="text-xs">
+                    </p-tag>
+                  </div>
+                </ng-template>
+
+                <!-- Match Content -->
+                <div class="p-1">
+                  <!-- Teams Section -->
+                  <div class="game-card__teams">
+                    <!-- Time A -->
+                    <div class="game-card__team game-card__team--home">
+                      <img
+                        [src]="jogo.timeA.escudo"
+                        [alt]="jogo.timeA.nome"
+                        class="game-card__team-logo"
+                        (error)="onImageError($event)">
+                      <h4 class="game-card__team-name">{{ jogo.timeA.nome }}</h4>
+                      <div
+                        *ngIf="(jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado"
+                        class="game-card__team-score">
+                        {{ jogo.resultado.gols_casa || 0 }}
+                      </div>
+                    </div>
+
+                    <!-- Match Info -->
+                    <div class="game-card__match-info">
+                      <div class="game-card__match-time">
+                        {{ formatDataHora(jogo.data) }}
+                      </div>
+
+                      <div *ngIf="jogo.status !== 'finalizado' && jogo.status !== 'encerrado'"
+                           class="game-card__vs">
+                        VS
+                      </div>
+
+                      <div *ngIf="(jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado"
+                           class="game-card__result">
+                        <span class="game-card__result-label">Resultado</span>
+                        <span class="game-card__result-score">
+                          {{ jogo.resultado.gols_casa || 0 }} x {{ jogo.resultado.gols_visitante || 0 }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Time B -->
+                    <div class="game-card__team game-card__team--away">
+                      <img
+                        [src]="jogo.timeB.escudo"
+                        [alt]="jogo.timeB.nome"
+                        class="game-card__team-logo"
+                        (error)="onImageError($event)">
+                      <h4 class="game-card__team-name">{{ jogo.timeB.nome }}</h4>
+                      <div
+                        *ngIf="(jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado"
+                        class="game-card__team-score">
+                        {{ jogo.resultado.gols_visitante || 0 }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Venue Info -->
+                  <div class="game-card__venue" *ngIf="jogo.estadio">
+                    <i class="pi pi-map-marker"></i>
+                    <span>{{ jogo.estadio }}</span>
+                    <span *ngIf="jogo.cidade"> - {{ jogo.cidade }}</span>
+                  </div>
+
+                  <!-- Palpite Status -->
+                  <div class="game-card__palpite" *ngIf="getPalpiteStatus(jogo) as palpiteStatus">
+                    <p-tag
+                      [value]="palpiteStatus.label"
+                      [severity]="palpiteStatus.severity"
+                      styleClass="text-xs w-full">
+                    </p-tag>
+                  </div>
+                </div>
+
+                <!-- Card Footer -->
+                <ng-template pTemplate="footer">
+                  <div class="game-card__footer">
+                    <!-- Action Buttons -->
+                    <div class="game-card__actions">
+                      <app-button
+                        *ngIf="canMakePalpite(jogo)"
+                        label="Fazer Palpite"
+                        icon="pi pi-plus"
+                        variant="success"
+                        size="small"
+                        [fullWidth]="true"
+                        (onClick)="openPalpiteDialog(jogo)">
+                      </app-button>
+
+                      <app-button
+                        *ngIf="!canMakePalpite(jogo) && !jogo.palpite_usuario"
+                        label="Indisponível"
+                        icon="pi pi-clock"
+                        variant="secondary"
+                        size="small"
+                        [fullWidth]="true"
+                        [disabled]="true">
+                      </app-button>
+
+                      <app-button
+                        *ngIf="jogo.palpite_usuario && (jogo.status === 'aberto' || jogo.status === 'agendado')"
+                        label="Palpite Enviado"
+                        icon="pi pi-check"
+                        variant="info"
+                        size="small"
+                        [fullWidth]="true"
+                        [disabled]="true">
+                      </app-button>
+                    </div>
+                  </div>
+                </ng-template>
+              </p-card>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog de Palpite -->
+<app-modal
+  [visible]="showPalpiteDialog"
+  header="Fazer Palpite"
+  width="500px"
+  [showFooter]="true"
+  confirmLabel="Enviar Palpite"
+  cancelLabel="Cancelar"
+  confirmIcon="pi pi-check"
+  cancelIcon="pi pi-times"
+  [loading]="isSubmittingPalpite"
+  (onHide)="closePalpiteDialog()"
+  (onConfirm)="submitPalpite()"
+  (onCancel)="closePalpiteDialog()">
+
+  <div *ngIf="selectedJogo">
+    <!-- Match Preview -->
+    <div class="palpite-modal__preview">
+      <div class="palpite-modal__teams">
+        <!-- Team A Preview -->
+        <div class="palpite-modal__team">
+          <img
+            [src]="selectedJogo.timeA.escudo"
+            [alt]="selectedJogo.timeA.nome"
+            class="palpite-modal__team-logo"
+            (error)="onImageError($event)">
+          <span class="palpite-modal__team-name">{{ selectedJogo.timeA.nome }}</span>
+        </div>
+
+        <!-- VS -->
+        <div class="palpite-modal__vs">
+          <span>VS</span>
+        </div>
+
+        <!-- Team B Preview -->
+        <div class="palpite-modal__team">
+          <img
+            [src]="selectedJogo.timeB.escudo"
+            [alt]="selectedJogo.timeB.nome"
+            class="palpite-modal__team-logo"
+            (error)="onImageError($event)">
+          <span class="palpite-modal__team-name">{{ selectedJogo.timeB.nome }}</span>
+        </div>
+      </div>
+
+      <div class="palpite-modal__match-details">
+        <span class="palpite-modal__match-date">{{ formatDataHora(selectedJogo.data.toString()) }}</span>
+        <span class="palpite-modal__match-championship">{{ selectedJogo.campeonato }}</span>
+      </div>
+    </div>
+
+    <!-- Prediction Form -->
+    <form [formGroup]="palpiteForm">
+      <div class="palpite-modal__form-header">
+        <h4 class="palpite-modal__form-title">Qual será o placar?</h4>
+        <p class="palpite-modal__form-subtitle">Digite quantos gols cada time fará</p>
+      </div>
+
+      <div class="palpite-modal__inputs">
+        <!-- Team A Score -->
+        <div class="palpite-modal__input-group">
+          <div class="palpite-modal__input-label">
+            <span>{{ selectedJogo.timeA.nome }}</span>
+          </div>
+          <div class="palpite-modal__input-wrapper">
+            <input
+              pInputText
+              type="number"
+              [min]="0"
+              [max]="20"
+              class="palpite-modal__input"
+              formControlName="golsTimeA"
+              placeholder="0">
+          </div>
+        </div>
+
+        <!-- Separator -->
+        <div class="palpite-modal__separator">
+          <span>X</span>
+        </div>
+
+        <!-- Team B Score -->
+        <div class="palpite-modal__input-group">
+          <div class="palpite-modal__input-label">
+            <span>{{ selectedJogo.timeB.nome }}</span>
+          </div>
+          <div class="palpite-modal__input-wrapper">
+            <input
+              pInputText
+              type="number"
+              [min]="0"
+              [max]="20"
+              class="palpite-modal__input"
+              formControlName="golsTimeB"
+              placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation Messages -->
+      <div class="mb-3" *ngIf="palpiteForm.invalid && (palpiteForm.dirty || palpiteForm.touched)">
+        <small class="p-error block text-center" *ngIf="palpiteForm.get('golsTimeA')?.invalid">
+          Gols do {{ selectedJogo.timeA.nome }} deve ser entre 0 e 20
+        </small>
+        <small class="p-error block text-center" *ngIf="palpiteForm.get('golsTimeB')?.invalid">
+          Gols do {{ selectedJogo.timeB.nome }} deve ser entre 0 e 20
+        </small>
+      </div>
+    </form>
+  </div>
+</app-modal>

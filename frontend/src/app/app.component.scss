@@ -1,0 +1,70 @@
+@import 'shared/styles/variables';
+@import 'shared/styles/mixins';
+
+.app-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-ground);
+  overflow: hidden;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+
+  @include tablet-up {
+    margin-bottom: 0;
+  }
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--surface-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  @include shadow-medium;
+
+  @include tablet-up {
+    display: none;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-color-secondary);
+    transition: all 0.2s ease;
+    padding: 0.5rem;
+    border-radius: 8px;
+    min-width: 60px;
+
+    &:hover,
+    &.active {
+      color: var(--primary-color);
+      background: var(--primary-color-light);
+    }
+
+    i {
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+    }
+
+    span {
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+  }
+}

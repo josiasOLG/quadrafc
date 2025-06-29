@@ -1,0 +1,176 @@
+<div class="configuracoes">
+  <!-- Header -->
+  <app-page-header
+    title="Configurações"
+    subtitle="Personalize sua experiência no app"
+    icon="pi pi-cog"
+    [user]="user"
+    customClass="page-header--configuracoes"></app-page-header>
+  <!-- Lista de Configurações por Categoria -->
+  <div class="configuracoes__content">
+    <div *ngFor="let categoria of getCategorias()" class="configuracoes__category">
+      <p-card styleClass="settings-card">
+        <h3 class="category-title">{{ categoria }}</h3>
+        <div class="settings-list">
+          <div
+            *ngFor="let item of getConfiguracoesPorCategoria(categoria)"
+            class="setting-item"
+            [class.setting-item--button]="item.tipo === 'button'"
+            (click)="onButtonClick(item)"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="item.titulo">
+            <div class="setting-info">
+              <div class="setting-icon">
+                <i [class]="item.icone"></i>
+              </div>
+              <div class="setting-content">
+                <h4 class="setting-title">{{ item.titulo }}</h4>
+                <p class="setting-description">{{ item.descricao }}</p>
+              </div>
+            </div>
+
+            <div class="setting-control">
+              <!-- Switch -->
+              <p-inputSwitch
+                *ngIf="item.tipo === 'switch'"
+                [(ngModel)]="item.valor"
+                (onChange)="onConfigChange(item, $event.checked)"></p-inputSwitch>
+
+              <!-- Dropdown -->
+              <p-dropdown
+                *ngIf="item.tipo === 'dropdown'"
+                [(ngModel)]="item.valor"
+                [options]="item.opcoes"
+                optionLabel="label"
+                optionValue="value"
+                (onChange)="onConfigChange(item, $event.value)"
+                styleClass="setting-dropdown"></p-dropdown>
+
+              <!-- Button -->
+              <p-button
+                *ngIf="item.tipo === 'button'"
+                icon="pi pi-chevron-right"
+                styleClass="p-button-text p-button-outlined setting-button"></p-button>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Editar Perfil -->
+<p-dialog
+  [(visible)]="showEditProfileModal"
+  header="Editar Perfil"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [breakpoints]="{
+    '1199px': '75vw',
+    '575px': '95vw'
+  }"
+  [style]="{ width: '500px' }"
+  styleClass="configuracoes-modal">
+  <div class="modal-content">
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="nome">Nome Completo</label>
+        <input id="nome" type="text" pInputText [(ngModel)]="editProfileForm.nome" placeholder="Seu nome completo" />
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText [(ngModel)]="editProfileForm.email" placeholder="seu@email.com" />
+      </div>
+
+      <div class="form-field">
+        <label for="cidade">Cidade</label>
+        <input id="cidade" type="text" pInputText [(ngModel)]="editProfileForm.cidade" placeholder="Sua cidade" />
+      </div>
+
+      <div class="form-field">
+        <label for="estado">Estado</label>
+        <input id="estado" type="text" pInputText [(ngModel)]="editProfileForm.estado" placeholder="UF" />
+      </div>
+
+      <div class="form-field full-width">
+        <label for="bairro">Bairro</label>
+        <input id="bairro" type="text" pInputText [(ngModel)]="editProfileForm.bairro" placeholder="Seu bairro" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        styleClass="p-button-text"
+        (click)="showEditProfileModal = false"></p-button>
+      <p-button label="Salvar" icon="pi pi-check" (click)="saveProfile()"></p-button>
+    </div>
+  </div>
+</p-dialog>
+
+<!-- Modal: Alterar Senha -->
+<p-dialog
+  [(visible)]="showChangePasswordModal"
+  header="Alterar Senha"
+  [modal]="true"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [breakpoints]="{
+    '1199px': '75vw',
+    '575px': '95vw'
+  }"
+  [style]="{ width: '450px' }"
+  styleClass="configuracoes-modal">
+  <div class="modal-content">
+    <div class="form-grid">
+      <div class="form-field full-width">
+        <label for="senhaAtual">Senha Atual</label>
+        <p-password
+          id="senhaAtual"
+          [(ngModel)]="changePasswordForm.senhaAtual"
+          placeholder="Digite sua senha atual"
+          [feedback]="false"
+          [toggleMask]="true"></p-password>
+      </div>
+
+      <div class="form-field full-width">
+        <label for="novaSenha">Nova Senha</label>
+        <p-password
+          id="novaSenha"
+          [(ngModel)]="changePasswordForm.novaSenha"
+          placeholder="Digite a nova senha"
+          [feedback]="true"
+          [toggleMask]="true"></p-password>
+      </div>
+
+      <div class="form-field full-width">
+        <label for="confirmarSenha">Confirmar Nova Senha</label>
+        <p-password
+          id="confirmarSenha"
+          [(ngModel)]="changePasswordForm.confirmarSenha"
+          placeholder="Confirme a nova senha"
+          [feedback]="false"
+          [toggleMask]="true"></p-password>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        styleClass="p-button-text"
+        (click)="showChangePasswordModal = false"></p-button>
+      <p-button label="Alterar Senha" icon="pi pi-check" (click)="changePassword()"></p-button>
+    </div>
+  </div>
+</p-dialog>

@@ -1,0 +1,90 @@
+<div class="app-input flex flex-column gap-1">
+  <label *ngIf="label" class="app-input-label font-medium text-sm">
+    {{ label }}
+    <span *ngIf="required" class="text-red-500 ml-1">*</span>
+  </label>
+
+  <div class="app-input-wrapper flex align-items-center gap-2">
+    <i *ngIf="icon" [class]="'pi pi-' + icon" class="text-500"></i>
+
+    <!-- Text Input -->
+    <input
+      *ngIf="type === 'text' || type === 'email'"
+      pInputText
+      [type]="type"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [value]="value"
+      [attr.maxlength]="maxLength"
+      [class]="inputClasses"
+      (input)="handleInput($event)"
+      (blur)="handleBlur($event)"
+      (focus)="handleFocus($event)"
+    />
+
+    <!-- Password Input -->
+    <p-password
+      *ngIf="type === 'password'"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [(ngModel)]="value"
+      [class]="inputClasses"
+      [feedback]="false"
+      [toggleMask]="true"
+      (onInput)="handleInput($event)"
+      (onBlur)="handleBlur($event)"
+      (onFocus)="handleFocus($event)"
+    ></p-password>
+
+    <!-- Number Input -->
+    <p-inputNumber
+      *ngIf="type === 'number'"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [(ngModel)]="value"
+      [min]="min"
+      [max]="max"
+      [class]="inputClasses"
+      (onInput)="handleInput($event)"
+      (onBlur)="handleBlur($event)"
+      (onFocus)="handleFocus($event)"
+    ></p-inputNumber>
+
+    <!-- Date Input -->
+    <p-calendar
+      *ngIf="type === 'date'"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [(ngModel)]="value"
+      [class]="inputClasses"
+      dateFormat="dd/mm/yy"
+      [showIcon]="true"
+      (onSelect)="handleInput($event)"
+      (onBlur)="handleBlur($event)"
+      (onFocus)="handleFocus($event)"
+    ></p-calendar>
+
+    <!-- Textarea -->
+    <textarea
+      *ngIf="type === 'textarea'"
+      pInputTextarea
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [value]="value"
+      [rows]="rows"
+      [attr.maxlength]="maxLength"
+      [class]="inputClasses"
+      (input)="handleInput($event)"
+      (blur)="handleBlur($event)"
+      (focus)="handleFocus($event)"
+    ></textarea>
+  </div>
+
+  <small *ngIf="helpText && !hasError" class="app-input-help text-500">
+    {{ helpText }}
+  </small>
+
+  <small *ngIf="hasError" class="app-input-error text-red-500">
+    {{ errorMessage }}
+  </small>
+</div>

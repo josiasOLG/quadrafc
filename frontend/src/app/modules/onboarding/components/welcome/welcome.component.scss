@@ -1,0 +1,400 @@
+@import 'mixins';
+
+.welcome {
+  min-height: 100vh;
+  @include flex-center;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary-color-50) 0%, var(--primary-color-100) 100%);
+
+  @include dark-mode {
+    background: linear-gradient(135deg, var(--surface-900) 0%, var(--surface-800) 100%);
+  }
+
+  // Configurações globais para overlays do PrimeNG neste componente
+  ::ng-deep {
+    .p-calendar {
+      .p-datepicker {
+        z-index: 10000 !important;
+      }
+    }
+
+    .p-autocomplete-panel {
+      z-index: 10000 !important;
+    }
+
+    .p-dropdown-panel {
+      z-index: 10000 !important;
+    }
+
+    // Garantir que qualquer overlay do PrimeNG tenha z-index alto
+    .p-component-overlay {
+      z-index: 10000 !important;
+    }
+  }
+
+  &__container {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface-0);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-6);
+
+    @include dark-mode {
+      background: var(--surface-800);
+    }
+
+    @include tablet-up {
+      max-width: 600px;
+    }
+  }
+
+  &__header {
+    padding: 1.5rem 1rem 1rem;
+    background: var(--surface-50);
+    border-bottom: 1px solid var(--surface-200);
+    width: 100%;
+    overflow-x: scroll;
+    @include dark-mode {
+      background: var(--surface-700);
+      border-bottom-color: var(--surface-600);
+    }
+  }
+
+  &__steps {
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-300) var(--surface-50);
+    min-width: 0;
+    padding-bottom: 0.5rem;
+    position: relative;
+    background: linear-gradient(to right, var(--surface-0) 90%, transparent 100%);
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 2.5rem;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(to left, var(--surface-0) 60%, transparent 100%);
+      z-index: 2;
+    }
+    ::-webkit-scrollbar {
+      height: 6px;
+      background: var(--surface-50);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--surface-300);
+      border-radius: 3px;
+    }
+
+    @media (max-width: 600px) {
+      min-width: 0;
+      padding-bottom: 0.5rem;
+      ::ng-deep .p-steps {
+        gap: 0.15rem;
+        width: 100vw;
+        max-width: 100vw;
+        padding: 0 0.25rem;
+        .p-steps-list {
+          gap: 0.15rem;
+        }
+        .p-steps-item {
+          min-width: 110px;
+          max-width: 120px;
+          .p-steps-number {
+            font-size: 0.85rem;
+            width: 1.7rem;
+            height: 1.7rem;
+            line-height: 1.7rem;
+          }
+          .p-steps-title {
+            font-size: 0.7rem;
+            margin-top: 0.4rem;
+            min-height: 2em;
+            max-width: 90px;
+          }
+        }
+      }
+    }
+  }
+  ::ng-deep {
+    .p-steps .p-steps-item .p-menuitem-link {
+      background: transparent !important;
+    }
+    .p-steps {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      justify-content: flex-start;
+      // gap: 0.5rem;
+      // padding: 0 0.5rem;
+      min-width: 340px;
+      width: 60vh;
+      max-width: 100vw;
+
+      .p-steps-list {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        width: max-content;
+        gap: 0.5rem;
+      }
+      .p-steps-item {
+        flex: 0 0 auto;
+        min-width: 110px;
+        max-width: 140px;
+        text-align: center;
+        margin: 0 2px;
+        overflow: visible;
+        .p-steps-number {
+          // background: var(--surface-300);
+          color: var(--text-color);
+          font-size: 0.95rem;
+          width: 2.2rem;
+          height: 2.2rem;
+          line-height: 2.2rem;
+          margin: 0 auto;
+          @include dark-mode {
+            // background: var(--surface-600);
+          }
+        }
+        &.p-highlight {
+          .p-steps-number {
+            // background: var(--primary-color);
+            color: white;
+          }
+        }
+        .p-steps-title {
+          font-size: 0.82rem;
+          margin-top: 0.6rem;
+          color: var(--text-color-secondary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.3;
+          min-height: 2.2em;
+          max-width: 100%;
+          cursor: pointer;
+          @include mobile-only {
+            font-size: 0.75rem;
+            min-height: 2.5em;
+            max-width: 90px;
+          }
+        }
+      }
+    }
+  }
+  &__content {
+    padding: 2rem 1.5rem;
+    min-height: 400px;
+    @include flex-center;
+    flex-direction: column;
+    gap: 2.5rem;
+    @include mobile-only {
+      padding: 1.5rem 1rem;
+      min-height: 350px;
+      gap: 1.5rem;
+    }
+  }
+
+  &__step {
+    width: 100%;
+    text-align: center;
+    animation: fadeInUp 0.3s ease-out;
+    margin-bottom: 1.5rem;
+
+    &--intro {
+      .welcome__icon {
+        margin-bottom: 1.5rem;
+      }
+      .welcome__features {
+        display: grid;
+        gap: 1rem;
+        margin-top: 2rem;
+        @include tablet-up {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        @include mobile-only {
+          grid-template-columns: 1fr;
+        }
+      }
+      .welcome__feature {
+        @include flex-center;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--surface-50);
+        border-radius: 0.5rem;
+        border: 1px solid var(--surface-200);
+        @include dark-mode {
+          background: var(--surface-700);
+          border-color: var(--surface-600);
+        }
+        i {
+          font-size: 1.5rem;
+          color: var(--primary-color);
+        }
+        span {
+          font-size: 0.875rem;
+          color: var(--text-color-secondary);
+          text-align: center;
+        }
+      }
+    }
+
+    &--form {
+      max-width: 100%;
+      margin: 0 auto;
+
+      .welcome__icon {
+        margin-bottom: 1rem;
+      }
+
+      .welcome__form {
+        margin-top: 2rem;
+        text-align: left;
+
+        .welcome__form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+
+          @include mobile-only {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+        }
+
+        .field {
+          margin-bottom: 1.5rem;
+
+          label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+          }
+
+          ::ng-deep {
+            .p-inputtext,
+            .p-autocomplete {
+              width: 100% !important;
+            }
+
+            .p-autocomplete-input {
+              width: 100% !important;
+            }
+
+            .ng-invalid.ng-touched {
+              border-color: var(--red-500);
+            }
+          }
+        }
+      }
+    }
+
+    &--final {
+      .welcome__icon {
+        margin-bottom: 1rem;
+      }
+
+      .welcome__summary {
+        margin-top: 2rem;
+        text-align: left;
+
+        ::ng-deep {
+          .p-card {
+            .p-card-body {
+              padding: 1.5rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &__icon {
+    @include flex-center;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+
+    @include mobile-only {
+      font-size: 1.25rem;
+    }
+  }
+
+  &__description {
+    font-size: 1rem;
+    color: var(--text-color-secondary);
+    line-height: 1.5;
+    margin-bottom: 0;
+
+    @include mobile-only {
+      font-size: 0.875rem;
+    }
+  }
+
+  &__actions {
+    padding: 1.5rem;
+    background: var(--surface-50);
+    border-top: 1px solid var(--surface-200);
+
+    @include dark-mode {
+      background: var(--surface-700);
+      border-top-color: var(--surface-600);
+    }
+
+    ::ng-deep {
+      .p-button {
+        height: 3rem;
+        font-weight: 500;
+
+        &.p-button-secondary {
+          background: var(--surface-200);
+          border-color: var(--surface-300);
+          color: var(--text-color);
+
+          @include dark-mode {
+            background: var(--surface-600);
+            border-color: var(--surface-500);
+          }
+
+          &:hover {
+            background: var(--surface-300);
+            border-color: var(--surface-400);
+
+            @include dark-mode {
+              background: var(--surface-500);
+              border-color: var(--surface-400);
+            }
+          }
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

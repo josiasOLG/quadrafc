@@ -1,0 +1,235 @@
+@import 'mixins';
+
+.register {
+  @include qfc-flex-center;
+  min-height: 100%;
+  padding: var(--qfc-spacing-md);
+  background: var(--qfc-gradient-primary);
+
+  &__card {
+    @include qfc-card;
+    @include qfc-fade-in;
+    padding: var(--qfc-spacing-xl);
+    width: 100%;
+    max-width: 450px;
+    margin: auto;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: var(--qfc-spacing-2xl);
+  }
+
+  &__title {
+    color: var(--qfc-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 var(--qfc-spacing-sm) 0;
+  }
+
+  &__subtitle {
+    color: var(--qfc-text-secondary);
+    margin: 0;
+  }
+
+  &__field {
+    margin-bottom: var(--qfc-spacing-lg);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: var(--qfc-spacing-sm);
+    font-weight: 500;
+    color: var(--qfc-text-primary);
+  }
+
+  &__input {
+    @include qfc-input-base;
+  }
+
+  &__error {
+    color: var(--qfc-error);
+    display: block;
+    margin-top: var(--qfc-spacing-xs);
+    font-size: 0.875rem;
+  }
+
+  &__help {
+    color: var(--qfc-text-secondary);
+    display: block;
+    margin-top: var(--qfc-spacing-xs);
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+
+  &__actions {
+    margin-bottom: var(--qfc-spacing-lg);
+  }
+
+  &__button {
+    @include qfc-button-primary;
+    width: 100%;
+    height: 3rem;
+
+    &--loading {
+      opacity: 0.7;
+    }
+  }
+
+  &__login-link {
+    text-align: center;
+  }
+
+  &__login-text {
+    color: var(--qfc-text-secondary);
+    margin: 0;
+  }
+
+  &__login-action {
+    color: var(--qfc-primary);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // ===================================
+  // RESPONSIVIDADE
+  // ===================================
+  @include qfc-mobile {
+    padding: var(--qfc-spacing-sm);
+
+    &__card {
+      padding: var(--qfc-spacing-lg);
+      max-width: 100%;
+      max-height: 95vh;
+      margin: 0;
+    }
+
+    &__title {
+      font-size: 1.75rem;
+    }
+  }
+}
+
+// ===================================
+// PRIMENG OVERRIDES
+// ===================================
+::ng-deep {
+  .register {
+    // Password field
+    .p-password {
+      width: 100%;
+
+      .p-inputtext {
+        @include qfc-input-base;
+      }
+    }
+
+    // Calendar field
+    .p-calendar {
+      width: 100%;
+
+      .p-inputtext {
+        @include qfc-input-base;
+      }
+    }
+
+    // Dropdown field
+    .p-dropdown {
+      width: 100%;
+
+      .p-dropdown-label {
+        padding: var(--qfc-spacing-sm) var(--qfc-spacing-md);
+      }
+    }
+
+    // AutoComplete field
+    .p-autocomplete {
+      width: 100%;
+
+      .p-inputtext {
+        @include qfc-input-base;
+      }
+    }
+
+    .cidade-item,
+    .bairro-item {
+      padding: var(--qfc-spacing-sm);
+      border-radius: var(--qfc-border-radius);
+
+      &:hover {
+        background-color: var(--qfc-primary-hover);
+        color: white;
+      }
+    }
+
+    // Form validation styles
+    .ng-invalid.ng-touched {
+      .p-inputtext,
+      .p-password input,
+      .p-dropdown,
+      .p-calendar input,
+      .p-autocomplete .p-inputtext {
+        border-color: var(--qfc-error) !important;
+      }
+    }
+
+    // Button loading icon
+    .p-button-loading-icon {
+      margin-right: var(--qfc-spacing-sm);
+    }
+
+    // Button states
+    .p-button {
+      &:enabled:hover {
+        background-color: var(--qfc-primary-hover) !important;
+      }
+
+      &:disabled {
+        background-color: var(--qfc-text-tertiary) !important;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  // ===================================
+  // MODAL STYLES
+  // ===================================
+  .register__modal {
+    .p-dialog {
+      width: 90vw;
+      max-width: 500px;
+      max-height: 80vh;
+    }
+
+    .p-dialog-content {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .p-dialog-header {
+      padding: var(--qfc-spacing-lg);
+      border-bottom: 1px solid var(--qfc-border-color);
+    }
+
+    .p-dialog-footer {
+      padding: var(--qfc-spacing-lg);
+      border-top: 1px solid var(--qfc-border-color);
+    }
+  }
+}

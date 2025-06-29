@@ -1,0 +1,269 @@
+// ===================================
+// MIXINS GLOBAIS DO QUADRAFC
+// ===================================
+
+// Container mixins
+@mixin container-mobile {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@mixin container-tablet {
+  max-width: 768px;
+  padding: 0 2rem;
+}
+
+@mixin container-desktop {
+  max-width: 1200px;
+  padding: 0 3rem;
+}
+
+// Flex mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin qfc-flex-center {
+  @include flex-center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Card mixins
+@mixin card-base {
+  background: var(--surface-card);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--surface-border);
+  transition: all 0.2s ease;
+}
+
+// Shadow mixins
+@mixin shadow-soft {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@mixin shadow-medium {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+@mixin shadow-strong {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+// Scrollbar mixins
+@mixin scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-border) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--surface-border);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+  }
+}
+
+// Responsive mixins
+@mixin mobile-only {
+  @media (max-width: 767px) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: 768px) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin large-desktop-up {
+  @media (min-width: 1440px) {
+    @content;
+  }
+}
+
+// Dark mode mixin
+@mixin dark-mode {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+
+  [data-theme="dark"] & {
+    @content;
+  }
+}
+
+// ===================================
+// MIXINS GLOBAIS DO QUADRAFC
+// ===================================
+
+// Mixin para buttons
+@mixin qfc-button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--qfc-spacing-sm) var(--qfc-spacing-lg);
+  border: none;
+  border-radius: var(--qfc-radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@mixin qfc-button-primary {
+  @include qfc-button-base;
+  background-color: var(--qfc-primary);
+  color: var(--qfc-text-inverse);
+
+  &:hover:not(:disabled) {
+    background-color: var(--qfc-primary-hover);
+  }
+}
+
+@mixin qfc-button-secondary {
+  @include qfc-button-base;
+  background-color: transparent;
+  color: var(--qfc-primary);
+  border: 1px solid var(--qfc-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--qfc-primary);
+    color: var(--qfc-text-inverse);
+  }
+}
+
+// Mixin para inputs
+@mixin qfc-input-base {
+  width: 100%;
+  padding: var(--qfc-spacing-sm) var(--qfc-spacing-md);
+  border: 1px solid var(--qfc-border-primary);
+  border-radius: var(--qfc-radius-md);
+  background-color: var(--qfc-bg-primary);
+  color: var(--qfc-text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: var(--qfc-border-focus);
+  }
+
+  &::placeholder {
+    color: var(--qfc-text-tertiary);
+  }
+
+  &:disabled {
+    background-color: var(--qfc-bg-tertiary);
+    cursor: not-allowed;
+  }
+}
+
+// Mixin para cards
+@mixin qfc-card {
+  background-color: var(--qfc-bg-primary);
+  border-radius: var(--qfc-radius-xl);
+  box-shadow: var(--qfc-shadow-md);
+  overflow: hidden;
+}
+
+// Mixin para containers
+@mixin qfc-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--qfc-spacing-md);
+}
+
+// Mixin para flex center
+@mixin qfc-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Mixin para gradientes
+@mixin qfc-gradient-text {
+  background: var(--qfc-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Mixin para responsividade
+@mixin qfc-mobile {
+  @media (max-width: 767px) {
+    @content;
+  }
+}
+
+@mixin qfc-tablet {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    @content;
+  }
+}
+
+@mixin qfc-desktop {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+// Mixin para animações
+@mixin qfc-fade-in {
+  animation: qfcFadeIn 0.3s ease-in-out;
+}
+
+@mixin qfc-slide-up {
+  animation: qfcSlideUp 0.3s ease-out;
+}
+
+// Keyframes
+@keyframes qfcFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes qfcSlideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

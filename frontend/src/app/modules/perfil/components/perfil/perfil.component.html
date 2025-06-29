@@ -1,0 +1,313 @@
+<div class="perfil">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="perfil__loading">
+    <div class="loading-header">
+      <p-skeleton shape="circle" size="5rem" styleClass="mb-3"></p-skeleton>
+      <p-skeleton height="2rem" width="12rem" styleClass="mb-2"></p-skeleton>
+      <p-skeleton height="1rem" width="8rem"></p-skeleton>
+    </div>
+    <div class="loading-content">
+      <p-skeleton height="10rem" styleClass="mb-3"></p-skeleton>
+      <p-skeleton height="8rem" styleClass="mb-3"></p-skeleton>
+      <p-skeleton height="6rem"></p-skeleton>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && user" class="perfil__content">
+    <!-- Header com informações do usuário -->
+    <div class="perfil__header">
+      <p-card styleClass="user-info-card">
+        <div class="user-info">
+          <div class="user-avatar">
+            <p-avatar
+              [label]="getAvatarLabel()"
+              size="xlarge"
+              shape="circle"
+              styleClass="profile-avatar">
+            </p-avatar>
+          </div>
+
+          <div class="user-details">
+            <h1 class="user-name">{{ user.nome }}</h1>
+            <div class="user-meta">
+              <div class="meta-item">
+                <i class="pi pi-map-marker"></i>
+                <span>{{ user.bairro || 'Bairro não informado' }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="pi pi-envelope"></i>
+                <span>{{ user.email }}</span>
+              </div>
+              <div class="meta-item" *ngIf="user.data_criacao">
+                <i class="pi pi-calendar"></i>
+                <span>Membro desde {{ user.data_criacao | timeAgo }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="user-actions">
+            <p-button
+              label="Editar Perfil"
+              icon="pi pi-pencil"
+              severity="secondary"
+              size="small"
+              (onClick)="openEditDialog()">
+            </p-button>
+          </div>
+        </div>
+
+        <!-- Nível e progresso -->
+        <div class="level-progress" *ngIf="userStats">
+          <div class="level-info">
+            <div class="level-badge">
+              <p-badge
+                [value]="'Nível ' + userStats.nivel"
+                severity="info"
+                styleClass="level-badge-style">
+              </p-badge>
+            </div>
+            <div class="level-details">
+              <span class="progress-text">
+                {{ getPontosParaProximoNivel() | currencyFormat }} pontos para o próximo nível
+              </span>
+            </div>
+          </div>
+          <p-progressBar
+            [value]="getNivelProgress()"
+            styleClass="level-progress-bar">
+          </p-progressBar>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Estatísticas principais -->
+    <div class="perfil__stats" *ngIf="userStats">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="pi pi-star text-yellow-500"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ userStats.pontos_totais | currencyFormat }}</span>
+            <span class="stat-label">Pontos Totais</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="pi pi-circle-fill text-primary"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ userStats.moedas_ganhas | currencyFormat }}</span>
+            <span class="stat-label">Moedas</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="pi pi-check-circle text-green-500"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ userStats.palpites_corretos }}/{{ userStats.total_palpites }}</span>
+            <span class="stat-label">Acertos</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="pi pi-percentage text-blue-500"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ userStats.taxa_acerto }}%</span>
+            <span class="stat-label">Taxa de Acerto</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="pi pi-bolt text-orange-500"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ userStats.sequencia_atual }}</span>
+            <span class="stat-label">Sequência Atual</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="pi pi-trophy text-yellow-600"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value">{{ userStats.melhor_sequencia }}</span>
+            <span class="stat-label">Melhor Sequência</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs com histórico e conquistas -->
+    <div class="perfil__tabs">
+      <p-tabView styleClass="profile-tabs">
+        <!-- Tab: Palpites Recentes -->
+        <p-tabPanel header="Palpites Recentes" leftIcon="pi pi-history">
+          <div class="palpites-recentes">
+            <!-- Empty State -->
+            <div *ngIf="recentPalpites.length === 0" class="empty-state">
+              <div class="empty-state__icon">
+                <i class="pi pi-history"></i>
+              </div>
+              <h3>Nenhum palpite encontrado</h3>
+              <p>Você ainda não fez nenhum palpite.</p>
+            </div>
+
+            <!-- Lista de palpites -->
+            <div *ngIf="recentPalpites.length > 0" class="palpites-list">
+              <div
+                *ngFor="let palpite of recentPalpites; trackBy: trackByPalpite"
+                class="palpite-item">
+
+                <div class="palpite-info">
+                  <div class="palpite-match">
+                    <span class="match-teams">Jogo #{{ palpite.jogo }}</span>
+                    <span class="palpite-date">{{ palpite.data_palpite | timeAgo }}</span>
+                  </div>
+                  <div class="palpite-details">
+                    <span class="palpite-value">
+                      Palpite: {{ palpite.valor_palpite?.gols_casa || '-' }} x {{ palpite.valor_palpite?.gols_visitante || '-' }}
+                    </span>
+                    <span class="palpite-points" *ngIf="palpite.pontos_ganhos">
+                      +{{ palpite.pontos_ganhos }} pontos
+                    </span>
+                  </div>
+                </div>
+
+                <div class="palpite-status">
+                  <p-tag
+                    [value]="getPalpiteStatus(palpite).label"
+                    [severity]="getPalpiteStatus(palpite).severity"
+                    styleClass="palpite-status-tag">
+                  </p-tag>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Tab: Conquistas -->
+        <p-tabPanel header="Conquistas" leftIcon="pi pi-trophy">
+          <div class="conquistas">
+            <!-- Empty State -->
+            <div *ngIf="conquistas.length === 0" class="empty-state">
+              <div class="empty-state__icon">
+                <i class="pi pi-trophy"></i>
+              </div>
+              <h3>Nenhuma conquista ainda</h3>
+              <p>Continue fazendo palpites para desbloquear conquistas!</p>
+            </div>
+
+            <!-- Lista de conquistas -->
+            <div *ngIf="conquistas.length > 0" class="conquistas-grid">
+              <div
+                *ngFor="let conquista of conquistas; trackBy: trackByConquista"
+                class="conquista-item"
+                [ngClass]="'conquista-item--' + conquista.raridade">
+
+                <div class="conquista-icon">
+                  <i [class]="'pi ' + conquista.icone"></i>
+                </div>
+
+                <div class="conquista-info">
+                  <h4 class="conquista-nome">{{ conquista.nome }}</h4>
+                  <p class="conquista-descricao">{{ conquista.descricao }}</p>
+                  <div class="conquista-meta">
+                    <p-tag
+                      [value]="conquista.raridade"
+                      [severity]="getConquistaSeverity(conquista.raridade)"
+                      styleClass="raridade-tag">
+                    </p-tag>
+                    <span class="conquista-data">{{ conquista.data_conquista | timeAgo }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog de Edição de Perfil -->
+<p-dialog
+  [(visible)]="showEditDialog"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  header="Editar Perfil"
+  styleClass="edit-profile-dialog"
+  (onHide)="closeEditDialog()">
+
+  <div class="edit-profile-content">
+    <form [formGroup]="editForm" class="edit-form">
+      <div class="form-field">
+        <label for="nome" class="block text-900 font-medium mb-2">Nome</label>
+        <input
+          pInputText
+          id="nome"
+          formControlName="nome"
+          placeholder="Seu nome"
+          class="w-full"
+          [class.ng-invalid]="editForm.get('nome')?.invalid && editForm.get('nome')?.touched"
+        />
+        <small
+          *ngIf="editForm.get('nome')?.invalid && editForm.get('nome')?.touched"
+          class="p-error block mt-1">
+          Nome é obrigatório (mín. 2 caracteres)
+        </small>
+      </div>
+
+      <div class="form-field">
+        <label for="email" class="block text-900 font-medium mb-2">E-mail</label>
+        <input
+          pInputText
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Seu e-mail"
+          class="w-full"
+          [class.ng-invalid]="editForm.get('email')?.invalid && editForm.get('email')?.touched"
+        />
+        <small
+          *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched"
+          class="p-error block mt-1">
+          E-mail é obrigatório e deve ser válido
+        </small>
+      </div>
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-actions">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        size="small"
+        (onClick)="closeEditDialog()"
+        [disabled]="isUpdating">
+      </p-button>
+
+      <p-button
+        label="Salvar"
+        icon="pi pi-check"
+        size="small"
+        (onClick)="updateProfile()"
+        [loading]="isUpdating"
+        [disabled]="editForm.invalid">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

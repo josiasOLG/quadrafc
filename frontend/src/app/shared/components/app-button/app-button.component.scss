@@ -1,0 +1,19 @@
+.app-button {
+  &.p-button-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+
+    &:hover:not(:disabled) {
+      background-color: #e55a34;
+      border-color: #e55a34;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 0.2rem rgba(255, 106, 61, 0.25);
+    }
+  }
+
+  &.w-full {
+    width: 100%;
+  }
+}

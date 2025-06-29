@@ -1,0 +1,344 @@
+// =====================
+// Premium Store (BEM + PrimeFlex)
+// =====================
+
+.premium-store {
+  display: flex;
+  flex-direction: column;
+  // padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 0rem;
+
+  &__balance {
+    margin-bottom: 2rem;
+    .premium-store__balance-card {
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, #4f8cff 0%, #764ba2 100%);
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px rgba(79, 140, 255, 0.12);
+      padding: 0rem 2rem;
+      color: #fff;
+      gap: 1.5rem;
+      .premium-store__balance-icon {
+        font-size: 3rem;
+        color: #ffd700;
+      }
+      .premium-store__balance-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        .premium-store__balance-label {
+          font-size: 1rem;
+          opacity: 0.85;
+        }
+        .premium-store__balance-value {
+          font-size: 2rem;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  &__status {
+    margin-bottom: 2rem;
+    .premium-store__status-card {
+      border: none;
+      box-shadow: 0 2px 12px rgba(79, 140, 255, 0.08);
+      border-radius: 1.5rem;
+      padding: 2rem 1.5rem;
+      background: #fff;
+      .premium-store__status-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 700;
+        .premium-store__status-icon {
+          color: #f39c12;
+          font-size: 2rem;
+        }
+      }
+      .premium-store__status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+        .premium-store__status-item {
+          background: #f8fafd;
+          border-radius: 1rem;
+          padding: 1.25rem 1rem;
+          border: 1px solid #e3e8f0;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          .premium-store__status-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 0.5rem;
+            i {
+              color: #4f8cff;
+            }
+          }
+          .premium-store__status-expiry {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+          }
+          .premium-store__estados-list,
+          .premium-store__cidades-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            .premium-store__estado-tag,
+            .premium-store__cidade-tag {
+              font-size: 0.85rem;
+            }
+          }
+          .premium-store__no-access {
+            color: #b0b8c1;
+            font-style: italic;
+            font-size: 0.95rem;
+          }
+        }
+      }
+    }
+  }
+
+  &__products {
+    padding: 0rem 1.5rem;
+    .premium-store__products-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      color: #2c3e50;
+      font-size: 1.5rem;
+      font-weight: 700;
+      i {
+        color: #e74c3c;
+        font-size: 2.2rem;
+      }
+    }
+    .premium-store__products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2.5rem;
+      .premium-store__product-card {
+        border: none;
+        box-shadow: 0 4px 24px rgba(79, 140, 255, 0.1);
+        border-radius: 1.5rem;
+        transition: box-shadow 0.2s, transform 0.2s;
+        background: #fff;
+        &:hover {
+          box-shadow: 0 8px 32px rgba(79, 140, 255, 0.18);
+          transform: translateY(-4px) scale(1.01);
+        }
+        &--premium {
+          border: 2px solid #f39c12;
+          position: relative;
+          padding: 1.5rem;
+          .premium-store__best-offer-tag {
+            position: absolute;
+            top: -10px;
+            right: 1.5rem;
+            z-index: 10;
+          }
+        }
+        .premium-store__product-header {
+          text-align: center;
+          margin-bottom: 1.5rem;
+          position: relative;
+          .premium-store__product-icon {
+            font-size: 3.2rem;
+            margin-bottom: 0.75rem;
+            display: block;
+            &--premium {
+              color: #f39c12;
+            }
+            &--nacional {
+              color: #3498db;
+            }
+            &--estado {
+              color: #9b59b6;
+            }
+            &--cidade {
+              color: #e74c3c;
+            }
+          }
+          h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.35rem;
+            font-weight: 600;
+          }
+        }
+        .premium-store__product-description {
+          margin-bottom: 1.5rem;
+          p {
+            margin: 0 0 1rem 0;
+            color: #5a6c7d;
+            text-align: center;
+          }
+          .premium-store__benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            li {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-bottom: 0.5rem;
+              font-size: 1rem;
+              color: #5a6c7d;
+              i {
+                color: #27ae60;
+                font-size: 1rem;
+              }
+            }
+          }
+        }
+        .premium-store__product-price {
+          text-align: center;
+          margin-bottom: 1.5rem;
+          padding: 1rem;
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          border-radius: 1rem;
+          .premium-store__price-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            display: block;
+          }
+          .premium-store__price-label {
+            font-size: 1rem;
+            color: #6c757d;
+          }
+        }
+        .premium-store__product-form {
+          margin-bottom: 1.5rem;
+          .premium-store__estado-dropdown,
+          .premium-store__cidade-dropdown {
+            width: 100%;
+          }
+        }
+        .premium-store__product-actions {
+          .premium-store__product-button {
+            width: 100%;
+            padding: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+          }
+          .premium-store__already-purchased {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            font-size: 1rem;
+            i {
+              color: #28a745;
+            }
+          }
+          .premium-store__insufficient-balance {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            font-size: 1rem;
+            i {
+              color: #dc3545;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.premium-store__confirm-dialog {
+  .premium-store__confirm-content {
+    .premium-store__confirm-message {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      .premium-store__confirm-icon {
+        font-size: 2.2rem;
+        color: #f39c12;
+      }
+      p {
+        margin: 0;
+        line-height: 1.6;
+        color: #495057;
+      }
+    }
+    .premium-store__confirm-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: flex-end;
+      button {
+        min-width: 120px;
+      }
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 900px) {
+  .premium-store__products-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+@media (max-width: 600px) {
+  .premium-store {
+    // padding: 0.5rem;
+    &__balance-card {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+    &__products-title {
+      font-size: 1.3rem;
+    }
+    &__product-card {
+      padding: 1.5rem;
+      .premium-store__product-header {
+        .premium-store__product-icon {
+          font-size: 2rem;
+        }
+        h3 {
+          font-size: 1rem;
+        }
+      }
+    }
+    &__product-price {
+      .premium-store__price-value {
+        font-size: 1.3rem;
+      }
+    }
+  }
+  .premium-store__confirm-content {
+    .premium-store__confirm-actions {
+      flex-direction: column;
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

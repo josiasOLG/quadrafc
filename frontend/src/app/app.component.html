@@ -1,0 +1,12 @@
+<div class="app-container">
+  <p-toast></p-toast>
+
+  <!-- Splash Screen -->
+  <app-splash-screen *ngIf="authService.isLoading"></app-splash-screen>
+
+  <!-- Main Content -->
+  <main class="main-content" *ngIf="!authService.isLoading">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+

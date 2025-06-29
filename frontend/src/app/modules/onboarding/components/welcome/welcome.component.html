@@ -1,0 +1,194 @@
+<div class="welcome">
+  <div class="welcome__container">
+    <!-- Header com progresso -->
+    <div class="welcome__header">
+      <p-steps
+        [model]="steps"
+        [activeIndex]="currentStep"
+        [readonly]="true"
+        styleClass="welcome__steps">
+      </p-steps>
+    </div>
+
+    <!-- Conteúdo das etapas -->
+    <div class="welcome__content">
+      <!-- Etapa 0: Bem-vindo -->
+      <div *ngIf="currentStep === 0" class="welcome__step welcome__step--intro">
+        <div class="welcome__icon">
+          <i class="pi pi-trophy" style="font-size: 3rem; color: var(--primary-color);"></i>
+        </div>
+        <h1 class="welcome__title">Bem-vindo ao QuadraFC!</h1>
+        <p class="welcome__description">
+          O app onde você compete com seu bairro fazendo palpites nos jogos de futebol.
+          Ganhe pontos, suba no ranking e mostre que seu bairro é o melhor!
+        </p>
+        <div class="welcome__features">
+          <div class="welcome__feature">
+            <i class="pi pi-chart-line"></i>
+            <span>Compita com seu bairro</span>
+          </div>
+          <div class="welcome__feature">
+            <i class="pi pi-star"></i>
+            <span>Ganhe moedas e conquistas</span>
+          </div>
+          <div class="welcome__feature">
+            <i class="pi pi-users"></i>
+            <span>Ranking em tempo real</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Etapa 1: Informações Pessoais -->
+      <div *ngIf="currentStep === 1" class="welcome__step welcome__step--form">
+        <div class="welcome__icon">
+          <i class="pi pi-user" style="font-size: 2rem; color: var(--primary-color);"></i>
+        </div>
+        <h2 class="welcome__title">Suas Informações</h2>
+        <p class="welcome__description">
+          Vamos precisar de algumas informações para completar seu perfil.
+        </p>
+
+        <form [formGroup]="onboardingForm" class="welcome__form">
+          <div class="welcome__form-grid">
+            <div class="field">
+              <label for="data_nascimento" class="block text-900 font-medium mb-2">Data de nascimento</label>
+              <p-calendar
+                id="data_nascimento"
+                formControlName="data_nascimento"
+                [maxDate]="maxDate"
+                dateFormat="dd/mm/yy"
+                placeholder="Selecione sua data de nascimento"
+                class="w-full"
+                inputStyleClass="w-full"
+                appendTo="body"
+                [class.ng-invalid]="onboardingForm.get('data_nascimento')?.invalid && onboardingForm.get('data_nascimento')?.touched">
+              </p-calendar>
+              <small
+                *ngIf="onboardingForm.get('data_nascimento')?.invalid && onboardingForm.get('data_nascimento')?.touched"
+                class="p-error block mt-1">
+                Data de nascimento é obrigatória
+              </small>
+            </div>
+
+            <div class="field">
+              <label for="telefone" class="block text-900 font-medium mb-2">Telefone</label>
+              <p-inputMask
+                id="telefone"
+                formControlName="telefone"
+                mask="(99) 99999-9999"
+                placeholder="(11) 99999-9999"
+                class="w-full"
+                [class.ng-invalid]="onboardingForm.get('telefone')?.invalid && onboardingForm.get('telefone')?.touched">
+              </p-inputMask>
+              <small
+                *ngIf="onboardingForm.get('telefone')?.invalid && onboardingForm.get('telefone')?.touched"
+                class="p-error block mt-1">
+                Telefone é obrigatório e deve estar no formato correto
+              </small>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Etapa 2: Localização -->
+      <div *ngIf="currentStep === 2" class="welcome__step welcome__step--form">
+        <div class="welcome__icon">
+          <i class="pi pi-map-marker" style="font-size: 2rem; color: var(--primary-color);"></i>
+        </div>
+        <h2 class="welcome__title">Qual seu bairro?</h2>
+        <p class="welcome__description">
+          Você competirá representando seu bairro no ranking do QuadraFC.
+        </p>
+
+        <form [formGroup]="onboardingForm" class="welcome__form">
+          <div class="field">
+            <label for="bairro" class="block text-900 font-medium mb-2">Seu bairro</label>
+            <p-autoComplete
+              formControlName="bairro"
+              [suggestions]="filteredBairros"
+              (completeMethod)="filterBairros($event)"
+              field="nome"
+              placeholder="Digite para buscar seu bairro"
+              [dropdown]="true"
+              [showEmptyMessage]="true"
+              emptyMessage="Nenhum bairro encontrado"
+              styleClass="w-full"
+              inputStyleClass="w-full">
+
+              <ng-template let-bairro pTemplate="item">
+                <div class="flex align-items-center">
+                  <div>
+                    <div class="font-medium">{{ bairro.nome }}</div>
+                    <div class="text-sm text-500">{{ bairro.cidade }} - {{ bairro.estado }}</div>
+                  </div>
+                </div>
+              </ng-template>
+            </p-autoComplete>
+            <small
+              *ngIf="onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched"
+              class="p-error block mt-1">
+              Selecione seu bairro
+            </small>
+          </div>
+        </form>
+      </div>
+
+      <!-- Etapa 3: Finalização -->
+      <div *ngIf="currentStep === 3" class="welcome__step welcome__step--final">
+        <div class="welcome__icon">
+          <i class="pi pi-check-circle" style="font-size: 3rem; color: var(--green-500);"></i>
+        </div>
+        <h2 class="welcome__title">Tudo pronto!</h2>
+        <p class="welcome__description">
+          Você agora faz parte do bairro
+          <strong>{{ onboardingForm.get('bairro')?.value?.nome }}</strong>.
+          Vamos começar a competir!
+        </p>
+
+        <div class="welcome__summary">
+          <p-card>
+            <div class="flex align-items-center gap-3">
+              <i class="pi pi-user text-primary"></i>
+              <div>
+                <div class="font-medium">Perfil completo</div>
+                <div class="text-sm text-500">Dados pessoais preenchidos</div>
+              </div>
+            </div>
+            <div class="flex align-items-center gap-3 mt-3">
+              <i class="pi pi-map-marker text-primary"></i>
+              <div>
+                <div class="font-medium">{{ getBairroDisplayName(onboardingForm.get('bairro')?.value) }}</div>
+                <div class="text-sm text-500">Seu bairro no QuadraFC</div>
+              </div>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegação -->
+    <div class="welcome__actions">
+      <div class="flex justify-content-between gap-2">
+        <p-button
+          *ngIf="currentStep > 0"
+          label="Voltar"
+          icon="pi pi-chevron-left"
+          severity="secondary"
+          (onClick)="previousStep()"
+          [disabled]="isLoading"
+          styleClass="flex-1">
+        </p-button>
+
+        <p-button
+          [label]="currentStep === steps.length - 1 ? 'Começar!' : 'Próximo'"
+          [icon]="currentStep === steps.length - 1 ? 'pi pi-check' : 'pi pi-chevron-right'"
+          iconPos="right"
+          (onClick)="nextStep()"
+          [loading]="isLoading"
+          styleClass="flex-1"
+          [disabled]="!canProceed()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+</div>

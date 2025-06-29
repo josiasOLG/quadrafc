@@ -1,0 +1,54 @@
+# ===================================
+# CONFIGURAÇÃO PRETTIER - PROJETO QUADRAFC
+# ===================================
+
+# Configurações Básicas
+semi: true
+singleQuote: true
+quoteProps: 'as-needed'
+trailingComma: 'es5'
+tabWidth: 2
+useTabs: false
+printWidth: 100
+endOfLine: 'lf'
+
+# HTML/Angular Templates
+htmlWhitespaceSensitivity: 'css'
+bracketSameLine: false
+bracketSpacing: true
+
+# Arquivos específicos
+overrides:
+  # TypeScript/JavaScript
+  - files: '*.{ts,js}'
+    options:
+      semi: true
+      singleQuote: true
+      trailingComma: 'es5'
+      printWidth: 100
+
+  # HTML/Angular Templates
+  - files: '*.html'
+    options:
+      printWidth: 120
+      htmlWhitespaceSensitivity: 'ignore'
+      bracketSameLine: true
+
+  # SCSS/CSS
+  - files: '*.{scss,css}'
+    options:
+      singleQuote: true
+      printWidth: 120
+
+  # JSON
+  - files: '*.json'
+    options:
+      printWidth: 120
+      trailingComma: 'none'
+
+  # Markdown
+  - files: '*.md'
+    options:
+      printWidth: 80
+      proseWrap: 'always'
+      tabWidth: 2
