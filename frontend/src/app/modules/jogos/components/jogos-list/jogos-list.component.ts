@@ -290,7 +290,7 @@ export class JogosListComponent implements OnInit {
       const palpite = jogo.palpites.at(0) as Palpite;
       const resultado = jogo.resultado;
 
-      const palpiteValue = palpite.palpite as { gols_casa: number; gols_visitante: number };
+      const palpiteValue = palpite.palpite as any;
       const acertouPlacar =
         palpiteValue.gols_casa === (resultado.gols_casa || 0) &&
         palpiteValue.gols_visitante === (resultado.gols_visitante || 0);

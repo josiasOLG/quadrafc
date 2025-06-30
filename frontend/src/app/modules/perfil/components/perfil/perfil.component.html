@@ -20,12 +20,7 @@
       <p-card styleClass="user-info-card">
         <div class="user-info">
           <div class="user-avatar">
-            <p-avatar
-              [label]="getAvatarLabel()"
-              size="xlarge"
-              shape="circle"
-              styleClass="profile-avatar">
-            </p-avatar>
+            <p-avatar [label]="getAvatarLabel()" size="xlarge" shape="circle" styleClass="profile-avatar"></p-avatar>
           </div>
 
           <div class="user-details">
@@ -52,8 +47,7 @@
               icon="pi pi-pencil"
               severity="secondary"
               size="small"
-              (onClick)="openEditDialog()">
-            </p-button>
+              (onClick)="openEditDialog()"></p-button>
           </div>
         </div>
 
@@ -61,11 +55,7 @@
         <div class="level-progress" *ngIf="userStats">
           <div class="level-info">
             <div class="level-badge">
-              <p-badge
-                [value]="'Nível ' + userStats.nivel"
-                severity="info"
-                styleClass="level-badge-style">
-              </p-badge>
+              <p-badge [value]="'Nível ' + userStats.nivel" severity="info" styleClass="level-badge-style"></p-badge>
             </div>
             <div class="level-details">
               <span class="progress-text">
@@ -73,10 +63,7 @@
               </span>
             </div>
           </div>
-          <p-progressBar
-            [value]="getNivelProgress()"
-            styleClass="level-progress-bar">
-          </p-progressBar>
+          <p-progressBar [value]="getNivelProgress()" styleClass="level-progress-bar"></p-progressBar>
         </div>
       </p-card>
     </div>
@@ -163,10 +150,7 @@
 
             <!-- Lista de palpites -->
             <div *ngIf="recentPalpites.length > 0" class="palpites-list">
-              <div
-                *ngFor="let palpite of recentPalpites; trackBy: trackByPalpite"
-                class="palpite-item">
-
+              <div *ngFor="let palpite of recentPalpites; trackBy: trackByPalpite" class="palpite-item">
                 <div class="palpite-info">
                   <div class="palpite-match">
                     <span class="match-teams">Jogo #{{ palpite.jogo }}</span>
@@ -174,7 +158,8 @@
                   </div>
                   <div class="palpite-details">
                     <span class="palpite-value">
-                      Palpite: {{ palpite.valor_palpite?.gols_casa || '-' }} x {{ palpite.valor_palpite?.gols_visitante || '-' }}
+                      Palpite: {{ palpite.palpite?.valor_palpite?.gols_casa ?? palpite.palpite?.timeA ?? '-' }} x
+                      {{ palpite.palpite?.valor_palpite?.gols_visitante ?? palpite.palpite?.timeB ?? '-' }}
                     </span>
                     <span class="palpite-points" *ngIf="palpite.pontos_ganhos">
                       +{{ palpite.pontos_ganhos }} pontos
@@ -186,8 +171,7 @@
                   <p-tag
                     [value]="getPalpiteStatus(palpite).label"
                     [severity]="getPalpiteStatus(palpite).severity"
-                    styleClass="palpite-status-tag">
-                  </p-tag>
+                    styleClass="palpite-status-tag"></p-tag>
                 </div>
               </div>
             </div>
@@ -212,7 +196,6 @@
                 *ngFor="let conquista of conquistas; trackBy: trackByConquista"
                 class="conquista-item"
                 [ngClass]="'conquista-item--' + conquista.raridade">
-
                 <div class="conquista-icon">
                   <i [class]="'pi ' + conquista.icone"></i>
                 </div>
@@ -224,8 +207,7 @@
                     <p-tag
                       [value]="conquista.raridade"
                       [severity]="getConquistaSeverity(conquista.raridade)"
-                      styleClass="raridade-tag">
-                    </p-tag>
+                      styleClass="raridade-tag"></p-tag>
                     <span class="conquista-data">{{ conquista.data_conquista | timeAgo }}</span>
                   </div>
                 </div>
@@ -249,7 +231,6 @@
   header="Editar Perfil"
   styleClass="edit-profile-dialog"
   (onHide)="closeEditDialog()">
-
   <div class="edit-profile-content">
     <form [formGroup]="editForm" class="edit-form">
       <div class="form-field">
@@ -260,11 +241,8 @@
           formControlName="nome"
           placeholder="Seu nome"
           class="w-full"
-          [class.ng-invalid]="editForm.get('nome')?.invalid && editForm.get('nome')?.touched"
-        />
-        <small
-          *ngIf="editForm.get('nome')?.invalid && editForm.get('nome')?.touched"
-          class="p-error block mt-1">
+          [class.ng-invalid]="editForm.get('nome')?.invalid && editForm.get('nome')?.touched" />
+        <small *ngIf="editForm.get('nome')?.invalid && editForm.get('nome')?.touched" class="p-error block mt-1">
           Nome é obrigatório (mín. 2 caracteres)
         </small>
       </div>
@@ -278,11 +256,8 @@
           formControlName="email"
           placeholder="Seu e-mail"
           class="w-full"
-          [class.ng-invalid]="editForm.get('email')?.invalid && editForm.get('email')?.touched"
-        />
-        <small
-          *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched"
-          class="p-error block mt-1">
+          [class.ng-invalid]="editForm.get('email')?.invalid && editForm.get('email')?.touched" />
+        <small *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched" class="p-error block mt-1">
           E-mail é obrigatório e deve ser válido
         </small>
       </div>
@@ -297,8 +272,7 @@
         severity="secondary"
         size="small"
         (onClick)="closeEditDialog()"
-        [disabled]="isUpdating">
-      </p-button>
+        [disabled]="isUpdating"></p-button>
 
       <p-button
         label="Salvar"
@@ -306,8 +280,7 @@
         size="small"
         (onClick)="updateProfile()"
         [loading]="isUpdating"
-        [disabled]="editForm.invalid">
-      </p-button>
+        [disabled]="editForm.invalid"></p-button>
     </div>
   </ng-template>
 </p-dialog>

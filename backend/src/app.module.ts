@@ -10,6 +10,7 @@ import { PremiumAccessModule } from './shared/modules/premium-access.module';
 // Modules
 import { AuthModule } from './modules/auth/auth.module';
 import { BairrosModule } from './modules/bairros/bairros.module';
+import { CepModule } from './modules/cep/cep.module';
 import { CidadesModule } from './modules/cidades/cidades.module';
 import { ConquistasModule } from './modules/conquistas/conquistas.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
@@ -19,7 +20,6 @@ import { PalpitesModule } from './modules/palpites/palpites.module';
 import { RankingModule } from './modules/ranking/ranking.module';
 import { RodadasModule } from './modules/rodadas/rodadas.module';
 import { SincronizacaoModule } from './modules/sincronizacao/sincronizacao.module';
-import { TestModule } from './modules/test/test.module';
 import { TransacoesMoedasModule } from './modules/transacoes-moedas/transacoes-moedas.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -61,7 +61,7 @@ import { UsersModule } from './modules/users/users.module';
     DashboardModule,
     SincronizacaoModule,
     RankingModule,
-    TestModule,
+    CepModule,
   ],
   providers: [
     {
