@@ -52,3 +52,18 @@ overrides:
       printWidth: 80
       proseWrap: 'always'
       tabWidth: 2
+# =============================
+# ESLint: Suprimir regras chatas
+# =============================
+# Adicione as regras abaixo ao seu .eslintrc.json para suprimir os avisos de:
+# - prefer-inject
+# - no-case-declarations
+# - @typescript-eslint/no-explicit-any
+#
+# Exemplo de bloco para adicionar ao seu .eslintrc.json:
+#
+# "rules": {
+#   "@angular-eslint/prefer-inject": "off",
+#   "no-case-declarations": "off",
+#   "@typescript-eslint/no-explicit-any": "off"
+# }
