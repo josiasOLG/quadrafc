@@ -106,4 +106,64 @@ export class RankingController {
   async comprarAssinaturaPremium(@Request() req: any, @Body() body: { meses?: number }) {
     return this.rankingService.comprarAssinaturaPremium(req.user.userId, body.meses || 1);
   }
+
+  @Get('usuarios-cidade')
+  @ResponseMessage('Ranking de usuários da cidade recuperado')
+  @ApiOperation({ summary: 'Buscar ranking de usuários de uma cidade específica' })
+  @ApiQuery({ name: 'cidade', required: true, description: 'Nome da cidade' })
+  @ApiQuery({ name: 'estado', required: true, description: 'Sigla do estado (ex: SP, RJ)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Limite de resultados (padrão: 50)' })
+  @ApiQuery({ name: 'offset', required: false, description: 'Offset para paginação (padrão: 0)' })
+  async getRankingUsuariosCidade(
+    @Query('cidade') cidade: string,
+    @Query('estado') estado: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number
+  ) {
+    console.log('🎯 Controller getRankingUsuariosCidade:', {
+      cidade,
+      estado,
+      limit,
+      offset,
+    });
+
+    if (!cidade || !estado) {
+      throw new Error('Cidade e estado são obrigatórios');
+    }
+
+    return this.rankingService.getRankingUsuariosCidade(cidade, estado, {
+      limit: limit || 50,
+      offset: offset || 0,
+    });
+  }
+
+  @Get('bairros-cidade')
+  @ResponseMessage('Ranking de bairros da cidade recuperado')
+  @ApiOperation({ summary: 'Buscar ranking de bairros de uma cidade específica' })
+  @ApiQuery({ name: 'cidade', required: true, description: 'Nome da cidade' })
+  @ApiQuery({ name: 'estado', required: true, description: 'Sigla do estado (ex: SP, RJ)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Limite de resultados (padrão: 50)' })
+  @ApiQuery({ name: 'offset', required: false, description: 'Offset para paginação (padrão: 0)' })
+  async getRankingBairrosCidade(
+    @Query('cidade') cidade: string,
+    @Query('estado') estado: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number
+  ) {
+    console.log('🎯 Controller getRankingBairrosCidade:', {
+      cidade,
+      estado,
+      limit,
+      offset,
+    });
+
+    if (!cidade || !estado) {
+      throw new Error('Cidade e estado são obrigatórios');
+    }
+
+    return this.rankingService.getRankingBairrosCidade(cidade, estado, {
+      limit: limit || 50,
+      offset: offset || 0,
+    });
+  }
 }

@@ -72,7 +72,7 @@ export class LoginComponent implements OnInit {
         next: (response) => {
           this.toastService.success('Login realizado com sucesso!');
           const user = response.user;
-          if (user.bairroId) {
+          if (user.bairro && user.cidade && user.estado) {
             this.router.navigate(['/ranking']);
           } else {
             this.router.navigate(['/onboarding']);

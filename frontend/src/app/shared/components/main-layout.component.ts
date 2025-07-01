@@ -145,8 +145,12 @@ export class MainLayoutComponent implements OnInit {
   }
 
   getBairroInfo(): string {
-    if (this.user?.bairroId) {
-      const bairro = this.user.bairroId;
+    if (this.user?.bairro && this.user?.cidade && this.user?.estado) {
+      const bairro = {
+        nome: this.user.bairro,
+        cidade: this.user.cidade,
+        estado: this.user.estado,
+      };
       return `${bairro.nome}, ${bairro.cidade} - ${bairro.estado}`;
     }
     return this.user?.bairro || 'Selecione seu bairro';

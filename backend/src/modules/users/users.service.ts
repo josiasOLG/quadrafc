@@ -1,19 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from '../../shared/schemas/user.schema';
-import { RegisterDto } from '../../shared/dto/register.dto';
 import * as bcrypt from 'bcrypt';
+import { Model } from 'mongoose';
+import { RegisterDto } from '../../shared/dto/register.dto';
+import { User, UserDocument } from '../../shared/schemas/user.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async create(createUserDto: RegisterDto): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    
+
     const createdUser = new this.userModel({
       ...createUserDto,
       passwordHash: hashedPassword,
@@ -27,7 +25,7 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<UserDocument | null> {
-    return this.userModel.findById(id).populate('bairroId').exec();
+    return this.userModel.findById(id).exec();
   }
 
   async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
@@ -35,11 +33,9 @@ export class UsersService {
   }
 
   async updateMoedas(userId: string, quantidade: number): Promise<UserDocument> {
-    const user = await this.userModel.findByIdAndUpdate(
-      userId,
-      { $inc: { moedas: quantidade } },
-      { new: true }
-    ).exec();
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { $inc: { moedas: quantidade } }, { new: true })
+      .exec();
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -49,11 +45,9 @@ export class UsersService {
   }
 
   async updateTotalPoints(userId: string, pontos: number): Promise<UserDocument> {
-    const user = await this.userModel.findByIdAndUpdate(
-      userId,
-      { $inc: { totalPoints: pontos } },
-      { new: true }
-    ).exec();
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { $inc: { totalPoints: pontos } }, { new: true })
+      .exec();
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -63,11 +57,9 @@ export class UsersService {
   }
 
   async addMedal(userId: string, medal: string): Promise<UserDocument> {
-    const user = await this.userModel.findByIdAndUpdate(
-      userId,
-      { $addToSet: { medals: medal } },
-      { new: true }
-    ).exec();
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { $addToSet: { medals: medal } }, { new: true })
+      .exec();
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -76,7 +68,11 @@ export class UsersService {
     return user;
   }
 
-  async getRankingIndividual(paginationDto?: { page: number; limit: number; skip: number }): Promise<{ data: UserDocument[]; total: number }> {
+  async getRankingIndividual(paginationDto?: {
+    page: number;
+    limit: number;
+    skip: number;
+  }): Promise<{ data: UserDocument[]; total: number }> {
     if (paginationDto) {
       const [data, total] = await Promise.all([
         this.userModel
@@ -84,30 +80,20 @@ export class UsersService {
           .sort({ totalPoints: -1 })
           .skip(paginationDto.skip)
           .limit(paginationDto.limit)
-          .populate('bairroId')
           .exec(),
         this.userModel.countDocuments().exec(),
       ]);
-      
+
       return { data, total };
     }
 
-    const data = await this.userModel
-      .find()
-      .sort({ totalPoints: -1 })
-      .limit(10)
-      .populate('bairroId')
-      .exec();
-      
+    const data = await this.userModel.find().sort({ totalPoints: -1 }).limit(10).exec();
+
     return { data, total: data.length };
   }
 
   async updateProfile(userId: string, updateData: Partial<User>): Promise<UserDocument> {
-    const user = await this.userModel.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true }
-    ).populate('bairroId').exec();
+    const user = await this.userModel.findByIdAndUpdate(userId, updateData, { new: true }).exec();
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');

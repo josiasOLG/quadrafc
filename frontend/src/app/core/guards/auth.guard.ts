@@ -19,8 +19,8 @@ export const authGuard: CanActivateFn = (route, state) => {
       return false;
     }
 
-    // Se já tem bairroId, nunca deixa acessar onboarding nem redireciona para onboarding
-    if (user.bairroId) {
+    // Se já tem informações completas, nunca deixa acessar onboarding nem redireciona para onboarding
+    if (user.bairro && user.cidade && user.estado) {
       if (state.url !== '/ranking') {
         router.navigate(['/ranking']);
         return false;
@@ -52,8 +52,8 @@ export const authGuard: CanActivateFn = (route, state) => {
         return false;
       }
 
-      // Se já tem bairroId, nunca deixa acessar onboarding nem redireciona para onboarding
-      if (user.bairroId) {
+      // Se já tem informações completas, nunca deixa acessar onboarding nem redireciona para onboarding
+      if (user.bairro && user.cidade && user.estado) {
         if (state.url !== '/ranking') {
           router.navigate(['/ranking']);
           return false;

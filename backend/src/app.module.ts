@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
-import { SeedService } from './database/seed.service';
+import { SeedService } from './database/seed.service'; // Reativado para criar dados iniciais
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 import { PremiumAccessModule } from './shared/modules/premium-access.module';
 
@@ -19,6 +19,7 @@ import { JogosModule } from './modules/jogos/jogos.module';
 import { PalpitesModule } from './modules/palpites/palpites.module';
 import { RankingModule } from './modules/ranking/ranking.module';
 import { RodadasModule } from './modules/rodadas/rodadas.module';
+import { SeedModule } from './modules/seed/seed.module';
 import { SincronizacaoModule } from './modules/sincronizacao/sincronizacao.module';
 import { TransacoesMoedasModule } from './modules/transacoes-moedas/transacoes-moedas.module';
 import { UsersModule } from './modules/users/users.module';
@@ -62,13 +63,14 @@ import { UsersModule } from './modules/users/users.module';
     SincronizacaoModule,
     RankingModule,
     CepModule,
+    SeedModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    SeedService,
+    SeedService, // Reativado para criar bairros e usuários iniciais para ranking
   ],
 })
 export class AppModule {}

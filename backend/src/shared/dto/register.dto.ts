@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, MinLength, IsString, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'João Silva', description: 'Nome completo do usuário' })
@@ -28,10 +28,10 @@ export class RegisterDto {
   @IsString({ message: 'Estado deve ser uma string' })
   estado?: string;
 
-  @ApiProperty({ example: '507f1f77bcf86cd799439011', description: 'ID do bairro', required: false })
+  @ApiProperty({ example: 'Centro', description: 'Nome do bairro', required: false })
   @IsOptional()
-  @IsString({ message: 'ID do bairro deve ser uma string' })
-  bairroId?: string;
+  @IsString({ message: 'Bairro deve ser uma string' })
+  bairro?: string;
 
   @ApiProperty({ example: '1990-01-01', description: 'Data de nascimento', required: false })
   @IsOptional()

@@ -2,12 +2,7 @@
   <div class="welcome__container">
     <!-- Header com progresso -->
     <div class="welcome__header">
-      <p-steps
-        [model]="steps"
-        [activeIndex]="currentStep"
-        [readonly]="true"
-        styleClass="welcome__steps">
-      </p-steps>
+      <p-steps [model]="steps" [activeIndex]="currentStep" [readonly]="true" styleClass="welcome__steps"></p-steps>
     </div>
 
     <!-- Conteúdo das etapas -->
@@ -15,12 +10,12 @@
       <!-- Etapa 0: Bem-vindo -->
       <div *ngIf="currentStep === 0" class="welcome__step welcome__step--intro">
         <div class="welcome__icon">
-          <i class="pi pi-trophy" style="font-size: 3rem; color: var(--primary-color);"></i>
+          <i class="pi pi-trophy" style="font-size: 3rem; color: var(--primary-color)"></i>
         </div>
         <h1 class="welcome__title">Bem-vindo ao QuadraFC!</h1>
         <p class="welcome__description">
-          O app onde você compete com seu bairro fazendo palpites nos jogos de futebol.
-          Ganhe pontos, suba no ranking e mostre que seu bairro é o melhor!
+          O app onde você compete com seu bairro fazendo palpites nos jogos de futebol. Ganhe pontos, suba no ranking e
+          mostre que seu bairro é o melhor!
         </p>
         <div class="welcome__features">
           <div class="welcome__feature">
@@ -41,12 +36,10 @@
       <!-- Etapa 1: Informações Pessoais -->
       <div *ngIf="currentStep === 1" class="welcome__step welcome__step--form">
         <div class="welcome__icon">
-          <i class="pi pi-user" style="font-size: 2rem; color: var(--primary-color);"></i>
+          <i class="pi pi-user" style="font-size: 2rem; color: var(--primary-color)"></i>
         </div>
         <h2 class="welcome__title">Suas Informações</h2>
-        <p class="welcome__description">
-          Vamos precisar de algumas informações para completar seu perfil.
-        </p>
+        <p class="welcome__description">Vamos precisar de algumas informações para completar seu perfil.</p>
 
         <form [formGroup]="onboardingForm" class="welcome__form">
           <div class="welcome__form-grid">
@@ -61,8 +54,9 @@
                 class="w-full"
                 inputStyleClass="w-full"
                 appendTo="body"
-                [class.ng-invalid]="onboardingForm.get('data_nascimento')?.invalid && onboardingForm.get('data_nascimento')?.touched">
-              </p-calendar>
+                [class.ng-invalid]="
+                  onboardingForm.get('data_nascimento')?.invalid && onboardingForm.get('data_nascimento')?.touched
+                "></p-calendar>
               <small
                 *ngIf="onboardingForm.get('data_nascimento')?.invalid && onboardingForm.get('data_nascimento')?.touched"
                 class="p-error block mt-1">
@@ -78,8 +72,9 @@
                 mask="(99) 99999-9999"
                 placeholder="(11) 99999-9999"
                 class="w-full"
-                [class.ng-invalid]="onboardingForm.get('telefone')?.invalid && onboardingForm.get('telefone')?.touched">
-              </p-inputMask>
+                [class.ng-invalid]="
+                  onboardingForm.get('telefone')?.invalid && onboardingForm.get('telefone')?.touched
+                "></p-inputMask>
               <small
                 *ngIf="onboardingForm.get('telefone')?.invalid && onboardingForm.get('telefone')?.touched"
                 class="p-error block mt-1">
@@ -93,41 +88,143 @@
       <!-- Etapa 2: Localização -->
       <div *ngIf="currentStep === 2" class="welcome__step welcome__step--form">
         <div class="welcome__icon">
-          <i class="pi pi-map-marker" style="font-size: 2rem; color: var(--primary-color);"></i>
+          <i class="pi pi-map-marker" style="font-size: 2rem; color: var(--primary-color)"></i>
         </div>
-        <h2 class="welcome__title">Qual seu bairro?</h2>
+        <h2 class="welcome__title">Onde você mora?</h2>
         <p class="welcome__description">
-          Você competirá representando seu bairro no ranking do QuadraFC.
+          Informe seu CEP para encontrarmos seu bairro e você competir no ranking local.
         </p>
 
         <form [formGroup]="onboardingForm" class="welcome__form">
+          <!-- Campo CEP -->
           <div class="field">
-            <label for="bairro" class="block text-900 font-medium mb-2">Seu bairro</label>
-            <p-autoComplete
-              formControlName="bairro"
-              [suggestions]="filteredBairros"
-              (completeMethod)="filterBairros($event)"
-              field="nome"
-              placeholder="Digite para buscar seu bairro"
-              [dropdown]="true"
-              [showEmptyMessage]="true"
-              emptyMessage="Nenhum bairro encontrado"
-              styleClass="w-full"
-              inputStyleClass="w-full">
+            <label for="cep" class="block text-900 font-medium mb-2">CEP *</label>
+            <div class="p-inputgroup">
+              <p-inputMask
+                id="cep"
+                formControlName="cep"
+                mask="99999-999"
+                placeholder="00000-000"
+                styleClass="w-full"
+                [class.ng-invalid]="
+                  onboardingForm.get('cep')?.invalid && onboardingForm.get('cep')?.touched
+                "></p-inputMask>
+              <span class="p-inputgroup-addon" *ngIf="shouldShowCepLoading()">
+                <i class="pi pi-spin pi-spinner"></i>
+              </span>
+              <span class="p-inputgroup-addon" *ngIf="cepData && !isLoadingCep">
+                <i class="pi pi-check text-green-500"></i>
+              </span>
+              <span class="p-inputgroup-addon" *ngIf="cepError && !isLoadingCep">
+                <i class="pi pi-times text-red-500"></i>
+              </span>
+            </div>
 
-              <ng-template let-bairro pTemplate="item">
-                <div class="flex align-items-center">
-                  <div>
-                    <div class="font-medium">{{ bairro.nome }}</div>
-                    <div class="text-sm text-500">{{ bairro.cidade }} - {{ bairro.estado }}</div>
-                  </div>
-                </div>
-              </ng-template>
-            </p-autoComplete>
+            <!-- Mensagens de erro/validação -->
             <small
-              *ngIf="onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched"
+              *ngIf="onboardingForm.get('cep')?.invalid && onboardingForm.get('cep')?.touched"
               class="p-error block mt-1">
-              Selecione seu bairro
+              CEP é obrigatório e deve ter 8 dígitos
+            </small>
+            <small *ngIf="cepError && !onboardingForm.get('cep')?.invalid" class="p-error block mt-1">
+              {{ getCepErrorMessage() }}
+            </small>
+            <small *ngIf="shouldShowCepLoading()" class="p-info block mt-1">
+              <i class="pi pi-spin pi-spinner mr-1"></i>
+              Buscando endereço...
+            </small>
+          </div>
+
+          <!-- Informações do CEP -->
+          <div *ngIf="cepData" class="field">
+            <div class="surface-100 border-round p-3">
+              <h4 class="text-900 mt-0 mb-2">Endereço encontrado:</h4>
+              <p class="text-600 m-0">
+                <strong>{{ cepData.localidade }}</strong>
+                - {{ cepData.uf }}
+                <br />
+                <span *ngIf="cepData.logradouro">{{ cepData.logradouro }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Campo Bairro -->
+          <div *ngIf="cepData" class="field">
+            <label for="bairro" class="block text-900 font-medium mb-2">Bairro *</label>
+
+            <!-- Se tem bairro direto do CEP - campo readonly -->
+            <div *ngIf="cepData.bairro && cepData.bairro.trim() && !showBairroSelect && !showBairroInput">
+              <input
+                pInputText
+                id="bairro"
+                formControlName="bairro"
+                readonly
+                styleClass="w-full"
+                [value]="cepData.bairro" />
+              <small class="p-info block mt-1">
+                <i class="pi pi-check text-green-500 mr-1"></i>
+                Bairro encontrado automaticamente
+              </small>
+            </div>
+
+            <!-- Se precisa mostrar select de bairros disponíveis -->
+            <div *ngIf="shouldShowBairroSelect()">
+              <p-dropdown
+                id="bairro"
+                formControlName="bairro"
+                [options]="bairrosDisponiveis"
+                optionLabel="nome"
+                optionValue="nome"
+                placeholder="Selecione seu bairro"
+                styleClass="w-full"
+                [class.ng-invalid]="
+                  onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched
+                "></p-dropdown>
+
+              <div class="mt-2 text-center">
+                <small class="text-600">Não encontrou seu bairro?</small>
+                <button
+                  type="button"
+                  class="p-button-link p-button-sm p-button-plain"
+                  (click)="toggleBairroInputMode()">
+                  Digite o nome do seu bairro
+                </button>
+              </div>
+            </div>
+
+            <!-- Se precisa mostrar input para digitar bairro -->
+            <div *ngIf="shouldShowBairroInput()">
+              <div class="p-inputgroup">
+                <input
+                  pInputText
+                  id="bairro"
+                  formControlName="bairro"
+                  placeholder="Digite o nome do seu bairro"
+                  styleClass="w-full"
+                  (input)="onBairroInputChange()"
+                  [class.ng-invalid]="onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched" />
+                <span class="p-inputgroup-addon" *ngIf="isValidatingBairro">
+                  <i class="pi pi-spin pi-spinner"></i>
+                </span>
+              </div>
+
+              <!-- Mensagem de validação de bairro -->
+              <small *ngIf="bairroError" class="p-warn block mt-1" [innerHTML]="bairroError"></small>
+
+              <!-- Botão para voltar ao select se houver bairros disponíveis -->
+              <div *ngIf="bairrosDisponiveis.length > 0" class="mt-2 text-center">
+                <button type="button" class="p-button-link p-button-sm p-button-plain" (click)="backToBairroSelect()">
+                  ← Voltar à lista de bairros
+                </button>
+              </div>
+            </div>
+
+            <!-- Mensagens de erro -->
+            <small
+              *ngIf="onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched && !bairroError"
+              class="p-error block mt-1">
+              <span *ngIf="showBairroSelect">Selecione seu bairro da lista</span>
+              <span *ngIf="showBairroInput">Digite o nome do seu bairro (mínimo 2 caracteres)</span>
             </small>
           </div>
         </form>
@@ -136,13 +233,13 @@
       <!-- Etapa 3: Finalização -->
       <div *ngIf="currentStep === 3" class="welcome__step welcome__step--final">
         <div class="welcome__icon">
-          <i class="pi pi-check-circle" style="font-size: 3rem; color: var(--green-500);"></i>
+          <i class="pi pi-check-circle" style="font-size: 3rem; color: var(--green-500)"></i>
         </div>
         <h2 class="welcome__title">Tudo pronto!</h2>
         <p class="welcome__description">
           Você agora faz parte do bairro
-          <strong>{{ onboardingForm.get('bairro')?.value?.nome }}</strong>.
-          Vamos começar a competir!
+          <strong>{{ getBairroNome() }}</strong>
+          . Vamos começar a competir!
         </p>
 
         <div class="welcome__summary">
@@ -157,7 +254,7 @@
             <div class="flex align-items-center gap-3 mt-3">
               <i class="pi pi-map-marker text-primary"></i>
               <div>
-                <div class="font-medium">{{ getBairroDisplayName(onboardingForm.get('bairro')?.value) }}</div>
+                <div class="font-medium">{{ getBairroNome() }}</div>
                 <div class="text-sm text-500">Seu bairro no QuadraFC</div>
               </div>
             </div>
@@ -176,8 +273,7 @@
           severity="secondary"
           (onClick)="previousStep()"
           [disabled]="isLoading"
-          styleClass="flex-1">
-        </p-button>
+          styleClass="flex-1"></p-button>
 
         <p-button
           [label]="currentStep === steps.length - 1 ? 'Começar!' : 'Próximo'"
@@ -186,8 +282,7 @@
           (onClick)="nextStep()"
           [loading]="isLoading"
           styleClass="flex-1"
-          [disabled]="!canProceed()">
-        </p-button>
+          [disabled]="!canProceed()"></p-button>
       </div>
     </div>
   </div>

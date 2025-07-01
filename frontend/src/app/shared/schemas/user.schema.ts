@@ -22,16 +22,11 @@ export const UserSchema = z.object({
   password: z.string().optional(),
   data_nascimento: z.coerce.date(),
   telefone: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().optional(),
+  pais: z.string().optional(),
+  cep: z.string().optional(),
   bairro: z.string().min(1, 'Bairro é obrigatório'),
-  bairroId: z
-    .object({
-      _id: z.string(),
-      nome: z.string(),
-      cidade: z.string(),
-      estado: z.string(),
-      totalPoints: z.number().optional(),
-    })
-    .optional(),
   moedas: z.number().min(0),
   pontos: z.number().min(0), // Para compatibilidade com alguns templates
   pontos_totais: z.number().min(0),

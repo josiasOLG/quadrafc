@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { BaseApiService } from '../../../shared/services/base-api.service';
 import { Bairro, CreateBairroDto, PaginationParams, RankingItem } from '../../../shared/schemas';
+import { BaseApiService } from '../../../shared/services/base-api.service';
 import { HttpService } from '../../../shared/services/http.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BairrosService extends BaseApiService<Bairro, CreateBairroDto> {
   protected readonly endpoint = 'bairros';
@@ -34,7 +34,9 @@ export class BairrosService extends BaseApiService<Bairro, CreateBairroDto> {
     return this.httpService.getPaginated<Bairro>(`${this.endpoint}/search`, params);
   }
 
-  getRankingBairros(params?: PaginationParams): Observable<{ data: RankingItem[]; pagination: any }> {
+  getRankingBairros(
+    params?: PaginationParams
+  ): Observable<{ data: RankingItem[]; pagination: any }> {
     return this.getPaginated<RankingItem>('ranking', params);
   }
 
@@ -44,11 +46,11 @@ export class BairrosService extends BaseApiService<Bairro, CreateBairroDto> {
     total_palpites: number;
     media_pontuacao: number;
     ranking_posicao: number;
-    historico_mensal: Array<{
+    historico_mensal: {
       mes: string;
       pontos: number;
       posicao: number;
-    }>;
+    }[];
   }> {
     return this.get(`${bairroId}/estatisticas`);
   }
@@ -80,5 +82,15 @@ export class BairrosService extends BaseApiService<Bairro, CreateBairroDto> {
 
   recalcularRanking(): Observable<{ bairros_atualizados: number }> {
     return this.postGlobal('admin/bairros/recalcular-ranking');
+  }
+
+  // Método para criar bairro com validação
+  createWithValidation(bairroData: {
+    nome: string;
+    cidade: string;
+    estado: string;
+    cep?: string;
+  }): Observable<{ success: boolean; bairro?: Bairro; message: string; similares?: Bairro[] }> {
+    return this.post('criar-com-validacao', bairroData);
   }
 }

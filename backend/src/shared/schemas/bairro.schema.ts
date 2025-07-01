@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Document } from 'mongoose';
 
 export type BairroDocument = Bairro & Document;
 
@@ -17,6 +17,14 @@ export class Bairro {
   @ApiProperty({ description: 'Estado do bairro' })
   @Prop({ required: true })
   estado: string;
+
+  @ApiProperty({ description: 'País do bairro' })
+  @Prop({ required: true, default: 'Brasil' })
+  pais: string;
+
+  @ApiProperty({ description: 'CEP do bairro', required: false })
+  @Prop({ required: false })
+  cep?: string;
 
   @ApiProperty({ description: 'Total de pontos do bairro' })
   @Prop({ default: 0 })

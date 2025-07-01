@@ -1,23 +1,23 @@
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { ApiResponse, PaginationParams } from '../schemas';
 import { environment } from '../../../environments/environment';
+import { ApiResponse, PaginationParams } from '../schemas';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class HttpService {
   private readonly baseUrl = environment.apiUrl || 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   private buildParams(params?: Record<string, any>): HttpParams {
     let httpParams = new HttpParams();
 
     if (params) {
-      Object.keys(params).forEach(key => {
+      Object.keys(params).forEach((key) => {
         const value = params[key];
         if (value !== null && value !== undefined) {
           httpParams = httpParams.set(key, value.toString());
@@ -30,11 +30,11 @@ export class HttpService {
 
   private buildHeaders(headers?: Record<string, string>): HttpHeaders {
     let httpHeaders = new HttpHeaders({
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     });
 
     if (headers) {
-      Object.keys(headers).forEach(key => {
+      Object.keys(headers).forEach((key) => {
         httpHeaders = httpHeaders.set(key, headers[key]);
       });
     }
@@ -63,81 +63,104 @@ export class HttpService {
     return throwError(() => new Error(errorMessage));
   }
 
-  get<T>(endpoint: string, params?: Record<string, any>, headers?: Record<string, string>): Observable<T> {
+  get<T>(
+    endpoint: string,
+    params?: Record<string, any>,
+    headers?: Record<string, string>
+  ): Observable<T> {
     const httpParams = this.buildParams(params);
     const httpHeaders = this.buildHeaders(headers);
 
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
-      params: httpParams,
-      headers: httpHeaders,
-      withCredentials: true
-    }).pipe(
-      map(response => this.handleResponse(response)),
-      catchError(error => this.handleError(error))
-    );
+    return this.http
+      .get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
+        params: httpParams,
+        headers: httpHeaders,
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => this.handleResponse(response)),
+        catchError((error) => this.handleError(error))
+      );
   }
 
   post<T>(endpoint: string, data?: any, headers?: Record<string, string>): Observable<T> {
     const httpHeaders = this.buildHeaders(headers);
 
-    return this.http.post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
-      headers: httpHeaders,
-      withCredentials: true
-    }).pipe(
-      map(response => this.handleResponse(response)),
-      catchError(error => this.handleError(error))
-    );
+    return this.http
+      .post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
+        headers: httpHeaders,
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => this.handleResponse(response)),
+        catchError((error) => this.handleError(error))
+      );
   }
 
   put<T>(endpoint: string, data?: any, headers?: Record<string, string>): Observable<T> {
     const httpHeaders = this.buildHeaders(headers);
 
-    return this.http.put<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
-      headers: httpHeaders,
-      withCredentials: true
-    }).pipe(
-      map(response => this.handleResponse(response)),
-      catchError(error => this.handleError(error))
-    );
+    return this.http
+      .put<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
+        headers: httpHeaders,
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => this.handleResponse(response)),
+        catchError((error) => this.handleError(error))
+      );
   }
 
   patch<T>(endpoint: string, data?: any, headers?: Record<string, string>): Observable<T> {
     const httpHeaders = this.buildHeaders(headers);
 
-    return this.http.patch<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
-      headers: httpHeaders,
-      withCredentials: true
-    }).pipe(
-      map(response => this.handleResponse(response)),
-      catchError(error => this.handleError(error))
-    );
+    return this.http
+      .patch<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
+        headers: httpHeaders,
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => this.handleResponse(response)),
+        catchError((error) => this.handleError(error))
+      );
   }
 
   delete<T>(endpoint: string, headers?: Record<string, string>): Observable<T> {
     const httpHeaders = this.buildHeaders(headers);
 
-    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
-      headers: httpHeaders,
-      withCredentials: true
-    }).pipe(
-      map(response => this.handleResponse(response)),
-      catchError(error => this.handleError(error))
-    );
+    return this.http
+      .delete<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
+        headers: httpHeaders,
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => this.handleResponse(response)),
+        catchError((error) => this.handleError(error))
+      );
   }
 
   // Método especializado para requests com paginação
-  getPaginated<T>(endpoint: string, pagination?: PaginationParams, params?: Record<string, any>): Observable<{ data: T[]; pagination: any }> {
+  getPaginated<T>(
+    endpoint: string,
+    pagination?: PaginationParams,
+    params?: Record<string, any>
+  ): Observable<{ data: T[]; pagination: any }> {
     const allParams = { ...pagination, ...params };
 
-    return this.http.get<ApiResponse<T[]>>(`${this.baseUrl}/${endpoint}`, {
-      params: this.buildParams(allParams),
-      withCredentials: true
-    }).pipe(
-      map(response => ({
-        data: response.data || [],
-        pagination: response.pagination
-      })),
-      catchError(error => this.handleError(error))
-    );
+    return this.http
+      .get<ApiResponse<{ data: T[]; pagination: any }>>(`${this.baseUrl}/${endpoint}`, {
+        params: this.buildParams(allParams),
+        withCredentials: true,
+      })
+      .pipe(
+        map((response) => {
+          if (!response.success) {
+            throw new Error(response.message || 'Erro na requisição');
+          }
+          // A resposta já vem no formato correto dentro de response.data
+          return response.data || { data: [], pagination: {} };
+        }),
+        catchError((error) => this.handleError(error))
+      );
   }
 }

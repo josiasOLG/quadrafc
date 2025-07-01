@@ -58,10 +58,9 @@ export class PremiumAccessService {
     }
 
     // Verificar se é a cidade do próprio usuário
-    const user = await this.userModel.findById(userId).populate('bairroId').exec();
-    if (user && user.bairroId) {
-      const userBairro = user.bairroId as any;
-      if (userBairro.cidade === cidade && userBairro.estado === estado) {
+    const user = await this.userModel.findById(userId).exec();
+    if (user && user.cidade && user.estado) {
+      if (user.cidade === cidade && user.estado === estado) {
         return true;
       }
     }
@@ -91,10 +90,9 @@ export class PremiumAccessService {
     }
 
     // Verificar se é o estado do próprio usuário
-    const user = await this.userModel.findById(userId).populate('bairroId').exec();
-    if (user && user.bairroId) {
-      const userBairro = user.bairroId as any;
-      if (userBairro.estado === estado) {
+    const user = await this.userModel.findById(userId).exec();
+    if (user && user.estado) {
+      if (user.estado === estado) {
         return true;
       }
     }
@@ -325,7 +323,7 @@ export class PremiumAccessService {
     temAcessoNacional: boolean;
     custos: CustoAcesso;
   }> {
-    const user = await this.userModel.findById(userId).populate('bairroId').exec();
+    const user = await this.userModel.findById(userId).exec();
     if (!user) {
       // Em vez de lançar exceção, retornar valores padrão
       return {
@@ -351,14 +349,13 @@ export class PremiumAccessService {
     let temAcessoNacional = false;
 
     // Adicionar cidade própria (sempre acessível)
-    if (user.bairroId) {
-      const userBairro = user.bairroId as any;
+    if (user.cidade && user.estado) {
       cidadesAcessiveis.push({
-        cidade: userBairro.cidade,
-        estado: userBairro.estado,
+        cidade: user.cidade,
+        estado: user.estado,
       });
-      if (!estadosAcessiveis.includes(userBairro.estado)) {
-        estadosAcessiveis.push(userBairro.estado);
+      if (!estadosAcessiveis.includes(user.estado)) {
+        estadosAcessiveis.push(user.estado);
       }
     }
 

@@ -1,22 +1,11 @@
 <div class="ranking">
   <!-- Header Section -->
   <app-page-header
-    title="Rankings"
-    subtitle="Veja sua posição nos rankings!"
+    title="Rankings da Sua Cidade"
+    subtitle="Veja sua posição no ranking da sua cidade!"
     icon="pi pi-chart-line"
     [user]="user"
     customClass="page-header--ranking"></app-page-header>
-
-  <!-- Filters Section -->
-  <div class="ranking__filters">
-    <p-dropdown
-      [(ngModel)]="filtroSelecionado"
-      [options]="filtros"
-      optionLabel="label"
-      placeholder="Selecione o escopo"
-      (onChange)="onFiltroChange()"
-      styleClass="filter-dropdown"></p-dropdown>
-  </div>
 
   <!-- User Position Highlight -->
   <div class="user-position" *ngIf="user && getCurrentUserPosition()">
@@ -29,7 +18,13 @@
           <h4>Sua Posição</h4>
           <div class="position-stats">
             <span class="position-number">#{{ getCurrentUserPosition() }}</span>
-            <span class="position-points">{{ user.pontos }} pts</span>
+            <span class="position-points">{{ user.totalPoints || 0 }} pts</span>
+          </div>
+          <div class="position-location" *ngIf="getCurrentUserBairroInfo() as bairroInfo">
+            <i class="pi pi-map-marker"></i>
+            <span>{{ bairroInfo.bairro }}</span>
+            <span *ngIf="bairroInfo.cidade" class="location-separator">- {{ bairroInfo.cidade }}</span>
+            <span *ngIf="bairroInfo.estado" class="location-separator">/ {{ bairroInfo.estado }}</span>
           </div>
         </div>
         <div class="position-badge">
@@ -107,6 +102,8 @@
                   <div class="user-location">
                     <i class="pi pi-map-marker"></i>
                     <span>{{ item.usuario.bairro }}</span>
+                    <span *ngIf="item.usuario.cidade" class="location-separator">- {{ item.usuario.cidade }}</span>
+                    <span *ngIf="item.usuario.estado" class="location-separator">/ {{ item.usuario.estado }}</span>
                   </div>
                 </div>
 
@@ -135,7 +132,7 @@
                 <div class="score-rating">
                   <div class="rating-stars">
                     <i
-                      *ngFor="let star of getStarsArray(item.taxa_acerto)"
+                      *ngFor="let star of getStarsArray()"
                       class="pi pi-star-fill"
                       [class.star-active]="star <= getRatingFromPercent(item.taxa_acerto)"></i>
                   </div>
@@ -226,7 +223,7 @@
                 <div class="score-rating">
                   <div class="rating-stars">
                     <i
-                      *ngFor="let star of getStarsArray(0)"
+                      *ngFor="let star of getStarsArray()"
                       class="pi pi-star-fill"
                       [class.star-active]="star <= getBairroRating(item)"></i>
                   </div>

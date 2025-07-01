@@ -40,7 +40,7 @@ export class PremiumAccessGuard implements CanActivate {
     }
 
     // Buscar dados do usuário
-    const user = await this.userModel.findById(userId).populate('bairroId').exec();
+    const user = await this.userModel.findById(userId).exec();
     if (!user) {
       throw new ForbiddenException('Usuário não encontrado');
     }

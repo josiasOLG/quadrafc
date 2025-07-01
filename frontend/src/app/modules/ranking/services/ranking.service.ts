@@ -34,6 +34,20 @@ export class RankingService {
     return this.httpService.getPaginated<RankingUsuario>('users/ranking', params);
   }
 
+  // Ranking de usuários da cidade especificada
+  getRankingUsuariosCidade(
+    cidade: string,
+    estado: string,
+    params?: PaginationParams
+  ): Observable<{ data: RankingUsuario[]; pagination: any }> {
+    const queryParams = {
+      cidade,
+      estado,
+      ...params,
+    };
+    return this.httpService.getPaginated<RankingUsuario>('ranking/usuarios-cidade', queryParams);
+  }
+
   // Ranking de usuários por bairro
   getRankingUsuariosPorBairro(
     bairroId: string,
@@ -52,11 +66,18 @@ export class RankingService {
     return this.httpService.getPaginated<RankingBairro>('bairros/ranking', params);
   }
 
-  // Ranking de bairros da mesma cidade (gratuito)
+  // Ranking de bairros da cidade especificada
   getRankingBairrosCidade(
+    cidade: string,
+    estado: string,
     params?: PaginationParams
   ): Observable<{ data: RankingBairro[]; pagination: any }> {
-    return this.httpService.getPaginated<RankingBairro>('bairros/ranking/minha-cidade', params);
+    const queryParams = {
+      cidade,
+      estado,
+      ...params,
+    };
+    return this.httpService.getPaginated<RankingBairro>('ranking/bairros-cidade', queryParams);
   }
 
   // Ranking de bairros nacional (premium)

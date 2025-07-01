@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../shared/guards/roles.guard';
 import { ResponseUtil } from '../../shared/utils/response.util';
 import { BairrosService } from './bairros.service';
+import { CreateBairroValidationDto } from './dto/create-bairro-validation.dto';
 
 @ApiTags('bairros')
 @Controller('bairros')
@@ -136,5 +137,17 @@ export class BairrosController {
   @ApiOperation({ summary: 'Criar novo bairro (apenas admin)' })
   async create(@Body() createBairroDto: any) {
     return this.bairrosService.create(createBairroDto);
+  }
+
+  @Post('criar-com-validacao')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ResponseMessage('Validação de bairro realizada')
+  @ApiOperation({ summary: 'Criar novo bairro com validação inteligente' })
+  async createWithValidation(@Body() createBairroDto: CreateBairroValidationDto) {
+    const resultado = await this.bairrosService.createWithValidation(createBairroDto);
+
+    // Retornar diretamente o resultado do service, não usar ResponseUtil
+    return resultado;
   }
 }

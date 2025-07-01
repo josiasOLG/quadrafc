@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -33,9 +33,17 @@ export class User {
   @Prop({ required: false }) // Agora é opcional - será preenchido no onboarding
   estado?: string;
 
-  @ApiProperty({ description: 'ID do bairro', required: false })
-  @Prop({ type: Types.ObjectId, ref: 'Bairro', required: false }) // Agora é opcional - será preenchido no onboarding
-  bairroId?: Types.ObjectId;
+  @ApiProperty({ description: 'País do usuário', required: false })
+  @Prop({ required: false, default: 'Brasil' })
+  pais?: string;
+
+  @ApiProperty({ description: 'CEP do usuário', required: false })
+  @Prop({ required: false })
+  cep?: string;
+
+  @ApiProperty({ description: 'Nome do bairro', required: false })
+  @Prop({ required: false })
+  bairro?: string;
 
   @ApiProperty({ description: 'URL do avatar' })
   @Prop({ default: '' })

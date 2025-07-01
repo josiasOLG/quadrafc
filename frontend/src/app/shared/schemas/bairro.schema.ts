@@ -5,12 +5,12 @@ export const BairroEstatisticasSchema = z.object({
   usuarios_ativos: z.number().min(0),
   total_palpites: z.number().min(0),
   media_pontuacao: z.number().min(0),
-  ranking_posicao: z.number().min(1)
+  ranking_posicao: z.number().min(1),
 });
 
 export const CoordenadasSchema = z.object({
   latitude: z.number(),
-  longitude: z.number()
+  longitude: z.number(),
 });
 
 export const BairroSchema = z.object({
@@ -18,6 +18,8 @@ export const BairroSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   cidade: z.string().min(2, 'Cidade deve ter pelo menos 2 caracteres'),
   estado: z.string().min(2, 'Estado deve ter pelo menos 2 caracteres'),
+  pais: z.string().default('Brasil'),
+  cep: z.string().optional(),
   regiao: z.string().min(2, 'Região deve ter pelo menos 2 caracteres'),
   populacao: z.number().min(0).optional(),
   area_km2: z.number().min(0).optional(),
@@ -26,21 +28,24 @@ export const BairroSchema = z.object({
   coordenadas: CoordenadasSchema.optional(),
   descricao: z.string().optional(),
   ativo: z.boolean(),
+  totalPoints: z.number().min(0).default(0),
   data_criacao: z.coerce.date(),
-  estatisticas: BairroEstatisticasSchema
+  estatisticas: BairroEstatisticasSchema,
 });
 
 export const CreateBairroSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   cidade: z.string().min(2, 'Cidade deve ter pelo menos 2 caracteres'),
   estado: z.string().min(2, 'Estado deve ter pelo menos 2 caracteres'),
+  pais: z.string().default('Brasil'),
+  cep: z.string().optional(),
   regiao: z.string().min(2, 'Região deve ter pelo menos 2 caracteres'),
   populacao: z.number().min(0).optional(),
   area_km2: z.number().min(0).optional(),
   densidade_demografica: z.number().min(0).optional(),
   codigo_postal: z.string().optional(),
   coordenadas: CoordenadasSchema.optional(),
-  descricao: z.string().optional()
+  descricao: z.string().optional(),
 });
 
 export type Bairro = z.infer<typeof BairroSchema>;
