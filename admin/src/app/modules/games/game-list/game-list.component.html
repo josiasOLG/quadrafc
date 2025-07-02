@@ -1,0 +1,328 @@
+<div class="game-list-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <div class="card">
+    <p-toolbar styleClass="mb-4 gap-2">
+      <ng-template pTemplate="left">
+        <h2 class="m-0">Gerenciamento de Jogos</h2>
+      </ng-template>
+      <ng-template pTemplate="right">
+        <div class="flex gap-2">
+          <p-button
+            severity="success"
+            icon="pi pi-plus"
+            label="Criar Jogo"
+            routerLink="/games/new"
+            size="small"></p-button>
+
+          <p-button
+            severity="help"
+            icon="pi pi-sync"
+            label="Sincronizar Global"
+            (click)="syncGames()"
+            [loading]="syncing"
+            pTooltip="Buscar jogos de TODAS as competições mundiais (brasileiras, europeias, etc.)"
+            tooltipPosition="bottom"
+            size="small"></p-button>
+
+          <p-button
+            severity="warning"
+            icon="pi pi-check-circle"
+            label="Verificar Finalizados"
+            (click)="verificarJogosFinalizados()"
+            pTooltip="Verificar jogos finalizados e processar palpites"
+            tooltipPosition="bottom"
+            size="small"></p-button>
+
+          <p-button
+            severity="info"
+            icon="pi pi-cog"
+            label="Status Crons"
+            (click)="verStatusCrons()"
+            pTooltip="Ver status dos sistemas automáticos"
+            tooltipPosition="bottom"
+            size="small"></p-button>
+        </div>
+      </ng-template>
+    </p-toolbar>
+
+    <!-- Filtros -->
+    <div
+      class="flex flex-wrap gap-3 mb-4 p-3 border-round surface-border"
+      style="border: 1px solid var(--surface-border)">
+      <div class="flex flex-column">
+        <label class="font-semibold mb-1">Visualização</label>
+        <p-dropdown
+          [options]="viewOptions"
+          [(ngModel)]="currentView"
+          (onChange)="onViewChange()"
+          placeholder="Selecione a visualização"></p-dropdown>
+      </div>
+
+      <div class="flex flex-column">
+        <label class="font-semibold mb-1">Data Início</label>
+        <p-calendar
+          [(ngModel)]="filters.dataInicio"
+          dateFormat="dd/mm/yy"
+          placeholder="dd/mm/aaaa"
+          [showIcon]="true"
+          [showClear]="true"
+          (onSelect)="applyFilters()"></p-calendar>
+      </div>
+
+      <div class="flex flex-column">
+        <label class="font-semibold mb-1">Data Fim</label>
+        <p-calendar
+          [(ngModel)]="filters.dataFim"
+          dateFormat="dd/mm/yy"
+          placeholder="dd/mm/aaaa"
+          [showIcon]="true"
+          [showClear]="true"
+          (onSelect)="applyFilters()"></p-calendar>
+      </div>
+
+      <div class="flex flex-column">
+        <label class="font-semibold mb-1">Status</label>
+        <p-dropdown
+          [options]="statusOptions"
+          [(ngModel)]="filters.status"
+          placeholder="Todos os status"
+          [showClear]="true"
+          (onChange)="applyFilters()"></p-dropdown>
+      </div>
+
+      <div class="flex flex-column justify-content-end">
+        <p-button severity="secondary" icon="pi pi-times" label="Limpar" (click)="clearFilters()"></p-button>
+      </div>
+    </div>
+
+    <!-- Visualização por Lista Simples -->
+    <div *ngIf="currentView === 'lista'">
+      <p-table
+        [value]="jogos"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="pageSize"
+        [totalRecords]="totalRecords"
+        [lazy]="true"
+        (onLazyLoad)="loadJogos($event)"
+        dataKey="id"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} jogos"
+        [tableStyle]="{ 'min-width': '50rem' }"
+        styleClass="p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="dataHora">
+              Data/Hora
+              <p-sortIcon field="dataHora"></p-sortIcon>
+            </th>
+            <th>Jogo</th>
+            <th>Campeonato</th>
+            <th pSortableColumn="status">
+              Status
+              <p-sortIcon field="status"></p-sortIcon>
+            </th>
+            <th>Palpites</th>
+            <th>Resultado</th>
+            <th>Ações</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-jogo>
+          <tr>
+            <td>
+              <div class="flex flex-column">
+                <span class="font-semibold">{{ formatDate(jogo.data) }}</span>
+                <small class="text-color-secondary">{{ formatTime(jogo.data) }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="flex align-items-center gap-2">
+                <img
+                  [src]="jogo.timeA?.escudo || 'assets/images/team-placeholder.png'"
+                  [alt]="jogo.timeA?.nome"
+                  class="team-logo" />
+                <span class="font-semibold">{{ jogo.timeA?.nome }}</span>
+                <span class="mx-2">x</span>
+                <span class="font-semibold">{{ jogo.timeB?.nome }}</span>
+                <img
+                  [src]="jogo.timeB?.escudo || 'assets/images/team-placeholder.png'"
+                  [alt]="jogo.timeB?.nome"
+                  class="team-logo" />
+              </div>
+            </td>
+            <td>
+              <p-badge [value]="jogo.campeonato" severity="info"></p-badge>
+            </td>
+            <td>
+              <p-tag [value]="getStatusLabel(jogo.status)" [severity]="getStatusSeverity(jogo.status)"></p-tag>
+            </td>
+            <td>
+              <div class="flex align-items-center gap-2">
+                <p-checkbox [ngModel]="jogo.status === 'aberto'" [binary]="true" [disabled]="true"></p-checkbox>
+                <span class="text-sm">{{ jogo.palpites?.length || 0 }} palpites</span>
+              </div>
+            </td>
+            <td>
+              <div *ngIf="jogo.status === 'encerrado' && jogo.resultado; else noResult">
+                <span class="font-bold">{{ jogo.resultado.timeA }} x {{ jogo.resultado.timeB }}</span>
+              </div>
+              <ng-template #noResult>
+                <span class="text-color-secondary">-</span>
+              </ng-template>
+            </td>
+            <td>
+              <div class="flex gap-2">
+                <p-button
+                  icon="pi pi-eye"
+                  severity="info"
+                  size="small"
+                  [routerLink]="['/games', jogo._id]"
+                  pTooltip="Ver detalhes"></p-button>
+                <p-button
+                  icon="pi pi-pencil"
+                  severity="warning"
+                  size="small"
+                  [routerLink]="['/games', jogo._id, 'edit']"
+                  pTooltip="Editar"
+                  *ngIf="canEdit(jogo)"></p-button>
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  size="small"
+                  (click)="deleteJogo(jogo)"
+                  pTooltip="Deletar"
+                  *ngIf="canDelete(jogo)"></p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center py-4">
+              <div class="flex flex-column align-items-center gap-3">
+                <i class="pi pi-calendar text-4xl text-color-secondary"></i>
+                <span class="text-color-secondary">Nenhum jogo encontrado</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Visualização por Campeonatos -->
+    <div *ngIf="currentView === 'campeonatos'">
+      <div *ngIf="loading" class="flex justify-content-center p-4">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+
+      <p-tabView *ngIf="!loading && campeonatos && campeonatos.length > 0" [scrollable]="true">
+        <p-tabPanel *ngFor="let campeonato of campeonatos" [header]="campeonato.nome">
+          <ng-template pTemplate="header">
+            <span>{{ campeonato.nome }}</span>
+            <p-badge [value]="campeonato.total.toString()" styleClass="ml-2"></p-badge>
+          </ng-template>
+
+          <p-table [value]="campeonato.jogos" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-striped">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Data/Hora</th>
+                <th>Jogo</th>
+                <th>Status</th>
+                <th>Palpites</th>
+                <th>Resultado</th>
+                <th>Ações</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-jogo>
+              <tr>
+                <td>
+                  <div class="flex flex-column">
+                    <span class="font-semibold">{{ formatDate(jogo.data) }}</span>
+                    <small class="text-color-secondary">{{ formatTime(jogo.data) }}</small>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex align-items-center gap-2">
+                    <img
+                      [src]="jogo.timeA?.escudo || 'assets/images/team-placeholder.png'"
+                      [alt]="jogo.timeA?.nome"
+                      class="team-logo" />
+                    <span class="font-semibold">{{ jogo.timeA?.nome }}</span>
+                    <span class="mx-2">x</span>
+                    <span class="font-semibold">{{ jogo.timeB?.nome }}</span>
+                    <img
+                      [src]="jogo.timeB?.escudo || 'assets/images/team-placeholder.png'"
+                      [alt]="jogo.timeB?.nome"
+                      class="team-logo" />
+                  </div>
+                </td>
+                <td>
+                  <p-tag [value]="getStatusLabel(jogo.status)" [severity]="getStatusSeverity(jogo.status)"></p-tag>
+                </td>
+                <td>
+                  <div class="flex align-items-center gap-2">
+                    <p-checkbox [ngModel]="jogo.status === 'aberto'" [binary]="true" [disabled]="true"></p-checkbox>
+                    <span class="text-sm">{{ jogo.palpites?.length || 0 }} palpites</span>
+                  </div>
+                </td>
+                <td>
+                  <div *ngIf="jogo.status === 'encerrado' && jogo.resultado; else noResult">
+                    <span class="font-bold">{{ jogo.resultado.timeA }} x {{ jogo.resultado.timeB }}</span>
+                  </div>
+                  <ng-template #noResult>
+                    <span class="text-color-secondary">-</span>
+                  </ng-template>
+                </td>
+                <td>
+                  <div class="flex gap-2">
+                    <p-button
+                      icon="pi pi-eye"
+                      severity="info"
+                      size="small"
+                      [routerLink]="['/games', jogo._id]"
+                      pTooltip="Ver detalhes"></p-button>
+                    <p-button
+                      icon="pi pi-pencil"
+                      severity="warning"
+                      size="small"
+                      [routerLink]="['/games', jogo._id, 'edit']"
+                      pTooltip="Editar"
+                      *ngIf="canEdit(jogo)"></p-button>
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      size="small"
+                      (click)="deleteJogo(jogo)"
+                      pTooltip="Deletar"
+                      *ngIf="canDelete(jogo)"></p-button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="6" class="text-center py-4">
+                  <span class="text-color-secondary">Nenhum jogo neste campeonato</span>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+      </p-tabView>
+
+      <div *ngIf="!loading && (!campeonatos || campeonatos.length === 0)" class="text-center py-4">
+        <div class="flex flex-column align-items-center gap-3">
+          <i class="pi pi-calendar text-4xl text-color-secondary"></i>
+          <span class="text-color-secondary">Nenhum campeonato encontrado</span>
+          <p class="text-color-secondary mt-2">Tente sincronizar os jogos ou ajustar os filtros de data</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

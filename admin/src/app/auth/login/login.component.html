@@ -1,0 +1,69 @@
+<div class="login-container">
+  <div class="login-card">
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="login-header">
+          <h1>QuadraFC Admin</h1>
+          <p>Faça login para acessar o painel administrativo</p>
+        </div>
+      </ng-template>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            pInputText
+            id="email"
+            type="email"
+            formControlName="email"
+            [class.ng-invalid]="isFieldInvalid('email')"
+            class="w-full"
+            placeholder="Digite seu email" />
+          <small class="p-error" *ngIf="isFieldInvalid('email')">
+            {{ getFieldError('email') }}
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <p-password
+            id="password"
+            formControlName="password"
+            [class.ng-invalid]="isFieldInvalid('password')"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            [feedback]="false"
+            [toggleMask]="true"
+            placeholder="Digite sua senha"></p-password>
+          <small class="p-error" *ngIf="isFieldInvalid('password')">
+            {{ getFieldError('password') }}
+          </small>
+        </div>
+
+        <div class="field">
+          <button
+            pButton
+            type="submit"
+            label="Entrar"
+            icon="pi pi-sign-in"
+            class="p-button-primary w-full"
+            [loading]="loading"
+            [disabled]="loginForm.invalid || loading"></button>
+        </div>
+      </form>
+
+      <ng-template pTemplate="footer">
+        <div class="login-footer">
+          <small>© 2025 QuadraFC. Todos os direitos reservados.</small>
+        </div>
+      </ng-template>
+    </p-card>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" *ngIf="loading">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>

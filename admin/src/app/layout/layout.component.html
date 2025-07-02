@@ -1,0 +1,69 @@
+<div class="layout-wrapper">
+  <!-- Header -->
+  <div class="layout-topbar">
+    <div class="flex align-items-center justify-content-between p-3">
+      <div class="flex align-items-center">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-bars"
+          class="p-button-text p-button-rounded"
+          (click)="toggleSidebar()"></button>
+        <h2 class="ml-3 m-0">QuadraFC Admin</h2>
+      </div>
+
+      <div class="flex align-items-center">
+        <button pButton type="button" icon="pi pi-user" class="p-button-text p-button-rounded mr-2"></button>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-sign-out"
+          class="p-button-text p-button-rounded"
+          (click)="logout()"
+          pTooltip="Logout"
+          tooltipPosition="bottom"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <p-sidebar [(visible)]="sidebarVisible" position="left" styleClass="layout-sidebar">
+    <h3>Menu</h3>
+    <div class="sidebar-menu">
+      <ul class="layout-menu">
+        <li *ngFor="let item of menuItems">
+          <a
+            *ngIf="!item.items; else submenu"
+            [routerLink]="item.routerLink"
+            class="layout-menuitem-link"
+            (click)="sidebarVisible = false">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+          </a>
+
+          <ng-template #submenu>
+            <div class="layout-submenu-title">
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </div>
+            <ul class="layout-submenu">
+              <li *ngFor="let subitem of item.items">
+                <a [routerLink]="subitem.routerLink" class="layout-menuitem-link" (click)="sidebarVisible = false">
+                  <i [class]="subitem.icon"></i>
+                  <span>{{ subitem.label }}</span>
+                </a>
+              </li>
+            </ul>
+          </ng-template>
+        </li>
+      </ul>
+    </div>
+  </p-sidebar>
+
+  <!-- Content -->
+  <div class="layout-main" [class.layout-main-sidebar-open]="sidebarVisible">
+    <div class="layout-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

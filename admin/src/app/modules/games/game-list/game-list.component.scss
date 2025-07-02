@@ -1,0 +1,87 @@
+.game-list-container {
+  padding: 1rem;
+}
+
+.team-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid var(--surface-border);
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.75rem;
+}
+
+.p-toolbar {
+  border-radius: 6px;
+}
+
+.p-card .p-card-body {
+  padding: 1.5rem;
+}
+
+.p-tabview .p-tabview-nav {
+  background: var(--surface-card);
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  border: 1px solid var(--surface-border);
+  background: var(--surface-ground);
+  color: var(--text-color);
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: var(--primary-color-text);
+}
+
+.p-tabview .p-tabview-panels {
+  background: var(--surface-card);
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-top: 0;
+}
+
+.p-badge {
+  min-width: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .game-list-container {
+    padding: 0.5rem;
+  }
+
+  .flex.flex-wrap.gap-3 {
+    flex-direction: column;
+  }
+
+  .flex.flex-wrap.gap-3 > div {
+    width: 100%;
+  }
+
+  .p-tabview .p-tabview-nav {
+    flex-wrap: wrap;
+  }
+
+  .team-logo {
+    width: 20px;
+    height: 20px;
+  }
+
+  .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .flex.gap-2 {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .flex.gap-2 .p-button {
+    width: 100%;
+  }
+}

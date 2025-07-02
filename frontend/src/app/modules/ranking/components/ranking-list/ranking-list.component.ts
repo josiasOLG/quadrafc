@@ -309,10 +309,6 @@ export class RankingListComponent implements OnInit {
         } else {
           console.error('❌ Usuário não foi carregado após timeout');
           this.isLoading = false;
-          this.toastService.show({
-            detail: 'Erro ao carregar dados do usuário',
-            severity: 'error',
-          });
         }
       }, 1000);
       return;
@@ -586,15 +582,6 @@ export class RankingListComponent implements OnInit {
     const currentUser = this.rankingUsuarios.find((item) => {
       // Verificar por ID do usuário
       const userMatch = item.usuario._id === this.user?._id;
-
-      if (userMatch) {
-        console.log('Usuário atual encontrado no ranking:', {
-          usuario: item.usuario,
-          posicao: item.posicao,
-          pontos: item.pontos,
-          bairro: item.usuario.bairro,
-        });
-      }
 
       return userMatch;
     });

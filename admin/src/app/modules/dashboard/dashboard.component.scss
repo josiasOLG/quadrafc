@@ -1,0 +1,141 @@
+.dashboard {
+  padding: 1rem 0;
+}
+
+.stats-card {
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ::ng-deep .p-card-body {
+    padding: 1.5rem;
+  }
+}
+
+.stats-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stats-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  &.users {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  &.games {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  &.bets {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  &.cities {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  }
+}
+
+.stats-info {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+  }
+}
+
+.activity-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--surface-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.activity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.activity-description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.activity-time {
+  color: var(--text-color-secondary);
+  font-size: 0.8rem;
+}
+
+::ng-deep {
+  .p-card-header {
+    background: var(--surface-ground);
+    color: var(--primary-color);
+    font-weight: 600;
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .p-datatable .p-datatable-thead > tr > th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+  }
+
+  .p-datatable .p-datatable-tbody > tr:nth-child(even) {
+    background: var(--surface-ground);
+  }
+
+  .p-chart {
+    width: 100%;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .stats-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stats-icon {
+    width: 50px;
+    height: 50px;
+
+    i {
+      font-size: 1.2rem;
+    }
+  }
+
+  .stats-info h3 {
+    font-size: 1.5rem;
+  }
+}

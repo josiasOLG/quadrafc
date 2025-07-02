@@ -1,0 +1,205 @@
+<div class="user-list">
+  <p-card>
+    <ng-template pTemplate="header">
+      <p-toolbar>
+        <div class="p-toolbar-group-start">
+          <h2>Gerenciamento de Usuários</h2>
+        </div>
+        <div class="p-toolbar-group-end">
+          <button
+            pButton
+            type="button"
+            label="Novo Usuário"
+            icon="pi pi-plus"
+            class="p-button-success"
+            (click)="createUser()"></button>
+        </div>
+      </p-toolbar>
+    </ng-template>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+      <div class="grid">
+        <div class="col-12 md:col-4">
+          <div class="p-inputgroup">
+            <input
+              pInputText
+              type="text"
+              placeholder="Buscar por nome ou email..."
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="onSearch()"
+              class="w-full" />
+            <button pButton type="button" icon="pi pi-search" (click)="onSearch()"></button>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-3">
+          <p-dropdown
+            [options]="statusOptions"
+            [(ngModel)]="filters.ativo"
+            placeholder="Status"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onFilterChange()"
+            class="w-full"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-3">
+          <p-dropdown
+            [options]="premiumOptions"
+            [(ngModel)]="filters.assinaturaPremium"
+            placeholder="Assinatura"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onFilterChange()"
+            class="w-full"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-2">
+          <button
+            pButton
+            type="button"
+            label="Limpar"
+            icon="pi pi-filter-slash"
+            class="p-button-outlined w-full"
+            (click)="clearFilters()"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <p-table
+      [value]="users"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="rows"
+      [totalRecords]="totalRecords"
+      [lazy]="true"
+      (onLazyLoad)="onPageChange($event)"
+      [selection]="selectedUsers"
+      selectionMode="multiple"
+      dataKey="_id"
+      responsiveLayout="scroll"
+      styleClass="p-datatable-gridlines">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+          <th pSortableColumn="nome">
+            Nome
+            <p-sortIcon field="nome"></p-sortIcon>
+          </th>
+          <th pSortableColumn="email">
+            Email
+            <p-sortIcon field="email"></p-sortIcon>
+          </th>
+          <th>Telefone</th>
+          <th>Cidade</th>
+          <th>Status</th>
+          <th>Premium</th>
+          <th>Moedas</th>
+          <th>Pontuação</th>
+          <th style="width: 200px">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td>
+            <p-tableCheckbox [value]="user"></p-tableCheckbox>
+          </td>
+          <td>
+            <div class="user-info">
+              <strong>{{ user.nome }}</strong>
+              <small class="block text-500">ID: {{ user._id || user.id }}</small>
+            </div>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.telefone }}</td>
+          <td>{{ user.cidade || '-' }}</td>
+          <td>
+            <p-tag
+              [value]="(user.ativo !== undefined ? user.ativo : true) ? 'Ativo' : 'Inativo'"
+              [severity]="getStatusSeverity(user.ativo !== undefined ? user.ativo : true)"></p-tag>
+          </td>
+          <td>
+            <p-tag
+              [value]="user.assinaturaPremium || user.isPremium ? 'Premium' : 'Gratuito'"
+              [severity]="getPremiumSeverity(user.assinaturaPremium || user.isPremium)"></p-tag>
+          </td>
+          <td>
+            <span class="font-bold">{{ user.moedas }}</span>
+          </td>
+          <td>
+            <span class="font-bold text-primary">{{ user.totalPoints || user.pontuacaoTotal || 0 }}</span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-eye"
+                class="p-button-rounded p-button-outlined p-button-sm"
+                pTooltip="Visualizar"
+                (click)="viewUser(user)"></button>
+
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-outlined p-button-sm p-button-warning"
+                pTooltip="Editar"
+                (click)="editUser(user)"></button>
+
+              <button
+                pButton
+                type="button"
+                [icon]="user.ativo ? 'pi pi-lock' : 'pi pi-unlock'"
+                [class]="
+                  'p-button-rounded p-button-outlined p-button-sm ' +
+                  (user.ativo ? 'p-button-danger' : 'p-button-success')
+                "
+                [pTooltip]="user.ativo ? 'Desativar' : 'Ativar'"
+                (click)="toggleUserStatus(user)"></button>
+
+              <button
+                pButton
+                type="button"
+                [icon]="user.assinaturaPremium ? 'pi pi-star-fill' : 'pi pi-star'"
+                [class]="
+                  'p-button-rounded p-button-outlined p-button-sm ' +
+                  (user.assinaturaPremium ? 'p-button-warning' : 'p-button-info')
+                "
+                [pTooltip]="user.assinaturaPremium ? 'Remover Premium' : 'Adicionar Premium'"
+                (click)="togglePremium(user)"></button>
+
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-outlined p-button-sm p-button-danger"
+                pTooltip="Excluir"
+                (click)="deleteUser(user)"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="10" class="text-center">
+            <div class="empty-state">
+              <i class="pi pi-users" style="font-size: 3rem; color: var(--text-color-secondary)"></i>
+              <h4>Nenhum usuário encontrado</h4>
+              <p>Não há usuários cadastrados com os filtros aplicados.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

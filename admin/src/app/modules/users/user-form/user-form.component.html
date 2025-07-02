@@ -1,0 +1,184 @@
+<div class="user-form">
+  <p-card>
+    <ng-template pTemplate="header">
+      <p-toolbar>
+        <div class="p-toolbar-group-start">
+          <h2>{{ isEditMode ? 'Editar Usuário' : 'Novo Usuário' }}</h2>
+        </div>
+        <div class="p-toolbar-group-end">
+          <button
+            pButton
+            type="button"
+            label="Voltar"
+            icon="pi pi-arrow-left"
+            class="p-button-outlined"
+            (click)="onCancel()"></button>
+        </div>
+      </p-toolbar>
+    </ng-template>
+
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form-content">
+      <div class="grid">
+        <!-- Informações Básicas -->
+        <div class="col-12">
+          <h3>Informações Básicas</h3>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="nome">Nome *</label>
+            <input
+              pInputText
+              id="nome"
+              formControlName="nome"
+              [class.ng-invalid]="isFieldInvalid('nome')"
+              class="w-full" />
+            <small class="p-error" *ngIf="isFieldInvalid('nome')">
+              {{ getFieldError('nome') }}
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="email">Email *</label>
+            <input
+              pInputText
+              id="email"
+              type="email"
+              formControlName="email"
+              [class.ng-invalid]="isFieldInvalid('email')"
+              class="w-full" />
+            <small class="p-error" *ngIf="isFieldInvalid('email')">
+              {{ getFieldError('email') }}
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="telefone">Telefone *</label>
+            <p-inputMask
+              id="telefone"
+              mask="(99) 99999-9999"
+              formControlName="telefone"
+              [class.ng-invalid]="isFieldInvalid('telefone')"
+              styleClass="w-full"></p-inputMask>
+            <small class="p-error" *ngIf="isFieldInvalid('telefone')">
+              {{ getFieldError('telefone') }}
+            </small>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="dataNascimento">Data de Nascimento</label>
+            <p-calendar
+              id="dataNascimento"
+              formControlName="dataNascimento"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              styleClass="w-full"></p-calendar>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="genero">Gênero</label>
+            <p-dropdown
+              id="genero"
+              [options]="genderOptions"
+              formControlName="genero"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecione..."
+              styleClass="w-full"></p-dropdown>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <div class="field">
+            <label for="ativo">Status</label>
+            <p-toggleButton
+              id="ativo"
+              formControlName="ativo"
+              onLabel="Ativo"
+              offLabel="Inativo"
+              onIcon="pi pi-check"
+              offIcon="pi pi-times"
+              styleClass="w-full"></p-toggleButton>
+          </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="col-12">
+          <h3>Endereço</h3>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label for="cep">CEP</label>
+            <p-inputMask id="cep" mask="99999-999" formControlName="cep" styleClass="w-full"></p-inputMask>
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label for="cidade">Cidade</label>
+            <input pInputText id="cidade" formControlName="cidade" class="w-full" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-4">
+          <div class="field">
+            <label for="bairro">Bairro</label>
+            <input pInputText id="bairro" formControlName="bairro" class="w-full" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-8">
+          <div class="field">
+            <label for="endereco">Endereço</label>
+            <input pInputText id="endereco" formControlName="endereco" class="w-full" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-2">
+          <div class="field">
+            <label for="numero">Número</label>
+            <input pInputText id="numero" formControlName="numero" class="w-full" />
+          </div>
+        </div>
+
+        <div class="col-12 md:col-2">
+          <div class="field">
+            <label for="complemento">Complemento</label>
+            <input pInputText id="complemento" formControlName="complemento" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="form-actions">
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          icon="pi pi-times"
+          class="p-button-outlined"
+          (click)="onCancel()"></button>
+
+        <button
+          pButton
+          type="submit"
+          [label]="isEditMode ? 'Atualizar' : 'Criar'"
+          icon="pi pi-save"
+          class="p-button-success"
+          [loading]="saving"
+          [disabled]="userForm.invalid || saving"></button>
+      </div>
+    </form>
+  </p-card>
+</div>
+
+<p-toast></p-toast>

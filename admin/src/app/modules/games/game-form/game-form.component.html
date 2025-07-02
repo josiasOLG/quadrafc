@@ -1,0 +1,186 @@
+<div class="game-form-container">
+  <p-toast></p-toast>
+
+  <div class="card">
+    <div class="card-header mb-4">
+      <h2 class="m-0">{{ isEditMode ? 'Editar Jogo' : 'Novo Jogo' }}</h2>
+      <p class="text-color-secondary mt-2">
+        {{ isEditMode ? 'Atualize as informações do jogo' : 'Preencha os dados para criar um novo jogo' }}
+      </p>
+    </div>
+
+    <form [formGroup]="gameForm" (ngSubmit)="onSubmit()" class="p-fluid" *ngIf="gameForm">
+      <!-- Times -->
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-6">
+          <label for="timeANome" class="font-semibold">
+            Time Mandante
+            <span class="text-red-500">*</span>
+          </label>
+          <p-inputText
+            id="timeANome"
+            formControlName="timeANome"
+            placeholder="Nome do time mandante"
+            [class.ng-invalid]="isFieldInvalid('timeANome')"></p-inputText>
+          <small *ngIf="isFieldInvalid('timeANome')" class="p-error">Time mandante é obrigatório</small>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="timeBNome" class="font-semibold">
+            Time Visitante
+            <span class="text-red-500">*</span>
+          </label>
+          <p-inputText
+            id="timeBNome"
+            formControlName="timeBNome"
+            placeholder="Nome do time visitante"
+            [class.ng-invalid]="isFieldInvalid('timeBNome')"></p-inputText>
+          <small *ngIf="isFieldInvalid('timeBNome')" class="p-error">Time visitante é obrigatório</small>
+        </div>
+      </div>
+
+      <!-- Escudos (opcional) -->
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-6">
+          <label for="timeAEscudo" class="font-semibold">URL do Escudo - Mandante</label>
+          <p-inputText
+            id="timeAEscudo"
+            formControlName="timeAEscudo"
+            placeholder="https://exemplo.com/escudo.png"></p-inputText>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="timeBEscudo" class="font-semibold">URL do Escudo - Visitante</label>
+          <p-inputText
+            id="timeBEscudo"
+            formControlName="timeBEscudo"
+            placeholder="https://exemplo.com/escudo.png"></p-inputText>
+        </div>
+      </div>
+
+      <!-- Data, Hora e Informações -->
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-4">
+          <label for="dataHora" class="font-semibold">
+            Data e Hora
+            <span class="text-red-500">*</span>
+          </label>
+          <p-calendar
+            id="dataHora"
+            formControlName="dataHora"
+            [showTime]="true"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            placeholder="dd/mm/aaaa hh:mm"
+            [class.ng-invalid]="isFieldInvalid('dataHora')"></p-calendar>
+          <small *ngIf="isFieldInvalid('dataHora')" class="p-error">Data e hora são obrigatórias</small>
+        </div>
+
+        <div class="field col-12 md:col-4">
+          <label for="campeonato" class="font-semibold">
+            Campeonato
+            <span class="text-red-500">*</span>
+          </label>
+          <p-dropdown
+            id="campeonato"
+            formControlName="campeonato"
+            [options]="campeonatoOptions"
+            placeholder="Selecione o campeonato"
+            [class.ng-invalid]="isFieldInvalid('campeonato')"></p-dropdown>
+          <small *ngIf="isFieldInvalid('campeonato')" class="p-error">Campeonato é obrigatório</small>
+        </div>
+
+        <div class="field col-12 md:col-4">
+          <label for="rodada" class="font-semibold">Rodada</label>
+          <p-inputNumber id="rodada" formControlName="rodada" [min]="1" [max]="50" placeholder="Ex: 1"></p-inputNumber>
+        </div>
+      </div>
+
+      <!-- Local -->
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-4">
+          <label for="estadio" class="font-semibold">Estádio</label>
+          <p-inputText id="estadio" formControlName="estadio" placeholder="Nome do estádio"></p-inputText>
+        </div>
+
+        <div class="field col-12 md:col-4">
+          <label for="cidade" class="font-semibold">Cidade</label>
+          <p-inputText id="cidade" formControlName="cidade" placeholder="Cidade"></p-inputText>
+        </div>
+
+        <div class="field col-12 md:col-4">
+          <label for="estado" class="font-semibold">Estado</label>
+          <p-inputText id="estado" formControlName="estado" placeholder="Estado"></p-inputText>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Status e Configurações -->
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-6">
+          <label for="status" class="font-semibold">Status</label>
+          <p-dropdown
+            id="status"
+            formControlName="status"
+            [options]="statusOptions"
+            placeholder="Status do jogo"></p-dropdown>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label class="font-semibold">Configurações</label>
+          <div class="flex align-items-center mt-2">
+            <p-checkbox formControlName="permitePalpites" [binary]="true" inputId="permitePalpites"></p-checkbox>
+            <label for="permitePalpites" class="ml-2">Permitir palpites</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultado (apenas no modo edição) -->
+      <div *ngIf="isEditMode" class="formgrid grid">
+        <div class="field col-12">
+          <label class="font-semibold">Resultado (opcional)</label>
+        </div>
+        <div class="field col-12 md:col-6">
+          <label for="golsMandante" class="font-semibold">Gols Mandante</label>
+          <p-inputNumber
+            id="golsMandante"
+            formControlName="golsMandante"
+            [min]="0"
+            [max]="20"
+            placeholder="0"></p-inputNumber>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="golsVisitante" class="font-semibold">Gols Visitante</label>
+          <p-inputNumber
+            id="golsVisitante"
+            formControlName="golsVisitante"
+            [min]="0"
+            [max]="20"
+            placeholder="0"></p-inputNumber>
+        </div>
+      </div>
+
+      <!-- Observações -->
+      <div class="field">
+        <label for="observacoes" class="font-semibold">Observações</label>
+        <p-inputTextarea
+          id="observacoes"
+          formControlName="observacoes"
+          rows="3"
+          placeholder="Observações adicionais sobre o jogo..."></p-inputTextarea>
+      </div>
+
+      <!-- Ações -->
+      <div class="flex gap-2 mt-4">
+        <p-button
+          type="submit"
+          [label]="isEditMode ? 'Atualizar' : 'Criar'"
+          [loading]="loading"
+          [disabled]="gameForm.invalid"></p-button>
+        <p-button type="button" label="Cancelar" severity="secondary" (click)="goBack()"></p-button>
+      </div>
+    </form>
+  </div>
+</div>

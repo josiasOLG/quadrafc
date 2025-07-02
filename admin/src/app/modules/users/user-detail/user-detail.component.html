@@ -1,0 +1,330 @@
+<div class="user-detail" *ngIf="user">
+  <!-- Header com informações básicas -->
+  <div class="user-header mb-4">
+    <p-card>
+      <div class="flex align-items-center justify-content-between">
+        <div class="flex align-items-center gap-3">
+          <p-avatar
+            [label]="user.nome?.charAt(0).toUpperCase()"
+            size="large"
+            shape="circle"
+            styleClass="bg-primary"></p-avatar>
+          <div>
+            <h2 class="m-0">{{ user.nome }}</h2>
+            <p class="text-600 m-0">{{ user.email }}</p>
+            <div class="flex align-items-center gap-2 mt-2">
+              <p-tag [value]="user.ativo ? 'Ativo' : 'Inativo'" [severity]="getStatusSeverity(user.ativo)"></p-tag>
+              <p-tag
+                [value]="user.isPremium ? 'Premium' : 'Gratuito'"
+                [severity]="getPremiumStatusSeverity(user.isPremium)"></p-tag>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            pButton
+            type="button"
+            label="Editar"
+            icon="pi pi-pencil"
+            class="p-button-outlined"
+            (click)="editUser()"></button>
+          <button
+            pButton
+            type="button"
+            [label]="user.ativo ? 'Desativar' : 'Ativar'"
+            [icon]="user.ativo ? 'pi pi-times' : 'pi pi-check'"
+            [class]="user.ativo ? 'p-button-danger' : 'p-button-success'"
+            (click)="toggleUserStatus()"></button>
+          <button
+            pButton
+            type="button"
+            label="Voltar"
+            icon="pi pi-arrow-left"
+            class="p-button-secondary"
+            (click)="goBack()"></button>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Tabs com informações detalhadas -->
+  <p-tabView (onChange)="onTabChange($event)">
+    <!-- Aba: Informações Gerais -->
+    <p-tabPanel header="Informações Gerais" leftIcon="pi pi-user">
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <p-card header="Dados Pessoais">
+            <div class="field-group">
+              <div class="field">
+                <label>Nome Completo:</label>
+                <p>{{ user.nome || 'Não informado' }}</p>
+              </div>
+              <div class="field">
+                <label>Email:</label>
+                <p>{{ user.email || 'Não informado' }}</p>
+              </div>
+              <div class="field">
+                <label>Data de Nascimento:</label>
+                <p>{{ user.dataNascimento ? (user.dataNascimento | date : 'dd/MM/yyyy') : 'Não informado' }}</p>
+              </div>
+              <div class="field">
+                <label>Telefone:</label>
+                <p>{{ user.telefone || 'Não informado' }}</p>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+        <div class="col-12 md:col-6">
+          <p-card header="Localização">
+            <div class="field-group">
+              <div class="field">
+                <label>Bairro:</label>
+                <p>{{ user.bairro || 'Não informado' }}</p>
+              </div>
+              <div class="field">
+                <label>Cidade:</label>
+                <p>{{ user.cidade || 'Não informado' }}</p>
+              </div>
+              <div class="field">
+                <label>Estado:</label>
+                <p>{{ user.estado || 'Não informado' }}</p>
+              </div>
+              <div class="field">
+                <label>CEP:</label>
+                <p>{{ user.cep || 'Não informado' }}</p>
+              </div>
+            </div>
+          </p-card>
+        </div>
+
+        <div class="col-12">
+          <p-card header="Estatísticas do Jogador">
+            <div class="grid">
+              <div class="col-6 md:col-3">
+                <div class="stat-item">
+                  <div class="stat-value">{{ user.totalPontos || 0 }}</div>
+                  <div class="stat-label">Pontos Totais</div>
+                </div>
+              </div>
+              <div class="col-6 md:col-3">
+                <div class="stat-item">
+                  <div class="stat-value">{{ user.totalMoedas || 0 }}</div>
+                  <div class="stat-label">Moedas</div>
+                </div>
+              </div>
+              <div class="col-6 md:col-3">
+                <div class="stat-item">
+                  <div class="stat-value">{{ user.totalVitorias || 0 }}</div>
+                  <div class="stat-label">Vitórias</div>
+                </div>
+              </div>
+              <div class="col-6 md:col-3">
+                <div class="stat-item">
+                  <div class="stat-value">{{ user.totalDerrotas || 0 }}</div>
+                  <div class="stat-label">Derrotas</div>
+                </div>
+              </div>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </p-tabPanel>
+
+    <!-- Aba: Palpites -->
+    <p-tabPanel header="Palpites" leftIcon="pi pi-star">
+      <p-card header="Histórico de Palpites">
+        <p-table
+          [value]="palpites"
+          [loading]="loadingPalpites"
+          styleClass="p-datatable-sm"
+          [paginator]="true"
+          [rows]="10">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Jogo</th>
+              <th>Palpite</th>
+              <th>Data</th>
+              <th>Pontos</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-palpite>
+            <tr>
+              <td>
+                <div>
+                  <strong>{{ palpite.jogo.timeCasa }} vs {{ palpite.jogo.timeVisitante }}</strong>
+                  <br />
+                  <small class="text-600">{{ palpite.jogo.campeonato }}</small>
+                </div>
+              </td>
+              <td>
+                <span class="palpite-placar">
+                  {{ palpite.palpite.placarCasa }} - {{ palpite.palpite.placarVisitante }}
+                </span>
+              </td>
+              <td>{{ palpite.jogo.dataJogo | date : 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="font-bold">{{ palpite.pontos || 0 }}</span>
+              </td>
+              <td>
+                <p-tag
+                  [value]="palpite.acertou ? 'Acertou' : 'Errou'"
+                  [severity]="getPalpiteSeverity(palpite.acertou)"></p-tag>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center p-4">Nenhum palpite encontrado</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabPanel>
+
+    <!-- Aba: Rankings -->
+    <p-tabPanel header="Rankings" leftIcon="pi pi-trophy">
+      <p-card header="Posições nos Rankings">
+        <div class="grid" *ngIf="!loadingRankings">
+          <div class="col-12 md:col-6 lg:col-3" *ngFor="let ranking of rankings">
+            <div class="ranking-card" [style.border-left-color]="getRankingColor(ranking.posicao)">
+              <div class="ranking-position" [style.color]="getRankingColor(ranking.posicao)">
+                #{{ ranking.posicao }}
+              </div>
+              <div class="ranking-type">{{ ranking.tipo | titlecase }}</div>
+              <div class="ranking-details">
+                <div>{{ ranking.pontos }} pontos</div>
+                <div class="text-600">de {{ ranking.totalUsuarios | number }} usuários</div>
+              </div>
+              <div class="ranking-progress">
+                <p-progressBar
+                  [value]="((ranking.totalUsuarios - ranking.posicao) / ranking.totalUsuarios) * 100"
+                  [showValue]="false"
+                  styleClass="ranking-bar"></p-progressBar>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="loadingRankings" class="grid">
+          <div class="col-12 md:col-6 lg:col-3" *ngFor="let i of [1, 2, 3, 4]">
+            <p-skeleton height="8rem"></p-skeleton>
+          </div>
+        </div>
+      </p-card>
+    </p-tabPanel>
+
+    <!-- Aba: Transações -->
+    <p-tabPanel header="Transações" leftIcon="pi pi-wallet">
+      <p-card header="Histórico de Moedas">
+        <p-table
+          [value]="transacoes"
+          [loading]="loadingTransacoes"
+          styleClass="p-datatable-sm"
+          [paginator]="true"
+          [rows]="10">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+              <th>Data</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-transacao>
+            <tr>
+              <td>
+                <p-tag [value]="transacao.tipo" [severity]="getTransacaoSeverity(transacao.tipo)"></p-tag>
+              </td>
+              <td>{{ transacao.descricao }}</td>
+              <td>
+                <span [class]="transacao.valor > 0 ? 'text-green-600' : 'text-red-600'" class="font-bold">
+                  {{ transacao.valor > 0 ? '+' : '' }}{{ transacao.valor }}
+                </span>
+              </td>
+              <td>{{ transacao.createdAt | date : 'dd/MM/yyyy HH:mm' }}</td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4" class="text-center p-4">Nenhuma transação encontrada</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabPanel>
+
+    <!-- Aba: Assinatura Premium -->
+    <p-tabPanel header="Premium" leftIcon="pi pi-star-fill">
+      <p-card header="Assinatura Premium">
+        <div *ngIf="user.isPremium" class="premium-active">
+          <div class="flex align-items-center gap-2 mb-3">
+            <i class="pi pi-check-circle text-green-600 text-xl"></i>
+            <span class="text-lg font-semibold text-green-600">Assinatura Ativa</span>
+          </div>
+
+          <div class="grid">
+            <div class="col-12 md:col-6">
+              <div class="field">
+                <label>Data de Início:</label>
+                <p>{{ user.premiumStartDate ? (user.premiumStartDate | date : 'dd/MM/yyyy') : 'Não informado' }}</p>
+              </div>
+            </div>
+            <div class="col-12 md:col-6">
+              <div class="field">
+                <label>Data de Expiração:</label>
+                <p>{{ user.premiumEndDate ? (user.premiumEndDate | date : 'dd/MM/yyyy') : 'Não informado' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="premium-benefits mt-4">
+            <h4>Benefícios Ativos:</h4>
+            <ul>
+              <li>Acesso aos rankings estadual e nacional</li>
+              <li>Rankings de bairros de outras cidades</li>
+              <li>Estatísticas avançadas</li>
+              <li>Suporte prioritário</li>
+            </ul>
+          </div>
+        </div>
+
+        <div *ngIf="!user.isPremium" class="premium-inactive">
+          <div class="flex align-items-center gap-2 mb-3">
+            <i class="pi pi-times-circle text-red-600 text-xl"></i>
+            <span class="text-lg font-semibold text-red-600">Sem Assinatura Premium</span>
+          </div>
+
+          <p class="text-600">
+            Este usuário não possui assinatura premium ativa. Ele tem acesso apenas aos recursos básicos da plataforma.
+          </p>
+        </div>
+      </p-card>
+    </p-tabPanel>
+  </p-tabView>
+</div>
+
+<!-- Loading state -->
+<div *ngIf="loading" class="loading-container">
+  <p-card>
+    <div class="flex align-items-center gap-3 mb-4">
+      <p-skeleton shape="circle" size="4rem"></p-skeleton>
+      <div class="flex-1">
+        <p-skeleton width="12rem" height="1.5rem" class="mb-2"></p-skeleton>
+        <p-skeleton width="8rem" height="1rem"></p-skeleton>
+      </div>
+    </div>
+  </p-card>
+
+  <div class="mt-4">
+    <p-skeleton height="20rem"></p-skeleton>
+  </div>
+</div>
+
+<p-toast></p-toast>

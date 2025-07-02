@@ -1,11 +1,11 @@
-import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { ResponseTransformInterceptor } from './shared/interceptors/response-transform.interceptor';
-import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
+import { NestFactory, Reflector } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
+import { ResponseTransformInterceptor } from './shared/interceptors/response-transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,9 +23,18 @@ async function bootstrap() {
 
   // CORS configuration
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN', 'http://localhost:4200'),
+    origin: [
+      'http://localhost:4200',
+      'http://localhost:2001',
+      'http://localhost:3000',
+      'http://127.0.0.1:4200',
+      'http://127.0.0.1:2001',
+      configService.get('CORS_ORIGIN', 'http://localhost:4200'),
+    ].filter(Boolean),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    optionsSuccessStatus: 200, // Para suporte a navegadores legados
   });
 
   // Global validation pipe
@@ -34,7 +43,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   );
 
   // Global prefix
@@ -47,13 +56,13 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get('PORT', 3000);
   await app.listen(port);
-  
+
   console.log(`🚀 QuadraFC Backend running on: http://localhost:${port}`);
   console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
 }

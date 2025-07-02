@@ -56,3 +56,9 @@ backend/coverage/
 frontend/dist/
 frontend/node_modules/
 frontend/coverage/
+
+
+# Frontend specific
+admin/dist/
+admin/node_modules/
+admin/coverage/
