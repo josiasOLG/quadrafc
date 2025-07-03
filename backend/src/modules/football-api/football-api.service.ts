@@ -18,40 +18,42 @@ export class FootballApiService {
       this.logger.log(`Buscando jogos para a data: ${data}`);
       this.logger.log(`URL da API: ${this.apiUrl}`);
       this.logger.log(`API Key configurada: ${this.apiKey ? 'Sim' : 'Não'}`);
-      
+
       // Validar se a data está dentro do limite permitido (até 30 dias no futuro)
       const dataLimite = new Date();
       dataLimite.setDate(dataLimite.getDate() + 30);
       const dataBusca = new Date(data);
-      
+
       if (dataBusca > dataLimite) {
         this.logger.warn(`Data ${data} está além do limite de 30 dias. Não buscando jogos.`);
         return {
           filters: { date: data },
           resultSet: { count: 0 },
-          matches: []
+          matches: [],
         };
       }
-      
+
       // Primeira tentativa: buscar jogos da data solicitada até 30 dias no futuro
       let resultado = await this.buscarJogosEmRange(data, 30);
-      
+
       // Se não encontrou jogos, tenta buscar em competições específicas
       if (resultado.matches.length === 0) {
-        this.logger.log('Nenhum jogo encontrado na busca geral, tentando competições específicas...');
+        this.logger.log(
+          'Nenhum jogo encontrado na busca geral, tentando competições específicas...'
+        );
         resultado = await this.buscarJogosCompeticoesBrasileiras(data);
       }
-      
+
       // NÃO MAIS CRIA JOGOS FAKE - apenas retorna resultado vazio se não encontrou
       if (resultado.matches.length === 0) {
         this.logger.log('Nenhum jogo real encontrado para a data solicitada.');
         return {
           filters: { date: data },
           resultSet: { count: 0 },
-          matches: []
+          matches: [],
         };
       }
-      
+
       this.logger.log(`Jogos reais encontrados: ${resultado.matches.length}`);
       return resultado;
     } catch (error) {
@@ -60,13 +62,13 @@ export class FootballApiService {
         this.logger.error('Resposta de erro:', error.response.data);
         this.logger.error('Status:', error.response.status);
       }
-      
+
       // Em caso de erro, retorna resultado vazio ao invés de jogos fake
       this.logger.log('Erro na API, retornando resultado vazio.');
       return {
         filters: { date: data },
         resultSet: { count: 0 },
-        matches: []
+        matches: [],
       };
     }
   }
@@ -102,7 +104,7 @@ export class FootballApiService {
   }
 
   transformarJogosAPI(jogosAPI: any[]): any[] {
-    return jogosAPI.map(jogo => ({
+    return jogosAPI.map((jogo) => ({
       codigoAPI: jogo.id,
       timeA: {
         nome: jogo.homeTeam.name,
@@ -113,70 +115,114 @@ export class FootballApiService {
         escudo: jogo.awayTeam.crest || '',
       },
       data: new Date(jogo.utcDate),
-      campeonato: jogo.competition?.name || 'Brasileirão Serie A',
+      campeonato: jogo.competition?.name || 'Sem Campeonato',
       status: jogo.status === 'FINISHED' ? 'encerrado' : 'aberto',
-      resultado: jogo.status === 'FINISHED' && jogo.score?.fullTime ? {
-        timeA: jogo.score.fullTime.home,
-        timeB: jogo.score.fullTime.away,
-      } : null,
+      resultado:
+        jogo.status === 'FINISHED' && jogo.score?.fullTime
+          ? {
+              timeA: jogo.score.fullTime.home,
+              timeB: jogo.score.fullTime.away,
+            }
+          : null,
     }));
   }
 
   // Lista de times brasileiros conhecidos (principais clubes)
   private timesBrasileiros = [
     // Times do Brasileirão Serie A
-    'Flamengo', 'Palmeiras', 'São Paulo', 'Corinthians', 'Santos', 'Grêmio', 
-    'Internacional', 'Fluminense', 'Atlético Mineiro', 'Cruzeiro', 'Botafogo',
-    'Vasco da Gama', 'Athletico Paranaense', 'Bahia', 'Sport Recife', 'Ceará',
-    'Fortaleza', 'Goiás', 'Coritiba', 'Avaí', 'Juventude', 'América Mineiro',
-    'Atlético Goianiense', 'Bragantino', 'Cuiabá', 'Chapecoense',
-    
+    'Flamengo',
+    'Palmeiras',
+    'São Paulo',
+    'Corinthians',
+    'Santos',
+    'Grêmio',
+    'Internacional',
+    'Fluminense',
+    'Atlético Mineiro',
+    'Cruzeiro',
+    'Botafogo',
+    'Vasco da Gama',
+    'Athletico Paranaense',
+    'Bahia',
+    'Sport Recife',
+    'Ceará',
+    'Fortaleza',
+    'Goiás',
+    'Coritiba',
+    'Avaí',
+    'Juventude',
+    'América Mineiro',
+    'Atlético Goianiense',
+    'Bragantino',
+    'Cuiabá',
+    'Chapecoense',
+
     // Times históricos e outros importantes
-    'Atlético-MG', 'Atlético Mineiro', 'Atlético-PR', 'Athletico-PR',
-    'Internacional', 'Inter', 'Grêmio FBPA', 'Sport Club do Recife',
-    'Clube de Regatas do Flamengo', 'Sociedade Esportiva Palmeiras',
-    'São Paulo FC', 'Sport Club Corinthians Paulista',
-    
+    'Atlético-MG',
+    'Atlético Mineiro',
+    'Atlético-PR',
+    'Athletico-PR',
+    'Internacional',
+    'Inter',
+    'Grêmio FBPA',
+    'Sport Club do Recife',
+    'Clube de Regatas do Flamengo',
+    'Sociedade Esportiva Palmeiras',
+    'São Paulo FC',
+    'Sport Club Corinthians Paulista',
+
     // Variações de nomes que podem aparecer na API
-    'CR Flamengo', 'SE Palmeiras', 'Sao Paulo', 'SC Corinthians Paulista',
-    'Santos FC', 'Gremio', 'SC Internacional', 'Fluminense FC',
-    'Atletico Mineiro', 'Cruzeiro EC', 'Botafogo FR', 'CR Vasco da Gama'
+    'CR Flamengo',
+    'SE Palmeiras',
+    'Sao Paulo',
+    'SC Corinthians Paulista',
+    'Santos FC',
+    'Gremio',
+    'SC Internacional',
+    'Fluminense FC',
+    'Atletico Mineiro',
+    'Cruzeiro EC',
+    'Botafogo FR',
+    'CR Vasco da Gama',
   ];
 
   private isTimeBrasileiro(nomeTime: string): boolean {
     if (!nomeTime) return false;
-    
+
     // Converte para lowercase para comparação mais flexível
     const nomeNormalizado = nomeTime.toLowerCase();
-    
+
     // Verifica se o nome do time está na lista ou contém palavras-chave brasileiras
-    return this.timesBrasileiros.some(time => 
-      nomeNormalizado.includes(time.toLowerCase()) || 
-      time.toLowerCase().includes(nomeNormalizado)
-    ) || 
-    // Verifica palavras-chave que indicam times brasileiros
-    nomeNormalizado.includes('brasil') ||
-    nomeNormalizado.includes('brazil') ||
-    nomeNormalizado.includes('rio') ||
-    nomeNormalizado.includes('são paulo') ||
-    nomeNormalizado.includes('sao paulo') ||
-    nomeNormalizado.includes('minas') ||
-    nomeNormalizado.includes('bahia') ||
-    nomeNormalizado.includes('ceará') ||
-    nomeNormalizado.includes('goiás');
+    return (
+      this.timesBrasileiros.some(
+        (time) =>
+          nomeNormalizado.includes(time.toLowerCase()) ||
+          time.toLowerCase().includes(nomeNormalizado)
+      ) ||
+      // Verifica palavras-chave que indicam times brasileiros
+      nomeNormalizado.includes('brasil') ||
+      nomeNormalizado.includes('brazil') ||
+      nomeNormalizado.includes('rio') ||
+      nomeNormalizado.includes('são paulo') ||
+      nomeNormalizado.includes('sao paulo') ||
+      nomeNormalizado.includes('minas') ||
+      nomeNormalizado.includes('bahia') ||
+      nomeNormalizado.includes('ceará') ||
+      nomeNormalizado.includes('goiás')
+    );
   }
 
   // Método para buscar jogos de times brasileiros em todas as competições
   async buscarJogosBrasileirosHoje(data?: string) {
     const dataBusca = data || new Date().toISOString().split('T')[0];
-    
+
     try {
       this.logger.log('Buscando todas as competições ativas...');
-      
+
       // Primeiro, lista todas as competições para ver quais estão ativas
       const competicoes = await this.listarCompeticoes();
       this.logger.log(`Competições encontradas: ${competicoes.length}`);
-      
+
       // Busca jogos de hoje em todas as competições
       const response = await axios.get(`${this.apiUrl}/matches`, {
         headers: {
@@ -190,33 +236,37 @@ export class FootballApiService {
 
       const todosJogos = response.data.matches || [];
       this.logger.log(`Total de jogos encontrados hoje: ${todosJogos.length}`);
-      
+
       // Log de alguns jogos para debug
       if (todosJogos.length > 0) {
         this.logger.log('Primeiros 3 jogos encontrados:');
         todosJogos.slice(0, 3).forEach((jogo, index) => {
-          this.logger.log(`${index + 1}. ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name}`);
+          this.logger.log(
+            `${index + 1}. ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name}`
+          );
         });
       }
-      
+
       // Filtra apenas jogos com times brasileiros
-      const jogosBrasileiros = todosJogos.filter(jogo => {
+      const jogosBrasileiros = todosJogos.filter((jogo) => {
         const timeCasaBrasileiro = this.isTimeBrasileiro(jogo.homeTeam?.name);
         const timeVisitanteBrasileiro = this.isTimeBrasileiro(jogo.awayTeam?.name);
         const temTimeBrasileiro = timeCasaBrasileiro || timeVisitanteBrasileiro;
-        
+
         if (temTimeBrasileiro) {
-          this.logger.log(`Jogo brasileiro encontrado: ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name}`);
+          this.logger.log(
+            `Jogo brasileiro encontrado: ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name}`
+          );
         }
-        
+
         return temTimeBrasileiro;
       });
 
       this.logger.log(`Jogos com times brasileiros: ${jogosBrasileiros.length}`);
-      
+
       return {
         ...response.data,
-        matches: jogosBrasileiros
+        matches: jogosBrasileiros,
       };
     } catch (error) {
       this.logger.error('Erro ao buscar jogos brasileiros:', error.message);
@@ -230,10 +280,10 @@ export class FootballApiService {
       // IDs de competições que frequentemente têm times brasileiros
       const competicoesBrasileiras = [
         'BSA', // Brasileirão Serie A
-        'CL',  // Champions League (times brasileiros às vezes participam de amistosos)
+        'CL', // Champions League (times brasileiros às vezes participam de amistosos)
         'CLI', // Copa Libertadores (se disponível)
         'CSA', // Copa Sul-Americana (se disponível)
-        'WC',  // Copa do Mundo de Clubes
+        'WC', // Copa do Mundo de Clubes
       ];
 
       let todosJogos = [];
@@ -241,7 +291,7 @@ export class FootballApiService {
       for (const competicao of competicoesBrasileiras) {
         try {
           this.logger.log(`Buscando jogos na competição: ${competicao}`);
-          
+
           const response = await axios.get(`${this.apiUrl}/competitions/${competicao}/matches`, {
             headers: {
               'X-Auth-Token': this.apiKey,
@@ -254,7 +304,7 @@ export class FootballApiService {
 
           const jogosCompetição = response.data.matches || [];
           this.logger.log(`Jogos encontrados em ${competicao}: ${jogosCompetição.length}`);
-          
+
           todosJogos = [...todosJogos, ...jogosCompetição];
         } catch (error) {
           this.logger.warn(`Erro ao buscar competição ${competicao}:`, error.message);
@@ -263,7 +313,7 @@ export class FootballApiService {
       }
 
       // Filtra jogos com times brasileiros
-      const jogosBrasileiros = todosJogos.filter(jogo => {
+      const jogosBrasileiros = todosJogos.filter((jogo) => {
         const timeCasaBrasileiro = this.isTimeBrasileiro(jogo.homeTeam?.name);
         const timeVisitanteBrasileiro = this.isTimeBrasileiro(jogo.awayTeam?.name);
         return timeCasaBrasileiro || timeVisitanteBrasileiro;
@@ -274,7 +324,7 @@ export class FootballApiService {
       return {
         filters: { dateFrom: data, dateTo: data },
         resultSet: { count: jogosBrasileiros.length },
-        matches: jogosBrasileiros
+        matches: jogosBrasileiros,
       };
     } catch (error) {
       this.logger.error('Erro ao buscar jogos em competições brasileiras:', error.message);
@@ -290,28 +340,34 @@ export class FootballApiService {
     let dataAtual = new Date(dataInicial);
     const dataFinal = new Date(dataInicial);
     dataFinal.setDate(dataFinal.getDate() + diasNoFuturo);
-    
-    this.logger.log(`Buscando jogos de ${dataInicial} até ${dataFinal.toISOString().split('T')[0]} (${diasNoFuturo} dias)`);
-    this.logger.log('Dividindo em múltiplas chamadas de até 10 dias cada para respeitar limite da API...');
-    
+
+    this.logger.log(
+      `Buscando jogos de ${dataInicial} até ${dataFinal.toISOString().split('T')[0]} (${diasNoFuturo} dias)`
+    );
+    this.logger.log(
+      'Dividindo em múltiplas chamadas de até 10 dias cada para respeitar limite da API...'
+    );
+
     let tentativa = 1;
-    
+
     while (dataAtual < dataFinal) {
       // Calcula o fim deste pedaço (máximo 10 dias ou até a data final)
       const dataFimPedaco = new Date(dataAtual);
       dataFimPedaco.setDate(dataAtual.getDate() + LIMITE_DIAS_POR_REQUEST - 1);
-      
+
       // Se ultrapassar a data final, ajusta para a data final
       if (dataFimPedaco > dataFinal) {
         dataFimPedaco.setTime(dataFinal.getTime() - 24 * 60 * 60 * 1000); // Um dia antes para não ultrapassar
       }
-      
+
       const dataInicioStr = dataAtual.toISOString().split('T')[0];
       const dataFimStr = dataFimPedaco.toISOString().split('T')[0];
-      
+
       try {
-        this.logger.log(`Tentativa ${tentativa}: Buscando jogos de ${dataInicioStr} até ${dataFimStr}`);
-        
+        this.logger.log(
+          `Tentativa ${tentativa}: Buscando jogos de ${dataInicioStr} até ${dataFimStr}`
+        );
+
         const response = await axios.get(`${this.apiUrl}/matches`, {
           headers: {
             'X-Auth-Token': this.apiKey,
@@ -323,15 +379,17 @@ export class FootballApiService {
         });
 
         const jogosEncontrados = response.data.matches || [];
-        this.logger.log(`Tentativa ${tentativa}: ${jogosEncontrados.length} jogos encontrados no período`);
-        
+        this.logger.log(
+          `Tentativa ${tentativa}: ${jogosEncontrados.length} jogos encontrados no período`
+        );
+
         // Filtra jogos de TODAS as competições importantes (não apenas brasileiros)
-        const jogosRelevantes = jogosEncontrados.filter(jogo => {
+        const jogosRelevantes = jogosEncontrados.filter((jogo) => {
           // Times brasileiros
           const timeCasaBrasileiro = this.isTimeBrasileiro(jogo.homeTeam?.name);
           const timeVisitanteBrasileiro = this.isTimeBrasileiro(jogo.awayTeam?.name);
           const temTimeBrasileiro = timeCasaBrasileiro || timeVisitanteBrasileiro;
-          
+
           // Competições importantes que sempre incluímos (independente de times)
           const competicoesImportantes = [
             'fifa world cup',
@@ -352,71 +410,88 @@ export class FootballApiService {
             'ligue 1',
             'championship',
             'eredivisie',
-            'primeira liga'
+            'primeira liga',
           ];
-          
-          const competicaoImportante = competicoesImportantes.some(comp => 
+
+          const competicaoImportante = competicoesImportantes.some((comp) =>
             jogo.competition?.name?.toLowerCase().includes(comp.toLowerCase())
           );
-          
+
           // Inclui se: tem time brasileiro OU é competição importante
           const jogoRelevante = temTimeBrasileiro || competicaoImportante;
-          
+
           if (jogoRelevante) {
             const tipo = temTimeBrasileiro ? 'brasileiro' : 'competição importante';
-            this.logger.log(`Jogo ${tipo} encontrado: ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name} (${jogo.utcDate})`);
+            this.logger.log(
+              `Jogo ${tipo} encontrado: ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name} (${jogo.utcDate})`
+            );
           }
-          
+
           return jogoRelevante;
         });
-        
+
         todosJogosRelevantes.push(...jogosRelevantes);
-        this.logger.log(`Tentativa ${tentativa}: ${jogosRelevantes.length} jogos relevantes adicionados`);
-        
+        this.logger.log(
+          `Tentativa ${tentativa}: ${jogosRelevantes.length} jogos relevantes adicionados`
+        );
+
         // Pequena pausa entre requests para ser gentil com a API
         if (dataFimPedaco < dataFinal) {
-          await new Promise(resolve => setTimeout(resolve, 500)); // 500ms de pausa
+          await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms de pausa
         }
-        
       } catch (error) {
-        this.logger.error(`Erro na tentativa ${tentativa} (${dataInicioStr} - ${dataFimStr}):`, error.message);
-        
+        this.logger.error(
+          `Erro na tentativa ${tentativa} (${dataInicioStr} - ${dataFimStr}):`,
+          error.message
+        );
+
         // Se é erro 400, pode ser que ainda esteja ultrapassando o limite
         if (error.response?.status === 400) {
           this.logger.warn(`Erro 400 na tentativa ${tentativa}, pulando este período...`);
         } else {
           // Para outros tipos de erro, relança para que o método pai possa tratar
-          this.logger.error(`Erro não recuperável na tentativa ${tentativa}, continuando com outros períodos...`);
+          this.logger.error(
+            `Erro não recuperável na tentativa ${tentativa}, continuando com outros períodos...`
+          );
         }
       }
-      
+
       // Avança para o próximo pedaço
       dataAtual.setDate(dataAtual.getDate() + LIMITE_DIAS_POR_REQUEST);
       tentativa++;
     }
-    
-    this.logger.log(`Busca completa finalizada. Total de ${todosJogosRelevantes.length} jogos relevantes encontrados em ${tentativa - 1} chamadas`);
-    
+
+    this.logger.log(
+      `Busca completa finalizada. Total de ${todosJogosRelevantes.length} jogos relevantes encontrados em ${tentativa - 1} chamadas`
+    );
+
     // Se não encontrou jogos suficientes, tenta buscar em todas as competições específicas
     if (todosJogosRelevantes.length === 0) {
-      this.logger.log('Nenhum jogo encontrado na busca geral, tentando buscar em todas as competições...');
+      this.logger.log(
+        'Nenhum jogo encontrado na busca geral, tentando buscar em todas as competições...'
+      );
       try {
-        const resultadoCompeticoes = await this.buscarJogosTodasCompeticoes(dataInicial, diasNoFuturo);
-        this.logger.log(`Encontrados ${resultadoCompeticoes.matches.length} jogos em competições específicas`);
+        const resultadoCompeticoes = await this.buscarJogosTodasCompeticoes(
+          dataInicial,
+          diasNoFuturo
+        );
+        this.logger.log(
+          `Encontrados ${resultadoCompeticoes.matches.length} jogos em competições específicas`
+        );
         return resultadoCompeticoes;
       } catch (error) {
         this.logger.warn('Erro ao buscar em competições específicas:', error.message);
       }
     }
-    
+
     // Retorna no mesmo formato que a API original
     return {
-      filters: { 
+      filters: {
         dateFrom: dataInicial,
-        dateTo: dataFinal.toISOString().split('T')[0]
+        dateTo: dataFinal.toISOString().split('T')[0],
       },
       resultSet: { count: todosJogosRelevantes.length },
-      matches: todosJogosRelevantes
+      matches: todosJogosRelevantes,
     };
   }
 
@@ -439,57 +514,63 @@ export class FootballApiService {
       'Premier League': ['PL', 'PREMIER_LEAGUE'],
       'La Liga': ['PD', 'PRIMERA_DIVISION'],
       'Serie A Italiana': ['SA', 'SERIE_A'],
-      'Bundesliga': ['BL1', 'BUNDESLIGA'],
+      Bundesliga: ['BL1', 'BUNDESLIGA'],
       'Ligue 1': ['FL1', 'LIGUE_1'],
-      'Eurocopa': ['EC', 'EUROS', 'EUROPEAN_CHAMPIONSHIP'],
-      'Nations League': ['UNL', 'NATIONS_LEAGUE']
+      Eurocopa: ['EC', 'EUROS', 'EUROPEAN_CHAMPIONSHIP'],
+      'Nations League': ['UNL', 'NATIONS_LEAGUE'],
     };
 
     const jogosPorCampeonato = {};
-    
-    this.logger.log(`Buscando jogos por campeonatos de ${dataInicial} até ${diasNoFuturo} dias no futuro`);
-    
+
+    this.logger.log(
+      `Buscando jogos por campeonatos de ${dataInicial} até ${diasNoFuturo} dias no futuro`
+    );
+
     // Primeiro, busca todos os jogos usando o método de range
     const todosJogos = await this.buscarJogosEmRange(dataInicial, diasNoFuturo);
-    
+
     // Categoriza os jogos por campeonato
     for (const jogo of todosJogos.matches) {
       const nomeCampeonato = jogo.competition?.name || 'Outros';
       const categorizacao = this.categorizarCampeonato(nomeCampeonato);
-      
+
       if (!jogosPorCampeonato[categorizacao]) {
         jogosPorCampeonato[categorizacao] = {
           nome: categorizacao,
           jogos: [],
-          total: 0
+          total: 0,
         };
       }
-      
+
       jogosPorCampeonato[categorizacao].jogos.push(jogo);
       jogosPorCampeonato[categorizacao].total++;
     }
-    
+
     // Também busca em competições específicas que podem não ter aparecido na busca geral
     for (const [nomeCampeonato, codigosAPI] of Object.entries(campeonatosEspecificos)) {
       for (const codigoAPI of codigosAPI) {
         try {
-          const jogosCompetição = await this.buscarJogosCompetição(codigoAPI, dataInicial, diasNoFuturo);
-          
+          const jogosCompetição = await this.buscarJogosCompetição(
+            codigoAPI,
+            dataInicial,
+            diasNoFuturo
+          );
+
           if (jogosCompetição.length > 0) {
             if (!jogosPorCampeonato[nomeCampeonato]) {
               jogosPorCampeonato[nomeCampeonato] = {
                 nome: nomeCampeonato,
                 jogos: [],
-                total: 0
+                total: 0,
               };
             }
-            
+
             // Evita duplicatas verificando se o jogo já existe
             for (const jogo of jogosCompetição) {
               const jaExiste = jogosPorCampeonato[nomeCampeonato].jogos.some(
-                jogoExistente => jogoExistente.id === jogo.id
+                (jogoExistente) => jogoExistente.id === jogo.id
               );
-              
+
               if (!jaExiste) {
                 jogosPorCampeonato[nomeCampeonato].jogos.push(jogo);
                 jogosPorCampeonato[nomeCampeonato].total++;
@@ -497,60 +578,78 @@ export class FootballApiService {
             }
           }
         } catch (error) {
-          this.logger.warn(`Erro ao buscar competição ${codigoAPI} (${nomeCampeonato}):`, error.message);
+          this.logger.warn(
+            `Erro ao buscar competição ${codigoAPI} (${nomeCampeonato}):`,
+            error.message
+          );
         }
       }
     }
-    
+
     // Filtra apenas campeonatos com jogos
     const campeonatosComJogos = Object.values(jogosPorCampeonato).filter(
       (campeonato: any) => campeonato.total > 0
     );
-    
+
     // Ordena por relevância (campeonatos brasileiros primeiro)
     campeonatosComJogos.sort((a: any, b: any) => {
-      const prioridadeBrasileiros = ['Brasileirão Serie A', 'Copa do Brasil', 'Campeonato Carioca', 'Copa Libertadores'];
+      const prioridadeBrasileiros = [
+        'Brasileirão Serie A',
+        'Copa do Brasil',
+        'Campeonato Carioca',
+        'Copa Libertadores',
+      ];
       const prioridadeA = prioridadeBrasileiros.indexOf(a.nome);
       const prioridadeB = prioridadeBrasileiros.indexOf(b.nome);
-      
+
       if (prioridadeA !== -1 && prioridadeB !== -1) {
         return prioridadeA - prioridadeB;
       }
       if (prioridadeA !== -1) return -1;
       if (prioridadeB !== -1) return 1;
-      
+
       return a.nome.localeCompare(b.nome);
     });
-    
+
     this.logger.log(`Jogos categorizados em ${campeonatosComJogos.length} campeonatos`);
     campeonatosComJogos.forEach((campeonato: any) => {
       this.logger.log(`- ${campeonato.nome}: ${campeonato.total} jogos`);
     });
-    
+
     return {
       totalCampeonatos: campeonatosComJogos.length,
       totalJogos: campeonatosComJogos.reduce((acc: number, c: any) => acc + c.total, 0),
       campeonatos: campeonatosComJogos,
       periodo: {
         dataInicial,
-        dataFinal: new Date(new Date(dataInicial).getTime() + diasNoFuturo * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      }
+        dataFinal: new Date(new Date(dataInicial).getTime() + diasNoFuturo * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0],
+      },
     };
   }
 
   // Método auxiliar para categorizar campeonatos
   private categorizarCampeonato(nomeCampeonato: string): string {
     const nome = nomeCampeonato.toLowerCase();
-    
+
     // Mundial e Copa do Mundo
-    if (nome.includes('fifa world cup') || nome.includes('world cup') || nome.includes('copa do mundo')) {
+    if (
+      nome.includes('fifa world cup') ||
+      nome.includes('world cup') ||
+      nome.includes('copa do mundo')
+    ) {
       return 'Copa do Mundo FIFA';
     }
-    if (nome.includes('fifa club world cup') || nome.includes('club world cup') || 
-        nome.includes('mundial de clubes') || nome.includes('mundial club')) {
+    if (
+      nome.includes('fifa club world cup') ||
+      nome.includes('club world cup') ||
+      nome.includes('mundial de clubes') ||
+      nome.includes('mundial club')
+    ) {
       return 'Mundial de Clubes FIFA';
     }
-    
+
     // Campeonatos brasileiros
     if (nome.includes('brasileirão') || nome.includes('brasileiro') || nome.includes('serie a')) {
       return 'Brasileirão Serie A';
@@ -570,7 +669,7 @@ export class FootballApiService {
     if (nome.includes('copa do brasil')) {
       return 'Copa do Brasil';
     }
-    
+
     // Competições sul-americanas
     if (nome.includes('libertadores')) {
       return 'Copa Libertadores';
@@ -581,7 +680,7 @@ export class FootballApiService {
     if (nome.includes('copa america') || nome.includes('copa américa')) {
       return 'Copa América';
     }
-    
+
     // Competições europeias
     if (nome.includes('champions league') || nome.includes('liga dos campeões')) {
       return 'Liga dos Campeões UEFA';
@@ -589,13 +688,17 @@ export class FootballApiService {
     if (nome.includes('europa league') || nome.includes('liga europa')) {
       return 'Liga Europa UEFA';
     }
-    if (nome.includes('european championship') || nome.includes('euros') || nome.includes('eurocopa')) {
+    if (
+      nome.includes('european championship') ||
+      nome.includes('euros') ||
+      nome.includes('eurocopa')
+    ) {
       return 'Eurocopa';
     }
     if (nome.includes('nations league')) {
       return 'Nations League UEFA';
     }
-    
+
     // Ligas nacionais importantes
     if (nome.includes('premier league')) {
       return 'Premier League';
@@ -612,96 +715,115 @@ export class FootballApiService {
     if (nome.includes('ligue 1')) {
       return 'Ligue 1';
     }
-    
+
     // Se não conseguir categorizar, retorna o nome original
     return nomeCampeonato;
   }
 
   // Método auxiliar para buscar jogos de uma competição específica
-  private async buscarJogosCompetição(codigoCompetição: string, dataInicial: string, diasNoFuturo: number): Promise<any[]> {
+  private async buscarJogosCompetição(
+    codigoCompetição: string,
+    dataInicial: string,
+    diasNoFuturo: number
+  ): Promise<any[]> {
     const LIMITE_DIAS_POR_REQUEST = 10;
     const todosJogos = [];
     let dataAtual = new Date(dataInicial);
     const dataFinal = new Date(dataInicial);
     dataFinal.setDate(dataFinal.getDate() + diasNoFuturo);
-    
+
     while (dataAtual < dataFinal) {
       const dataFimPedaco = new Date(dataAtual);
       dataFimPedaco.setDate(dataAtual.getDate() + LIMITE_DIAS_POR_REQUEST - 1);
-      
+
       if (dataFimPedaco > dataFinal) {
         dataFimPedaco.setTime(dataFinal.getTime() - 24 * 60 * 60 * 1000);
       }
-      
+
       const dataInicioStr = dataAtual.toISOString().split('T')[0];
       const dataFimStr = dataFimPedaco.toISOString().split('T')[0];
-      
+
       try {
-        const response = await axios.get(`${this.apiUrl}/competitions/${codigoCompetição}/matches`, {
-          headers: {
-            'X-Auth-Token': this.apiKey,
-          },
-          params: {
-            dateFrom: dataInicioStr,
-            dateTo: dataFimStr,
-          },
-        });
+        const response = await axios.get(
+          `${this.apiUrl}/competitions/${codigoCompetição}/matches`,
+          {
+            headers: {
+              'X-Auth-Token': this.apiKey,
+            },
+            params: {
+              dateFrom: dataInicioStr,
+              dateTo: dataFimStr,
+            },
+          }
+        );
 
         const jogosEncontrados = response.data.matches || [];
         todosJogos.push(...jogosEncontrados);
-        
+
         // Pausa entre requests
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
+        await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (error) {
         // Ignora erros de competições específicas para não quebrar a busca geral
         break;
       }
-      
+
       dataAtual.setDate(dataAtual.getDate() + LIMITE_DIAS_POR_REQUEST);
     }
-    
+
     return todosJogos;
   }
 
   // Método melhorado para buscar jogos por data com opção de organizar por campeonatos
-  async getJogosPorDataComCampeonatos(data: string, organizarPorCampeonatos: boolean = false, diasNoFuturo: number = 30) {
+  async getJogosPorDataComCampeonatos(
+    data: string,
+    organizarPorCampeonatos: boolean = false,
+    diasNoFuturo: number = 30
+  ) {
     try {
-      this.logger.log(`Buscando jogos para a data: ${data} ${organizarPorCampeonatos ? '(organizados por campeonatos)' : ''} até ${diasNoFuturo} dias no futuro`);
-      
+      this.logger.log(
+        `Buscando jogos para a data: ${data} ${organizarPorCampeonatos ? '(organizados por campeonatos)' : ''} até ${diasNoFuturo} dias no futuro`
+      );
+
       // Validar se a data está dentro do limite permitido (até 30 dias no futuro)
       const dataLimite = new Date();
       dataLimite.setDate(dataLimite.getDate() + 30);
       const dataBusca = new Date(data);
-      
+
       if (dataBusca > dataLimite) {
         this.logger.warn(`Data ${data} está além do limite de 30 dias. Não buscando jogos.`);
-        return organizarPorCampeonatos 
-          ? { totalCampeonatos: 0, totalJogos: 0, campeonatos: [], periodo: { dataInicial: data, dataFinal: data } }
+        return organizarPorCampeonatos
+          ? {
+              totalCampeonatos: 0,
+              totalJogos: 0,
+              campeonatos: [],
+              periodo: { dataInicial: data, dataFinal: data },
+            }
           : { filters: { date: data }, resultSet: { count: 0 }, matches: [] };
       }
-      
+
       if (organizarPorCampeonatos) {
         // Retorna jogos organizados por campeonatos
         return await this.buscarJogosPorCampeonatos(data, diasNoFuturo);
       } else {
         // Comportamento original
         let resultado = await this.buscarJogosEmRange(data, diasNoFuturo);
-        
+
         if (resultado.matches.length === 0) {
-          this.logger.log('Nenhum jogo encontrado na busca geral, tentando competições específicas...');
+          this.logger.log(
+            'Nenhum jogo encontrado na busca geral, tentando competições específicas...'
+          );
           resultado = await this.buscarJogosCompeticoesBrasileiras(data);
         }
-        
+
         if (resultado.matches.length === 0) {
           this.logger.log('Nenhum jogo real encontrado para a data solicitada.');
           return {
             filters: { date: data },
             resultSet: { count: 0 },
-            matches: []
+            matches: [],
           };
         }
-        
+
         this.logger.log(`Jogos reais encontrados: ${resultado.matches.length}`);
         return resultado;
       }
@@ -711,11 +833,16 @@ export class FootballApiService {
         this.logger.error('Resposta de erro:', error.response.data);
         this.logger.error('Status:', error.response.status);
       }
-      
+
       // Em caso de erro, retorna resultado vazio
       this.logger.log('Erro na API, retornando resultado vazio.');
-      return organizarPorCampeonatos 
-        ? { totalCampeonatos: 0, totalJogos: 0, campeonatos: [], periodo: { dataInicial: data, dataFinal: data } }
+      return organizarPorCampeonatos
+        ? {
+            totalCampeonatos: 0,
+            totalJogos: 0,
+            campeonatos: [],
+            periodo: { dataInicial: data, dataFinal: data },
+          }
         : { filters: { date: data }, resultSet: { count: 0 }, matches: [] };
     }
   }
@@ -724,61 +851,134 @@ export class FootballApiService {
   async buscarJogosTodasCompeticoes(dataInicial: string, diasNoFuturo: number = 10) {
     try {
       this.logger.log('Buscando todas as competições disponíveis na API...');
-      
+
       // Primeiro, lista todas as competições disponíveis
       const competicoes = await this.listarCompeticoes();
       this.logger.log(`${competicoes.length} competições encontradas na API`);
-      
+
       const todosJogos = [];
       const dataFim = new Date(dataInicial);
       dataFim.setDate(dataFim.getDate() + diasNoFuturo);
       const dataFimStr = dataFim.toISOString().split('T')[0];
-      
+
       // Busca jogos em cada competição
       for (const competicao of competicoes) {
         try {
           this.logger.log(`Buscando jogos na competição: ${competicao.name} (${competicao.code})`);
-          
-          const response = await axios.get(`${this.apiUrl}/competitions/${competicao.code}/matches`, {
-            headers: {
-              'X-Auth-Token': this.apiKey,
-            },
-            params: {
-              dateFrom: dataInicial,
-              dateTo: dataFimStr,
-            },
-          });
+
+          const response = await axios.get(
+            `${this.apiUrl}/competitions/${competicao.code}/matches`,
+            {
+              headers: {
+                'X-Auth-Token': this.apiKey,
+              },
+              params: {
+                dateFrom: dataInicial,
+                dateTo: dataFimStr,
+              },
+            }
+          );
 
           const jogosCompetição = response.data.matches || [];
           this.logger.log(`${jogosCompetição.length} jogos encontrados em ${competicao.name}`);
-          
+
           if (jogosCompetição.length > 0) {
             todosJogos.push(...jogosCompetição);
           }
-          
+
           // Pausa entre requests para não sobrecarregar a API
-          await new Promise(resolve => setTimeout(resolve, 200));
-          
+          await new Promise((resolve) => setTimeout(resolve, 200));
         } catch (error) {
           this.logger.warn(`Erro ao buscar competição ${competicao.name}:`, error.message);
           // Continua com as outras competições
         }
       }
-      
+
       this.logger.log(`Total de jogos encontrados em todas as competições: ${todosJogos.length}`);
-      
+
       return {
-        filters: { 
+        filters: {
           dateFrom: dataInicial,
-          dateTo: dataFimStr
+          dateTo: dataFimStr,
         },
         resultSet: { count: todosJogos.length },
-        matches: todosJogos
+        matches: todosJogos,
       };
-      
     } catch (error) {
       this.logger.error('Erro ao buscar jogos de todas as competições:', error.message);
       throw error;
+    }
+  }
+
+  // Método específico para buscar TODOS os jogos (sem filtros) para sincronização global
+  async buscarTodosJogosEmRange(dataInicial: string, diasNoFuturo: number = 10) {
+    const dataFinal = new Date(dataInicial);
+    dataFinal.setDate(dataFinal.getDate() + diasNoFuturo);
+    const dataFinalStr = dataFinal.toISOString().split('T')[0];
+
+    this.logger.log(
+      `🌍 Buscando TODOS os jogos de ${dataInicial} até ${dataFinalStr} (${diasNoFuturo} dias) - SEM FILTROS`
+    );
+
+    try {
+      this.logger.log(
+        `🔍 Fazendo chamada direta: GET ${this.apiUrl}/matches?dateFrom=${dataInicial}&dateTo=${dataFinalStr}`
+      );
+
+      const response = await axios.get(`${this.apiUrl}/matches`, {
+        headers: {
+          'X-Auth-Token': this.apiKey,
+        },
+        params: {
+          dateFrom: dataInicial,
+          dateTo: dataFinalStr,
+        },
+      });
+
+      const todosJogos = response.data.matches || [];
+      this.logger.log(
+        `✅ ${todosJogos.length} jogos encontrados de TODOS os campeonatos automaticamente`
+      );
+
+      // Log de alguns jogos para verificação
+      if (todosJogos.length > 0) {
+        this.logger.log(`📝 Exemplos de jogos encontrados:`);
+        todosJogos.slice(0, 5).forEach((jogo, index) => {
+          this.logger.log(
+            `   ${index + 1}. ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name} (${jogo.utcDate})`
+          );
+        });
+      }
+
+      // Retorna no mesmo formato que a API original
+      return {
+        filters: {
+          dateFrom: dataInicial,
+          dateTo: dataFinalStr,
+        },
+        resultSet: { count: todosJogos.length },
+        matches: todosJogos,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erro ao buscar jogos de ${dataInicial} até ${dataFinalStr}:`,
+        error.message
+      );
+
+      if (error.response) {
+        this.logger.error(`Status: ${error.response.status}`);
+        this.logger.error(`Dados do erro:`, error.response.data);
+      }
+
+      // Retorna resultado vazio em caso de erro
+      return {
+        filters: {
+          dateFrom: dataInicial,
+          dateTo: dataFinalStr,
+        },
+        resultSet: { count: 0 },
+        matches: [],
+      };
     }
   }
 }

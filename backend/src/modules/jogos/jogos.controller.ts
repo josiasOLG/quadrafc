@@ -1,13 +1,15 @@
-import { Controller, Get, Query, Param, Inject, Post, BadRequestException, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { JogosService } from './jogos.service';
-import { FootballApiService } from '../football-api/football-api.service';
+import { BadRequestException, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
+import { FootballApiService } from '../football-api/football-api.service';
+import { JogosService } from './jogos.service';
 
 @ApiTags('jogos')
 @Controller('jogos')
 export class JogosController {
+  private readonly logger = new Logger(JogosController.name);
+
   constructor(
     private readonly jogosService: JogosService,
     private readonly footballApiService: FootballApiService
@@ -35,10 +37,10 @@ export class JogosController {
 
   @Get('data/:data')
   @Public()
-  @ResponseMessage('Jogos da data recuperados com sucesso')
-  @ApiOperation({ summary: 'Listar jogos de uma data específica' })
+  @ResponseMessage('Jogos da data organizados por campeonatos')
+  @ApiOperation({ summary: 'Listar jogos de uma data específica organizados por campeonatos' })
   async findJogosByData(@Param('data') data: string) {
-    return this.jogosService.findByData(data);
+    return this.jogosService.findByDataComCampeonatos(data, 60); // 60 dias para pegar mais jogos
   }
 
   @Get('data/:data/campeonatos')
@@ -90,22 +92,22 @@ export class JogosController {
     // Inject FootballApiService diretamente para teste
     const { FootballApiService } = await import('../football-api/football-api.service');
     const { ConfigService } = await import('@nestjs/config');
-    
+
     const configService = new ConfigService();
     const footballApiService = new FootballApiService(configService);
-    
+
     try {
       const result = await footballApiService.getJogosPorData(data);
       return {
         success: true,
         data: result,
-        message: 'API chamada com sucesso'
+        message: 'API chamada com sucesso',
       };
     } catch (error) {
       return {
         success: false,
         error: error.message,
-        message: 'Erro ao chamar API'
+        message: 'Erro ao chamar API',
       };
     }
   }
@@ -136,7 +138,7 @@ export class JogosController {
       return {
         data,
         status: 'nunca_sincronizado',
-        message: 'Esta data nunca foi sincronizada'
+        message: 'Esta data nunca foi sincronizada',
       };
     }
     return status;
@@ -145,43 +147,51 @@ export class JogosController {
   @Get('range/:dataInicial/:dias')
   @Public()
   @ResponseMessage('Jogos do range de datas recuperados com sucesso')
-  @ApiOperation({ summary: 'Buscar jogos em um range de datas (da data inicial até X dias no futuro)' })
+  @ApiOperation({
+    summary: 'Buscar jogos em um range de datas (da data inicial até X dias no futuro)',
+  })
   async findJogosByRange(@Param('dataInicial') dataInicial: string, @Param('dias') dias: string) {
     const diasNumber = parseInt(dias, 10);
-    const dataFim = new Date(dataInicial);
+    const dataFim = new Date(dataInicial + 'T00:00:00');
     dataFim.setDate(dataFim.getDate() + diasNumber);
-    
-    const startDate = new Date(dataInicial + 'T00:00:00.000Z');
-    const endDate = new Date(dataFim.toISOString().split('T')[0] + 'T23:59:59.999Z');
-    
-    return this.jogosService.findAll().then(jogos => 
-      jogos.filter(jogo => 
-        jogo.data >= startDate && jogo.data <= endDate
-      )
-    );
+
+    const startDate = new Date(dataInicial + 'T00:00:00');
+    const endDate = new Date(dataFim.toISOString().split('T')[0] + 'T23:59:59.999');
+
+    return this.jogosService
+      .findAll()
+      .then((jogos) => jogos.filter((jogo) => jogo.data >= startDate && jogo.data <= endDate));
   }
 
   @Get('campeonatos/:dataInicial/:dias')
   @Public()
   @ResponseMessage('Jogos por campeonatos recuperados com sucesso')
-  @ApiOperation({ summary: 'Buscar jogos organizados por campeonatos (Mundial FIFA, Brasileirão, Carioca, etc.)' })
-  async findJogosPorCampeonatos(@Param('dataInicial') dataInicial: string, @Param('dias') dias: string) {
+  @ApiOperation({
+    summary:
+      'Buscar jogos organizados por campeonatos de qualquer campeonato mundial (até 90 dias)',
+  })
+  async findJogosPorCampeonatos(
+    @Param('dataInicial') dataInicial: string,
+    @Param('dias') dias: string
+  ) {
     const diasNumber = parseInt(dias, 10);
-    
-    // Valida o limite máximo de 30 dias
-    if (diasNumber > 30) {
-      throw new BadRequestException('O limite máximo é de 30 dias no futuro');
+
+    // Remove limite de 30 dias - agora permite até 90 dias para sincronização global
+    if (diasNumber > 90) {
+      throw new BadRequestException('O limite máximo é de 90 dias no futuro');
     }
-    
-    // Primeiro tenta buscar do MongoDB
-    let resultado = await this.jogosService.findByDataComCampeonatos(dataInicial, diasNumber);
-    
-    // Se não encontrou jogos no MongoDB, sincroniza da API externa e busca novamente
+
+    // Busca diretamente do MongoDB todos os jogos organizados por campeonatos
+    const resultado = await this.jogosService.findByDataComCampeonatos(dataInicial, diasNumber);
+
+    // Se não encontrou jogos suficientes no MongoDB, retorna o que tem
+    // (não força sincronização automática para evitar demora na resposta)
     if (resultado.totalJogos === 0) {
-      await this.jogosService.sincronizarJogosRangeDaAPI(dataInicial, diasNumber);
-      resultado = await this.jogosService.findByDataComCampeonatos(dataInicial, diasNumber);
+      this.logger.log(
+        `⚠️ Nenhum jogo encontrado no MongoDB para ${dataInicial} até ${diasNumber} dias. Use a sincronização global para populá-los.`
+      );
     }
-    
+
     return resultado;
   }
 
@@ -191,16 +201,16 @@ export class JogosController {
   @ApiOperation({ summary: 'Buscar jogos de hoje organizados por campeonatos' })
   async findJogosHojePorCampeonatos() {
     const hoje = new Date().toISOString().split('T')[0];
-    
+
     // Primeiro tenta buscar do MongoDB
     let resultado = await this.jogosService.findByDataComCampeonatos(hoje, 7);
-    
+
     // Se não encontrou jogos no MongoDB, sincroniza da API externa e busca novamente
     if (resultado.totalJogos === 0) {
       await this.jogosService.sincronizarJogosRangeDaAPI(hoje, 7);
       resultado = await this.jogosService.findByDataComCampeonatos(hoje, 7);
     }
-    
+
     return resultado;
   }
 
@@ -212,5 +222,72 @@ export class JogosController {
     return this.footballApiService.listarCompeticoes();
   }
 
-  // Endpoint de limpeza removido - limpeza será feita manualmente
+  @Post('sincronizar-global-60-dias')
+  @Public()
+  @ResponseMessage('Sincronização global de 60 dias executada com sucesso')
+  @ApiOperation({
+    summary:
+      'Sincronizar todos os jogos dos próximos 60 dias (de 10 em 10 dias) e salvar no MongoDB por campeonato',
+    description:
+      'Busca jogos da API football-data.org dos próximos 60 dias, dividindo em períodos de 10 dias para respeitar os limites da API, e salva todos no MongoDB organizados por campeonato',
+  })
+  async sincronizarGlobal60Dias() {
+    try {
+      const hoje = new Date().toISOString().split('T')[0];
+
+      this.logger.log('🌍 Iniciando sincronização global de 60 dias...');
+
+      const resultado = await this.jogosService.sincronizarJogos60DiasComCampeonatos(hoje);
+
+      this.logger.log(
+        `✅ Sincronização global concluída: ${resultado.totalJogosSalvos} jogos salvos em ${resultado.totalCampeonatos} campeonatos`
+      );
+
+      return {
+        sucesso: true,
+        dataInicial: hoje,
+        diasSincronizados: 60,
+        totalJogosSalvos: resultado.totalJogosSalvos,
+        totalCampeonatos: resultado.totalCampeonatos,
+        jogosPorCampeonato: resultado.jogosPorCampeonato,
+        periodosProcessados: resultado.periodosProcessados,
+        estatisticas: resultado.estatisticas,
+      };
+    } catch (error) {
+      this.logger.error('❌ Erro na sincronização global de 60 dias:', error);
+      throw new BadRequestException(`Erro na sincronização global: ${error.message}`);
+    }
+  }
+
+  @Get('debug/datas/:dataInicial/:dias')
+  @Public()
+  @ResponseMessage('Debug de processamento de datas')
+  @ApiOperation({ summary: 'Debug - mostrar como as datas estão sendo processadas' })
+  async debugDatas(@Param('dataInicial') dataInicial: string, @Param('dias') dias: string) {
+    const diasNumber = parseInt(dias, 10);
+
+    // Simular o processamento de datas como no findByDataComCampeonatos (CORRIGIDO)
+    const startDate = new Date(dataInicial + 'T00:00:00');
+
+    const endDate = new Date(dataInicial + 'T00:00:00');
+    endDate.setDate(endDate.getDate() + diasNumber);
+    endDate.setHours(23, 59, 59, 999);
+
+    return {
+      entrada: {
+        dataInicial,
+        dias: diasNumber,
+      },
+      processamento: {
+        startDate: startDate.toISOString(),
+        startDateLocal: startDate.toString(),
+        endDate: endDate.toISOString(),
+        endDateLocal: endDate.toString(),
+      },
+      timezone: {
+        timezoneOffset: new Date().getTimezoneOffset(),
+        locale: Intl.DateTimeFormat().resolvedOptions(),
+      },
+    };
+  }
 }

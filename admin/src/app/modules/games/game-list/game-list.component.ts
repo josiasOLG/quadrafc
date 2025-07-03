@@ -175,95 +175,62 @@ export class GameListComponent implements OnInit {
   syncGames() {
     this.syncing = true;
 
-    // Sincroniza os próximos 30 dias a partir de hoje
-    const today = new Date().toISOString().split('T')[0];
-
     this.messageService.add({
       severity: 'info',
-      summary: 'Sincronização Global Iniciada',
-      detail: '🌍 Buscando jogos de TODAS as competições mundiais...',
-      life: 3000,
+      summary: 'Sincronização Global 60 Dias Iniciada',
+      detail:
+        '🌍 Buscando jogos dos próximos 60 dias (de 10 em 10 dias) e salvando por campeonato...',
+      life: 4000,
     });
 
-    // Primeiro inicializa TODAS as competições se necessário
-    this.jogoService.inicializarTodasCompeticoes().subscribe({
-      next: (initResult: any) => {
-        console.log('Todas as competições inicializadas:', initResult);
+    // Usa o novo endpoint de sincronização global de 60 dias
+    this.jogoService.sincronizarGlobal60Dias().subscribe({
+      next: (resultado: any) => {
+        console.log('Resultado da sincronização 60 dias:', resultado);
+
+        const totalJogosSalvos = resultado?.totalJogosSalvos || 0;
+        const totalCampeonatos = resultado?.totalCampeonatos || 0;
+        const periodosProcessados = resultado?.periodosProcessados || 0;
+        const jogosNovos = resultado?.estatisticas?.jogosNovos || 0;
+        const jogosAtualizados = resultado?.estatisticas?.jogosAtualizados || 0;
 
         this.messageService.add({
-          severity: 'info',
-          summary: 'Competições Descobertas',
-          detail: `� ${initResult?.totalCompeticoes || 0} competições ativas (${
-            initResult?.totalBrasileiras || 0
-          } brasileiras)`,
-          life: 4000,
+          severity: 'success',
+          summary: 'Sincronização Global 60 Dias Completa! 🎯🏆',
+          detail: `✅ ${totalJogosSalvos} jogos salvos em ${totalCampeonatos} campeonatos | 📅 ${periodosProcessados}/6 períodos processados | 🆕 ${jogosNovos} novos, 🔄 ${jogosAtualizados} atualizados`,
+          life: 12000,
         });
 
-        // Usa o novo endpoint de sincronização COMPLETA
-        this.jogoService.sincronizarESalvarTodasCompeticoes(today, 30).subscribe({
-          next: (resultado: any) => {
-            console.log('Resultado da sincronização COMPLETA:', resultado);
+        // Mostrar detalhes dos campeonatos encontrados
+        if (resultado?.jogosPorCampeonato && Object.keys(resultado.jogosPorCampeonato).length > 0) {
+          const topCampeonatos = Object.entries(resultado.jogosPorCampeonato)
+            .sort(([, a], [, b]) => (b as number) - (a as number))
+            .slice(0, 5)
+            .map(([nome, quantidade]) => `${nome}: ${quantidade}`)
+            .join(' | ');
 
-            const competicoesInicializadas = resultado?.competicoesInicializadas || 0;
-            const totalJogosNoMongoDB = resultado?.totalJogosNoMongoDB || 0;
-            const jogosNovos = resultado?.resultadoSincronizacao?.jogosNovos || 0;
-            const jogosAtualizados = resultado?.resultadoSincronizacao?.jogosAtualizados || 0;
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Top 5 Campeonatos Sincronizados',
+            detail: `🏆 ${topCampeonatos}`,
+            life: 8000,
+          });
+        }
 
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sincronização GLOBAL Completa! ��🎯',
-              detail: `✅ ${competicoesInicializadas} competições inicializadas | 💾 ${totalJogosNoMongoDB} jogos no MongoDB (${jogosNovos} novos, ${jogosAtualizados} atualizados)`,
-              life: 10000,
-            });
-
-            this.syncing = false;
-            this.onViewChange(); // Recarrega a visualização atual
-          },
-          error: (error: any) => {
-            console.error('Erro na sincronização COMPLETA:', error);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro na Sincronização COMPLETA',
-              detail: 'Falha ao sincronizar e salvar jogos de todas as competições.',
-              life: 5000,
-            });
-            this.syncing = false;
-          },
-        });
+        this.syncing = false;
+        this.onViewChange(); // Recarrega a visualização atual
       },
       error: (error: any) => {
-        console.error('Erro ao inicializar todas as competições:', error);
+        console.error('Erro na sincronização global 60 dias:', error);
         this.messageService.add({
-          severity: 'warn',
-          summary: 'Aviso',
-          detail: 'Erro ao inicializar competições, tentando sincronização básica...',
-          life: 4000,
+          severity: 'error',
+          summary: 'Erro na Sincronização Global 60 Dias',
+          detail: `❌ Falha ao sincronizar jogos dos próximos 60 dias: ${
+            error.error?.message || error.message
+          }`,
+          life: 8000,
         });
-
-        // Fallback para sincronização básica
-        this.jogoService.sincronizarJogosRange(today, 30).subscribe({
-          next: (resultado: any) => {
-            const totalJogos = resultado?.totalJogos || resultado?.jogosNovos || 0;
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sincronização Básica',
-              detail: `⚠️ ${totalJogos} jogos sincronizados (modo básico)`,
-              life: 6000,
-            });
-            this.syncing = false;
-            this.onViewChange();
-          },
-          error: (finalError: any) => {
-            console.error('Erro final na sincronização:', finalError);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Sincronização Falhou',
-              detail: 'Não foi possível sincronizar. Verifique se o backend está rodando.',
-              life: 5000,
-            });
-            this.syncing = false;
-          },
-        });
+        this.syncing = false;
       },
     });
   }

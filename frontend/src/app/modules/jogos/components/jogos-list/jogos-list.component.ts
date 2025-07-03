@@ -140,7 +140,7 @@ export class JogosListComponent implements OnInit {
     const hoje = new Date().toISOString().split('T')[0];
 
     // Primeiro tenta buscar via endpoint de campeonatos
-    this.jogosService.getJogosPorCampeonatos(hoje, 30).subscribe({
+    this.jogosService.getJogosPorCampeonatos(hoje, 60).subscribe({
       next: (response: any) => {
         // A resposta já vem diretamente com os dados (sem wrapper success/data)
         if (response && response.campeonatos) {

@@ -19,7 +19,6 @@ import { JogosModule } from './modules/jogos/jogos.module';
 import { PalpitesModule } from './modules/palpites/palpites.module';
 import { RankingModule } from './modules/ranking/ranking.module';
 import { RodadasModule } from './modules/rodadas/rodadas.module';
-import { SeedModule } from './modules/seed/seed.module';
 import { SincronizacaoModule } from './modules/sincronizacao/sincronizacao.module';
 import { TransacoesMoedasModule } from './modules/transacoes-moedas/transacoes-moedas.module';
 import { UsersModule } from './modules/users/users.module';
@@ -63,7 +62,6 @@ import { UsersModule } from './modules/users/users.module';
     SincronizacaoModule,
     RankingModule,
     CepModule,
-    SeedModule,
   ],
   providers: [
     {

@@ -453,4 +453,48 @@ export class JogoService {
       })
     );
   }
+
+  /**
+   * Sincronizar os próximos 60 dias (de 10 em 10 dias) e salvar todos os jogos no MongoDB por campeonato
+   */
+  sincronizarGlobal60Dias(): Observable<any> {
+    return this.http
+      .post<any>(
+        `${this.apiUrl}/sincronizar-global-60-dias`,
+        {},
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            return response.data;
+          }
+          return response;
+        })
+      );
+  }
+
+  /**
+   * Sincroniza e salva jogos de TODAS as competições mundiais (método antigo)
+   */
+  sincronizarESalvarJogosAntigo(dataInicial: string, diasNoFuturo: number): Observable<any> {
+    return this.http
+      .post<any>(
+        `${this.apiUrl}/sincronizar-salvar/${dataInicial}/${diasNoFuturo}`,
+        {},
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((response: any) => {
+          if (response.data) {
+            return response.data;
+          }
+          return response;
+        })
+      );
+  }
 }

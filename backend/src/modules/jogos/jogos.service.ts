@@ -83,56 +83,9 @@ export class JogosService {
       .exec();
   }
 
-  async findByData(data: string): Promise<JogoDocument[]> {
-    // Converte a string da data (YYYY-MM-DD) para início e fim do dia UTC
-    const startDate = new Date(data + 'T00:00:00.000Z');
-    const endDate = new Date(data + 'T23:59:59.999Z');
-
-    // Para buscar jogos, vamos buscar da data solicitada até 30 dias no futuro
-    const dataFim = new Date(data);
-    dataFim.setDate(dataFim.getDate() + 30);
-    const endDateRange = new Date(dataFim.toISOString().split('T')[0] + 'T23:59:59.999Z');
-
-    let jogos = await this.jogoModel
-      .find({
-        data: {
-          $gte: startDate,
-          $lte: endDateRange, // Busca até 30 dias no futuro
-        },
-      })
-      .populate('rodadaId')
-      .populate('palpites')
-      .sort({ data: 1 })
-      .exec();
-
-    // Verifica se precisa sincronizar (verifica apenas para a data específica solicitada)
-    const precisaSincronizar = await this.verificaSeNecessitaSincronizacao(data);
-
-    if (jogos.length === 0 || precisaSincronizar) {
-      try {
-        // Sincroniza jogos da data solicitada até 30 dias no futuro
-        await this.sincronizarJogosRangeDaAPI(data, 30);
-
-        // Busca novamente após sincronização (agora busca o range completo)
-        jogos = await this.jogoModel
-          .find({
-            data: {
-              $gte: startDate,
-              $lte: endDateRange,
-            },
-          })
-          .populate('rodadaId')
-          .populate('palpites')
-          .sort({ data: 1 })
-          .exec();
-      } catch (error) {
-        console.error('Erro ao sincronizar jogos:', error);
-        // Registra o erro na sincronização
-        await this.registrarSincronizacao(data, 'erro', 0, error.message);
-      }
-    }
-
-    return jogos;
+  async findByData(data: string): Promise<any> {
+    // Usa o método que organiza por campeonatos para retornar dados estruturados
+    return this.findByDataComCampeonatos(data, 60); // 60 dias para incluir mais jogos
   }
 
   private async verificaSeNecessitaSincronizacao(data: string): Promise<boolean> {
@@ -286,8 +239,9 @@ export class JogosService {
     data: string
   ): Promise<{ message: string; totalJogos: number; status: string }> {
     try {
-      const startDate = new Date(data + 'T00:00:00.000Z');
-      const endDate = new Date(data + 'T23:59:59.999Z');
+      // Usar timezone local ao invés de UTC
+      const startDate = new Date(data + 'T00:00:00');
+      const endDate = new Date(data + 'T23:59:59.999');
 
       await this.sincronizarJogosDaAPI(data);
 
@@ -338,13 +292,13 @@ export class JogosService {
       return false;
     }
 
-    // Verifica se a data do jogo está dentro do limite permitido (até 30 dias no futuro)
+    // Para sincronização global de 60 dias, permite jogos até 90 dias no futuro
     const dataJogo = new Date(jogo.data);
     const hoje = new Date();
     const dataLimite = new Date();
-    dataLimite.setDate(hoje.getDate() + 30);
+    dataLimite.setDate(hoje.getDate() + 90); // Aumentado para 90 dias
 
-    // Permite jogos de até 30 dias no passado (para jogos já realizados) até 30 dias no futuro
+    // Permite jogos de até 30 dias no passado (para jogos já realizados) até 90 dias no futuro
     const dataMinima = new Date();
     dataMinima.setDate(hoje.getDate() - 30);
 
@@ -359,25 +313,52 @@ export class JogosService {
       return false;
     }
 
+    // Para sincronização global, aceita QUALQUER campeonato (não apenas Brasileiro)
+    // Remove filtro de campeonato para permitir todos os jogos
     return true;
   }
 
+  private validarJogoRealParaSincronizacaoGlobal(jogo: any): boolean {
+    // Verifica se é um jogo com código API válido (não fake)
+    if (!jogo.codigoAPI || jogo.codigoAPI.toString().startsWith('999')) {
+      this.logger.warn(`Jogo rejeitado - código API suspeito: ${jogo.codigoAPI}`);
+      return false;
+    }
+
+    // Para sincronização global, permite qualquer jogo dentro de um range maior (até 90 dias)
+    const dataJogo = new Date(jogo.data);
+    const hoje = new Date();
+    const dataLimite = new Date();
+    dataLimite.setDate(hoje.getDate() + 90); // 90 dias no futuro para sincronização global
+
+    // Permite jogos de até 30 dias no passado até 90 dias no futuro
+    const dataMinima = new Date();
+    dataMinima.setDate(hoje.getDate() - 30);
+
+    if (dataJogo < dataMinima || dataJogo > dataLimite) {
+      this.logger.warn(`[GLOBAL] Jogo rejeitado - data fora do limite: ${dataJogo.toISOString()}`);
+      return false;
+    }
+
+    // Verifica se tem times válidos
+    if (!jogo.timeA?.nome || !jogo.timeB?.nome) {
+      this.logger.warn('[GLOBAL] Jogo rejeitado - times inválidos');
+      return false;
+    }
+
+    // Aceita QUALQUER campeonato para sincronização global
+    this.logger.log(
+      `[GLOBAL] Jogo válido aceito: ${jogo.timeA.nome} vs ${jogo.timeB.nome} - ${jogo.campeonato}`
+    );
+    return true;
+  }
   async findByDataComCampeonatos(dataInicial: string, diasNoFuturo: number = 7): Promise<any> {
     try {
-      // Calcula o range de datas
-      const startDate = new Date(dataInicial + 'T00:00:00.000Z');
-      const endDate = new Date(dataInicial);
-      endDate.setDate(endDate.getDate() + diasNoFuturo);
-      const endDateRange = new Date(endDate.toISOString().split('T')[0] + 'T23:59:59.999Z');
+      this.logger.log(`🔍 Buscando jogos a partir de: ${dataInicial} por ${diasNoFuturo} dias`);
 
-      // Busca jogos do MongoDB no range de datas, populando palpites
-      const jogos = await this.jogoModel
-        .find({
-          data: {
-            $gte: startDate,
-            $lte: endDateRange,
-          },
-        })
+      // Busca TODOS os jogos do MongoDB primeiro (sem filtro de data)
+      const todosJogos = await this.jogoModel
+        .find({})
         .populate('rodadaId')
         .populate({
           path: 'palpites',
@@ -386,10 +367,22 @@ export class JogosService {
         .sort({ data: 1 })
         .exec();
 
+      this.logger.log(`📊 Total de jogos no MongoDB: ${todosJogos.length}`);
+
+      // Log de todos os jogos para debug
+      todosJogos.forEach((jogo, index) => {
+        if (index < 10) {
+          // Log apenas os primeiros 10 para não poluir
+          this.logger.log(
+            `[${index}] ${jogo.timeA.nome} vs ${jogo.timeB.nome} - Data: ${jogo.data} (${new Date(jogo.data).toLocaleDateString('pt-BR')})`
+          );
+        }
+      });
+
       // Organiza os jogos por campeonato
       const jogosPorCampeonato = {};
 
-      for (const jogo of jogos) {
+      for (const jogo of todosJogos) {
         const campeonato = jogo.campeonato || 'Outros';
 
         if (!jogosPorCampeonato[campeonato]) {
@@ -404,32 +397,10 @@ export class JogosService {
         jogosPorCampeonato[campeonato].total++;
       }
 
-      // Converte para array e ordena por relevância
+      // Converte para array
       const campeonatos = Object.values(jogosPorCampeonato);
 
-      // Ordena por relevância (campeonatos brasileiros primeiro)
-      campeonatos.sort((a: any, b: any) => {
-        const prioridadeBrasileiros = [
-          'Brasileirão Serie A',
-          'Copa do Brasil',
-          'Campeonato Carioca',
-          'Copa Libertadores',
-        ];
-        const prioridadeA = prioridadeBrasileiros.indexOf(a.nome);
-        const prioridadeB = prioridadeBrasileiros.indexOf(b.nome);
-
-        if (prioridadeA !== -1 && prioridadeB !== -1) {
-          return prioridadeA - prioridadeB;
-        }
-        if (prioridadeA !== -1) return -1;
-        if (prioridadeB !== -1) return 1;
-
-        return a.nome.localeCompare(b.nome);
-      });
-
-      this.logger.log(
-        `Jogos encontrados no MongoDB organizados em ${campeonatos.length} campeonatos`
-      );
+      this.logger.log(`🏆 Campeonatos encontrados: ${campeonatos.length}`);
       campeonatos.forEach((campeonato: any) => {
         this.logger.log(`- ${campeonato.nome}: ${campeonato.total} jogos`);
       });
@@ -440,11 +411,14 @@ export class JogosService {
         campeonatos,
         periodo: {
           dataInicial,
-          dataFinal: endDate.toISOString().split('T')[0],
+          dataFinal: new Date(dataInicial).toISOString().split('T')[0],
         },
       };
     } catch (error) {
-      this.logger.error(`Erro ao buscar jogos por campeonatos para ${dataInicial}:`, error.message);
+      this.logger.error(
+        `❌ Erro ao buscar jogos por campeonatos para ${dataInicial}:`,
+        error.message
+      );
       return {
         totalCampeonatos: 0,
         totalJogos: 0,
@@ -452,5 +426,159 @@ export class JogosService {
         periodo: { dataInicial, dataFinal: dataInicial },
       };
     }
+  }
+
+  async sincronizarJogos60DiasComCampeonatos(dataInicial: string): Promise<{
+    totalJogosSalvos: number;
+    totalCampeonatos: number;
+    jogosPorCampeonato: { [campeonato: string]: number };
+    periodosProcessados: number;
+    estatisticas: {
+      jogosNovos: number;
+      jogosAtualizados: number;
+      jogosRejeitados: number;
+      erros: number;
+    };
+  }> {
+    const DIAS_POR_PERIODO = 10; // Dividir em períodos de 10 dias para respeitar limites da API
+    const TOTAL_DIAS = 60;
+    const TOTAL_PERIODOS = TOTAL_DIAS / DIAS_POR_PERIODO; // 6 períodos
+
+    let totalJogosSalvos = 0;
+    let periodosProcessados = 0;
+    const jogosPorCampeonato: { [campeonato: string]: number } = {};
+    const estatisticas = {
+      jogosNovos: 0,
+      jogosAtualizados: 0,
+      jogosRejeitados: 0,
+      erros: 0,
+    };
+
+    this.logger.log(
+      `🌍 Iniciando sincronização global de ${TOTAL_DIAS} dias em ${TOTAL_PERIODOS} períodos de ${DIAS_POR_PERIODO} dias cada`
+    );
+
+    const dataAtual = new Date(dataInicial);
+
+    for (let periodo = 0; periodo < TOTAL_PERIODOS; periodo++) {
+      const dataInicioPeriodo = new Date(dataAtual);
+      dataInicioPeriodo.setDate(dataAtual.getDate() + periodo * DIAS_POR_PERIODO);
+
+      const dataFimPeriodo = new Date(dataInicioPeriodo);
+      dataFimPeriodo.setDate(dataInicioPeriodo.getDate() + DIAS_POR_PERIODO - 1);
+
+      const dataInicioStr = dataInicioPeriodo.toISOString().split('T')[0];
+      const dataFimStr = dataFimPeriodo.toISOString().split('T')[0];
+
+      this.logger.log(
+        `📅 Período ${periodo + 1}/${TOTAL_PERIODOS}: ${dataInicioStr} até ${dataFimStr}`
+      );
+
+      try {
+        // Buscar jogos da API para este período usando o método sem filtros
+        const apiResponse = await this.footballApiService.buscarTodosJogosEmRange(
+          dataInicioStr,
+          DIAS_POR_PERIODO
+        );
+
+        if (!apiResponse || !apiResponse.matches) {
+          this.logger.warn(
+            `⚠️ Nenhum jogo encontrado para o período ${dataInicioStr} - ${dataFimStr}`
+          );
+          continue;
+        }
+
+        const jogosAPI = this.footballApiService.transformarJogosAPI(apiResponse.matches);
+        this.logger.log(`🔍 Encontrados ${jogosAPI.length} jogos no período ${periodo + 1}`);
+
+        // Processar cada jogo encontrado
+        for (const jogoAPI of jogosAPI) {
+          try {
+            // Validar se é um jogo real - para sincronização global, usa validação mais flexível
+            if (!this.validarJogoRealParaSincronizacaoGlobal(jogoAPI)) {
+              estatisticas.jogosRejeitados++;
+              continue;
+            }
+
+            // Verificar se já existe pelo codigoAPI
+            const jogoExistente = await this.findByCodigoAPI(jogoAPI.codigoAPI);
+
+            if (!jogoExistente) {
+              // Criar novo jogo
+              const novoJogo = {
+                ...jogoAPI,
+                rodadaId: null, // Será definido quando implementarmos as rodadas
+              };
+
+              await this.create(novoJogo);
+              estatisticas.jogosNovos++;
+              totalJogosSalvos++;
+
+              // Contar jogos por campeonato
+              const campeonato = jogoAPI.campeonato || 'Sem Campeonato';
+              jogosPorCampeonato[campeonato] = (jogosPorCampeonato[campeonato] || 0) + 1;
+
+              this.logger.log(
+                `✅ Novo jogo salvo: ${jogoAPI.timeA.nome} vs ${jogoAPI.timeB.nome} - ${campeonato}`
+              );
+            } else {
+              // Atualizar jogo existente
+              await this.atualizarJogoExistente(jogoExistente, jogoAPI);
+              estatisticas.jogosAtualizados++;
+
+              this.logger.log(`🔄 Jogo atualizado: ${jogoAPI.timeA.nome} vs ${jogoAPI.timeB.nome}`);
+            }
+          } catch (error) {
+            estatisticas.erros++;
+            this.logger.error(
+              `❌ Erro ao processar jogo ${jogoAPI.timeA.nome} vs ${jogoAPI.timeB.nome}:`,
+              error.message
+            );
+          }
+        }
+
+        periodosProcessados++;
+
+        // Pequena pausa entre períodos para não sobrecarregar a API
+        if (periodo < TOTAL_PERIODOS - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 segundo de pausa
+        }
+      } catch (error) {
+        estatisticas.erros++;
+        this.logger.error(
+          `❌ Erro ao processar período ${periodo + 1} (${dataInicioStr} - ${dataFimStr}):`,
+          error.message
+        );
+      }
+    }
+
+    const totalCampeonatos = Object.keys(jogosPorCampeonato).length;
+
+    this.logger.log(`🎯 Sincronização global concluída:`);
+    this.logger.log(`   📊 Total de jogos salvos: ${totalJogosSalvos}`);
+    this.logger.log(`   🏆 Total de campeonatos: ${totalCampeonatos}`);
+    this.logger.log(`   📅 Períodos processados: ${periodosProcessados}/${TOTAL_PERIODOS}`);
+    this.logger.log(
+      `   ✅ Novos: ${estatisticas.jogosNovos}, Atualizados: ${estatisticas.jogosAtualizados}`
+    );
+    this.logger.log(
+      `   ❌ Rejeitados: ${estatisticas.jogosRejeitados}, Erros: ${estatisticas.erros}`
+    );
+
+    // Registrar a sincronização global
+    await this.registrarSincronizacao(
+      `${dataInicial}_60dias`,
+      totalJogosSalvos > 0 ? 'sucesso' : 'sem_dados',
+      totalJogosSalvos,
+      estatisticas.erros > 0 ? `${estatisticas.erros} erros durante sincronização` : undefined
+    );
+
+    return {
+      totalJogosSalvos,
+      totalCampeonatos,
+      jogosPorCampeonato,
+      periodosProcessados,
+      estatisticas,
+    };
   }
 }
