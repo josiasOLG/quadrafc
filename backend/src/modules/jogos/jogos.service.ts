@@ -364,20 +364,7 @@ export class JogosService {
           path: 'palpites',
           model: 'Palpite',
         })
-        .sort({ data: 1 })
         .exec();
-
-      this.logger.log(`📊 Total de jogos no MongoDB: ${todosJogos.length}`);
-
-      // Log de todos os jogos para debug
-      todosJogos.forEach((jogo, index) => {
-        if (index < 10) {
-          // Log apenas os primeiros 10 para não poluir
-          this.logger.log(
-            `[${index}] ${jogo.timeA.nome} vs ${jogo.timeB.nome} - Data: ${jogo.data} (${new Date(jogo.data).toLocaleDateString('pt-BR')})`
-          );
-        }
-      });
 
       // Organiza os jogos por campeonato
       const jogosPorCampeonato = {};
