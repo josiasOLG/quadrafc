@@ -75,7 +75,6 @@ export class HttpService {
       .get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
         params: httpParams,
         headers: httpHeaders,
-        withCredentials: true,
       })
       .pipe(
         map((response) => this.handleResponse(response)),
@@ -89,7 +88,6 @@ export class HttpService {
     return this.http
       .post<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
         headers: httpHeaders,
-        withCredentials: true,
       })
       .pipe(
         map((response) => this.handleResponse(response)),
@@ -103,7 +101,6 @@ export class HttpService {
     return this.http
       .put<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
         headers: httpHeaders,
-        withCredentials: true,
       })
       .pipe(
         map((response) => this.handleResponse(response)),
@@ -117,7 +114,6 @@ export class HttpService {
     return this.http
       .patch<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, data, {
         headers: httpHeaders,
-        withCredentials: true,
       })
       .pipe(
         map((response) => this.handleResponse(response)),
@@ -131,7 +127,6 @@ export class HttpService {
     return this.http
       .delete<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, {
         headers: httpHeaders,
-        withCredentials: true,
       })
       .pipe(
         map((response) => this.handleResponse(response)),
@@ -150,7 +145,6 @@ export class HttpService {
     return this.http
       .get<ApiResponse<{ data: T[]; pagination: any }>>(`${this.baseUrl}/${endpoint}`, {
         params: this.buildParams(allParams),
-        withCredentials: true,
       })
       .pipe(
         map((response) => {
