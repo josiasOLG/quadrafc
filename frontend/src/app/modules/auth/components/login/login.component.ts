@@ -10,7 +10,6 @@ import { ToastModule } from 'primeng/toast';
 
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
-import { IosPwaDebugComponent } from '../../../../shared/components/ios-pwa-debug.component';
 import { LoginDto, LoginSchema } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../services/auth.service';
@@ -28,7 +27,6 @@ import { AuthService } from '../../services/auth.service';
     ToastModule,
     AppButtonComponent,
     AppInputComponent,
-    IosPwaDebugComponent,
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],

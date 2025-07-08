@@ -1,7 +1,6 @@
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
-import { IosPwaDiagnosticService } from './ios-pwa-diagnostic.service';
 
 @Injectable({
   providedIn: 'root',
@@ -10,11 +9,7 @@ export class AdvancedPwaService {
   private deferredPrompt: any;
   private isStandalone = false;
 
-  constructor(
-    private swUpdate: SwUpdate,
-    @Inject(PLATFORM_ID) private platformId: object,
-    private iosPwaDiagnosticService: IosPwaDiagnosticService
-  ) {
+  constructor(private swUpdate: SwUpdate, @Inject(PLATFORM_ID) private platformId: object) {
     this.initPWA();
     this.checkForUpdates();
     this.detectStandaloneMode();
@@ -492,124 +487,4 @@ export class AdvancedPwaService {
     }
     return outputArray;
   }
-
-  /**
-   * Executa diagnóstico completo do iOS PWA
-   */
-  runIosPwaDiagnostics() {
-    console.log('🔍 Executando diagnóstico iOS PWA...');
-    const diagnostics = this.iosPwaDiagnosticService.runDiagnostics();
-
-    // Se está em iOS PWA e há problemas, executar testes adicionais
-    if (this.iosPwaDiagnosticService.isIosPwa()) {
-      this.iosPwaDiagnosticService.testBackendConnectivity().then((connectivity) => {
-        console.group('🌐 iOS PWA Backend Connectivity');
-        console.log('Ping:', connectivity.ping);
-        console.log('Auth:', connectivity.auth);
-        console.log('Profile:', connectivity.profile);
-        console.groupEnd();
-      });
-    }
-
-    return diagnostics;
-  }
-
-  /**
-   * Verifica se há problemas conhecidos específicos do iOS
-   */
-  checkIosIssues(): IosPwaIssues {
-    const issues: IosPwaIssues = {
-      cookieIssues: false,
-      storageIssues: false,
-      networkIssues: false,
-      standaloneModeIssues: false,
-      recommendations: [],
-    };
-
-    // Verificar problemas de cookies
-    if (!navigator.cookieEnabled) {
-      issues.cookieIssues = true;
-      issues.recommendations.push(
-        'Cookies estão desabilitados. Habilite cookies nas configurações do Safari.'
-      );
-    }
-
-    // Verificar problemas de storage
-    try {
-      localStorage.setItem('__test__', 'test');
-      localStorage.removeItem('__test__');
-    } catch {
-      issues.storageIssues = true;
-      issues.recommendations.push(
-        'LocalStorage não está disponível. Verifique o modo privado do Safari.'
-      );
-    }
-
-    // Verificar modo standalone
-    if (this.iosPwaDiagnosticService.isIosPwa()) {
-      // Em modo standalone, verificar se há problemas conhecidos
-      if (
-        !window.matchMedia('(display-mode: standalone)').matches &&
-        (navigator as any).standalone !== true
-      ) {
-        issues.standaloneModeIssues = true;
-        issues.recommendations.push(
-          'App não está rodando em modo standalone. Adicione à tela inicial.'
-        );
-      }
-    }
-
-    // Verificar conectividade
-    if (!navigator.onLine) {
-      issues.networkIssues = true;
-      issues.recommendations.push('Sem conexão com a internet. Verifique sua conexão.');
-    }
-
-    return issues;
-  }
-
-  /**
-   * Força refresh de sessão especificamente para iOS PWA
-   */
-  async forceIosSessionRefresh(): Promise<boolean> {
-    if (!this.iosPwaDiagnosticService.isIosPwa()) {
-      console.log('Não está em iOS PWA, pulando refresh específico');
-      return false;
-    }
-
-    console.log('🔄 Forçando refresh de sessão iOS PWA...');
-
-    try {
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-iOS-PWA-Force-Refresh': 'true',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        },
-        credentials: 'include',
-        cache: 'no-cache',
-      });
-
-      if (response.ok) {
-        console.log('✅ Refresh de sessão iOS PWA bem-sucedido');
-        return true;
-      } else {
-        console.warn('⚠️ Refresh de sessão iOS PWA falhou:', response.status);
-        return false;
-      }
-    } catch (error) {
-      console.error('❌ Erro no refresh de sessão iOS PWA:', error);
-      return false;
-    }
-  }
-}
-
-// Interface para problemas específicos do iOS
-export interface IosPwaIssues {
-  cookieIssues: boolean;
-  storageIssues: boolean;
-  networkIssues: boolean;
-  standaloneModeIssues: boolean;
-  recommendations: string[];
 }

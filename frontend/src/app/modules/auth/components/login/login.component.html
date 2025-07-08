@@ -38,23 +38,28 @@
         <button
           type="submit"
           pButton
-          label="Entrar"
           [loading]="isLoading"
           [disabled]="loginForm.invalid"
           class="login__button w-full"
-          style="height: 3rem"></button>
+          style="height: 3rem">
+          Entrar
+        </button>
       </div>
 
       <!-- Register Link -->
       <div class="text-center">
         <p class="text-600 m-0">
           Ainda não tem conta?
-          <a (click)="navigateToRegister()" class="login__link cursor-pointer">Cadastre-se</a>
+          <button
+            type="button"
+            (click)="navigateToRegister()"
+            (keyup.enter)="navigateToRegister()"
+            (keyup.space)="navigateToRegister()"
+            class="login__link cursor-pointer p-0 border-none bg-transparent text-primary underline">
+            Cadastre-se
+          </button>
         </p>
       </div>
     </form>
   </div>
 </div>
-
-<!-- Debug Component for iOS PWA troubleshooting -->
-<app-ios-pwa-debug></app-ios-pwa-debug>

@@ -314,183 +314,213 @@ export class RankingListComponent implements OnInit {
       return;
     }
 
-    // Carregar rankings da cidade do usuário logado (backend filtra automaticamente)
-    Promise.all([this.loadRankingUsuarios(), this.loadRankingBairros()]).finally(() => {
-      this.isLoading = false;
+    // Carregar rankings sequencialmente para evitar problemas de sessão expirada
+    // ao fazer múltiplas chamadas simultâneas em iOS PWA
+    this.loadRankingUsuarios()
+      .then(() => {
+        console.log('✅ Ranking de usuários carregado, carregando bairros...');
+        return this.loadRankingBairros();
+      })
+      .then(() => {
+        console.log('✅ Todos os rankings carregados com sucesso');
+      })
+      .catch((error) => {
+        console.error('❌ Erro ao carregar rankings:', error);
+        this.toastService.show({
+          detail: 'Erro ao carregar rankings. Tente novamente.',
+          severity: 'error',
+        });
+      })
+      .finally(() => {
+        this.isLoading = false;
 
-      // Verificar sincronização após carregamento
-      setTimeout(() => {
-        this.verificarSincronizacaoUsuario();
-      }, 500);
-    });
+        // Verificar sincronização após carregamento
+        setTimeout(() => {
+          this.verificarSincronizacaoUsuario();
+        }, 500);
+      });
   }
 
   private async loadRankingUsuarios(): Promise<void> {
-    try {
-      if (!this.user) {
-        console.warn('⚠️ Usuário não carregado ainda, não é possível carregar ranking');
-        return;
-      }
+    return new Promise((resolve, reject) => {
+      try {
+        if (!this.user) {
+          console.warn('⚠️ Usuário não carregado ainda, não é possível carregar ranking');
+          resolve();
+          return;
+        }
 
-      // Obter cidade e estado do usuário
-      const cidade = this.user.cidade;
-      const estado = this.user.estado;
+        // Obter cidade e estado do usuário
+        const cidade = this.user.cidade;
+        const estado = this.user.estado;
 
-      if (!cidade || !estado) {
-        console.warn('⚠️ Usuário não possui cidade/estado definidos:', {
+        if (!cidade || !estado) {
+          console.warn('⚠️ Usuário não possui cidade/estado definidos:', {
+            cidade,
+            estado,
+            user: this.user,
+          });
+          this.toastService.show({
+            detail: 'Complete seu perfil para ver o ranking da sua cidade',
+            severity: 'warn',
+          });
+          resolve();
+          return;
+        }
+
+        const params = {
+          limit: 50,
+          offset: 0,
+        };
+
+        console.log('📡 Enviando params para ranking usuários da cidade:', {
           cidade,
           estado,
-          user: this.user,
+          params,
         });
-        this.toastService.show({
-          detail: 'Complete seu perfil para ver o ranking da sua cidade',
-          severity: 'warn',
-        });
-        return;
-      }
 
-      const params = {
-        limit: 50,
-        offset: 0,
-      };
+        this.rankingService.getRankingUsuariosCidade(cidade, estado, params).subscribe({
+          next: (response) => {
+            console.log('✅ Dados recebidos do ranking de usuários da cidade:', response);
 
-      console.log('📡 Enviando params para ranking usuários da cidade:', {
-        cidade,
-        estado,
-        params,
-      });
+            if (response.data && Array.isArray(response.data)) {
+              this.rankingUsuarios = response.data.map((item: any) => {
+                const mappedUser = {
+                  posicao: item.posicao || 0,
+                  usuario: {
+                    _id: item._id,
+                    nome: item.nome || 'Usuário',
+                    avatar: item.avatarUrl || item.avatar || '',
+                    bairro: item.bairro || '',
+                    cidade: item.cidade || '',
+                    estado: item.estado || '',
+                  },
+                  pontos: item.pontos || item.totalPoints || 0,
+                  palpites_corretos: item.palpites_corretos || 0,
+                  total_palpites: item.total_palpites || 0,
+                  taxa_acerto: item.taxa_acerto || 0,
+                  sequencia_atual: item.sequencia_atual || 0,
+                  isCurrentUser: this.user?._id === item._id || false,
+                };
 
-      this.rankingService.getRankingUsuariosCidade(cidade, estado, params).subscribe({
-        next: (response) => {
-          console.log('✅ Dados recebidos do ranking de usuários da cidade:', response);
+                console.log('👤 Usuário mapeado:', mappedUser);
+                return mappedUser;
+              });
 
-          if (response.data && Array.isArray(response.data)) {
-            this.rankingUsuarios = response.data.map((item: any) => {
-              const mappedUser = {
-                posicao: item.posicao || 0,
-                usuario: {
-                  _id: item._id,
-                  nome: item.nome || 'Usuário',
-                  avatar: item.avatarUrl || item.avatar || '',
-                  bairro: item.bairro || '',
-                  cidade: item.cidade || '',
-                  estado: item.estado || '',
-                },
-                pontos: item.pontos || item.totalPoints || 0,
-                palpites_corretos: item.palpites_corretos || 0,
-                total_palpites: item.total_palpites || 0,
-                taxa_acerto: item.taxa_acerto || 0,
-                sequencia_atual: item.sequencia_atual || 0,
-                isCurrentUser: this.user?._id === item._id || false,
-              };
-
-              console.log('👤 Usuário mapeado:', mappedUser);
-              return mappedUser;
+              console.log(
+                `🏆 Ranking de usuários carregado: ${this.rankingUsuarios.length} usuários`
+              );
+            } else {
+              console.warn('⚠️ Resposta não contém array de dados:', response);
+              this.rankingUsuarios = [];
+            }
+            resolve();
+          },
+          error: (error) => {
+            console.error('❌ Erro ao carregar ranking de usuários:', error);
+            this.toastService.show({
+              detail: 'Erro ao carregar ranking de usuários',
+              severity: 'error',
             });
-
-            console.log(
-              `🏆 Ranking de usuários carregado: ${this.rankingUsuarios.length} usuários`
-            );
-          } else {
-            console.warn('⚠️ Resposta não contém array de dados:', response);
-            this.rankingUsuarios = [];
-          }
-        },
-        error: (error) => {
-          console.error('❌ Erro ao carregar ranking de usuários:', error);
-          this.toastService.show({
-            detail: 'Erro ao carregar ranking de usuários',
-            severity: 'error',
-          });
-        },
-      });
-    } catch (_error) {
-      console.error('❌ Erro no método loadRankingUsuarios:', _error);
-      this.toastService.show({
-        detail: 'Erro ao carregar ranking de usuários',
-        severity: 'error',
-      });
-    }
+            reject(error);
+          },
+        });
+      } catch (_error) {
+        console.error('❌ Erro no método loadRankingUsuarios:', _error);
+        this.toastService.show({
+          detail: 'Erro ao carregar ranking de usuários',
+          severity: 'error',
+        });
+        reject(_error);
+      }
+    });
   }
 
   private async loadRankingBairros(): Promise<void> {
-    try {
-      if (!this.user) {
-        console.warn('⚠️ Usuário não carregado ainda, não é possível carregar ranking');
-        return;
-      }
+    return new Promise((resolve, reject) => {
+      try {
+        if (!this.user) {
+          console.warn('⚠️ Usuário não carregado ainda, não é possível carregar ranking');
+          resolve();
+          return;
+        }
 
-      // Obter cidade e estado do usuário
-      const cidade = this.user.cidade;
-      const estado = this.user.estado;
+        // Obter cidade e estado do usuário
+        const cidade = this.user.cidade;
+        const estado = this.user.estado;
 
-      if (!cidade || !estado) {
-        console.warn('⚠️ Usuário não possui cidade/estado definidos:', {
+        if (!cidade || !estado) {
+          console.warn('⚠️ Usuário não possui cidade/estado definidos:', {
+            cidade,
+            estado,
+            user: this.user,
+          });
+          this.toastService.show({
+            detail: 'Complete seu perfil para ver o ranking da sua cidade',
+            severity: 'warn',
+          });
+          resolve();
+          return;
+        }
+
+        const params = {
+          limit: 20,
+          offset: 0,
+        };
+
+        console.log('📡 Enviando params para ranking bairros da cidade:', {
           cidade,
           estado,
-          user: this.user,
+          params,
         });
-        this.toastService.show({
-          detail: 'Complete seu perfil para ver o ranking da sua cidade',
-          severity: 'warn',
-        });
-        return;
-      }
 
-      const params = {
-        limit: 20,
-        offset: 0,
-      };
+        this.rankingService.getRankingBairrosCidade(cidade, estado, params).subscribe({
+          next: (response) => {
+            console.log('✅ Dados recebidos do ranking de bairros da cidade:', response);
 
-      console.log('📡 Enviando params para ranking bairros da cidade:', {
-        cidade,
-        estado,
-        params,
-      });
+            if (response.data && Array.isArray(response.data)) {
+              this.rankingBairros = response.data.map((item: any) => {
+                const mappedBairro = {
+                  posicao: item.posicao || 0,
+                  bairro: {
+                    nome: item.nome || 'Bairro',
+                    cidade: item.cidade || '',
+                    estado: item.estado || '',
+                  },
+                  pontos_totais: item.pontos_totais || 0,
+                  usuarios_ativos: item.usuarios_ativos || 0,
+                  media_pontuacao: item.media_pontuacao || 0,
+                };
 
-      this.rankingService.getRankingBairrosCidade(cidade, estado, params).subscribe({
-        next: (response) => {
-          console.log('✅ Dados recebidos do ranking de bairros da cidade:', response);
+                console.log('🏘️ Bairro mapeado:', mappedBairro);
+                return mappedBairro;
+              });
 
-          if (response.data && Array.isArray(response.data)) {
-            this.rankingBairros = response.data.map((item: any) => {
-              const mappedBairro = {
-                posicao: item.posicao || 0,
-                bairro: {
-                  nome: item.nome || 'Bairro',
-                  cidade: item.cidade || '',
-                  estado: item.estado || '',
-                },
-                pontos_totais: item.pontos_totais || 0,
-                usuarios_ativos: item.usuarios_ativos || 0,
-                media_pontuacao: item.media_pontuacao || 0,
-              };
-
-              console.log('🏘️ Bairro mapeado:', mappedBairro);
-              return mappedBairro;
+              console.log(`🏆 Ranking de bairros carregado: ${this.rankingBairros.length} bairros`);
+            } else {
+              console.warn('⚠️ Resposta não contém array de dados:', response);
+              this.rankingBairros = [];
+            }
+            resolve();
+          },
+          error: (error) => {
+            console.error('❌ Erro ao carregar ranking de bairros:', error);
+            this.toastService.show({
+              detail: 'Erro ao carregar ranking de bairros',
+              severity: 'error',
             });
-
-            console.log(`🏆 Ranking de bairros carregado: ${this.rankingBairros.length} bairros`);
-          } else {
-            console.warn('⚠️ Resposta não contém array de dados:', response);
-            this.rankingBairros = [];
-          }
-        },
-        error: (error) => {
-          console.error('❌ Erro ao carregar ranking de bairros:', error);
-          this.toastService.show({
-            detail: 'Erro ao carregar ranking de bairros',
-            severity: 'error',
-          });
-        },
-      });
-    } catch (_error) {
-      console.error('❌ Erro no método loadRankingBairros:', _error);
-      this.toastService.show({
-        detail: 'Erro ao carregar ranking de bairros',
-        severity: 'error',
-      });
-    }
+            reject(error);
+          },
+        });
+      } catch (_error) {
+        console.error('❌ Erro no método loadRankingBairros:', _error);
+        this.toastService.show({
+          detail: 'Erro ao carregar ranking de bairros',
+          severity: 'error',
+        });
+        reject(_error);
+      }
+    });
   }
 
   onFiltroChange(): void {
