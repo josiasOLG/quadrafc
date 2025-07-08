@@ -425,6 +425,32 @@ export class AdvancedPwaService {
     return /Android/.test(navigator.userAgent);
   }
 
+  // Método específico para detectar iOS PWA
+  isIOSPWA(): boolean {
+    return this.isIOS() && this.isStandalone;
+  }
+
+  // Método para obter informações do ambiente PWA
+  getPWAEnvironment(): {
+    isStandalone: boolean;
+    isIOS: boolean;
+    isAndroid: boolean;
+    isIOSPWA: boolean;
+    platform: string;
+  } {
+    return {
+      isStandalone: this.isStandalone,
+      isIOS: this.isIOS(),
+      isAndroid: this.isAndroid(),
+      isIOSPWA: this.isIOSPWA(),
+      platform: this.isIOSPWA()
+        ? 'ios-pwa'
+        : this.isAndroid() && this.isStandalone
+        ? 'android-pwa'
+        : 'web',
+    };
+  }
+
   // Método para configurar notificações push
   async setupPushNotifications(): Promise<boolean> {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {

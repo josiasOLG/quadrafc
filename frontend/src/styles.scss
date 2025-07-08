@@ -200,6 +200,31 @@ body {
   color: var(--surface-800);
 }
 
+// ===================================
+// PWA STATUS BAR FIX FOR iOS
+// ===================================
+// Garantir que a status bar do iOS PWA tenha a cor correta
+@supports (-webkit-touch-callout: none) {
+  /* iOS only styles */
+  .ios-pwa-status-bar-fix {
+    padding-top: env(safe-area-inset-top);
+    background-color: #1e3a8a;
+  }
+
+  /* Aplicar cor de fundo no topo para status bar translúcida */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background-color: #1e3a8a;
+    z-index: 9999;
+    pointer-events: none;
+  }
+}
+
 // Garantir Inter em todos os elementos de texto, mas não em ícones
 h1,
 h2,
