@@ -34,12 +34,8 @@ export class ErrorInterceptor implements HttpInterceptor {
             errorMessage = error.error?.message || 'Dados inválidos';
             break;
           case 401:
-            errorMessage = 'Sessão expirada. Faça login novamente.';
-            this.toastService.error('Sessão Expirada', errorMessage);
-            // Limpar estado local sem fazer chamada para o backend
-            this.authService.clearLocalSession();
-            this.router.navigate(['/auth/login']);
-            return throwError(() => error);
+            errorMessage = 'Não autorizado. Verifique suas credenciais.';
+            break;
           case 403:
             errorMessage = 'Acesso negado';
             break;
@@ -67,10 +63,8 @@ export class ErrorInterceptor implements HttpInterceptor {
             errorMessage = error.error?.message || `Erro ${error.status}`;
         }
 
-        // Só mostra toast para erros que não são 401 (já tratado acima)
-        if (error.status !== 401) {
-          this.toastService.error('Erro', errorMessage);
-        }
+        // Mostra toast para todos os erros
+        this.toastService.error('Erro', errorMessage);
 
         return throwError(() => new Error(errorMessage));
       })
