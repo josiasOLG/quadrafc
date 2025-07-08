@@ -23,19 +23,19 @@
   <div *ngIf="!isLoading" class="ranking__content">
     <div class="ranking-bairros">
       <!-- Empty State -->
-      <div *ngIf="rankingBairros.length === 0" class="empty-state">
-        <div class="empty-state__icon">
-          <i class="pi pi-home"></i>
+      <div *ngIf="rankingBairros.length === 0" class="text-center p-6">
+        <div class="mb-3">
+          <i class="pi pi-home text-6xl text-color-secondary"></i>
         </div>
-        <h3>Nenhum bairro encontrado</h3>
-        <p>Não há bairros no ranking da sua cidade.</p>
+        <h3 class="text-color mb-2">Nenhum bairro encontrado</h3>
+        <p class="text-color-secondary m-0">Não há bairros no ranking da sua cidade.</p>
       </div>
 
       <!-- Lista de Bairros -->
-      <div *ngIf="rankingBairros.length > 0" class="ranking-list">
+      <div *ngIf="rankingBairros.length > 0" class="ranking-list flex flex-column gap-3 p-3">
         <div
           *ngFor="let item of rankingBairros; trackBy: trackByBairro"
-          class="ranking-bairro-card"
+          class="ranking-bairro-card flex align-items-center gap-3 p-3 border-round-xl cursor-pointer surface-0 border-2 border-blue-200"
           [ngClass]="{ 'ranking-bairro-card--podium': item.posicao <= 3 }"
           (click)="openBairroDetailsModal(item)"
           (keyup.enter)="openBairroDetailsModal(item)"
@@ -43,47 +43,48 @@
           role="button"
           [attr.aria-label]="'Ver detalhes do bairro ' + item.bairro.nome">
           <!-- Badge de Posição -->
-          <div class="ranking-badge" [ngClass]="getRankingBadgeClass(item.posicao)">
-            <span class="ranking-position">#{{ item.posicao }}</span>
+          <div
+            class="ranking-badge flex flex-column align-items-center justify-content-center border-circle text-white font-bold"
+            [ngClass]="getRankingBadgeClass(item.posicao)">
+            <span class="text-lg">#{{ item.posicao }}</span>
             <i
               *ngIf="getBairroMedalha(item.posicao) as medalha"
-              [class]="'pi ' + medalha.icon"
+              [class]="'pi ' + medalha.icon + ' text-xs'"
               [style.color]="medalha.color"></i>
           </div>
 
           <!-- Ícone do Bairro -->
-          <div class="bairro-avatar-container">
-            <div class="bairro-avatar-icon">
-              <i class="pi pi-map"></i>
-            </div>
+          <div
+            class="bairro-avatar-icon flex align-items-center justify-content-center border-circle border-3 border-white shadow-2">
+            <i class="pi pi-map text-white text-xl"></i>
           </div>
 
           <!-- Informações do Bairro -->
-          <div class="bairro-info">
-            <div class="bairro-primary-info">
-              <h4 class="bairro-name">{{ item.bairro.nome }}</h4>
-              <div class="bairro-location">
-                <i class="pi pi-map-marker"></i>
+          <div class="flex-1 flex flex-column gap-2">
+            <div>
+              <h4 class="text-lg font-bold m-0 mb-1">{{ item.bairro.nome }}</h4>
+              <div class="flex align-items-center gap-2 text-sm text-color-secondary">
+                <i class="pi pi-map-marker text-blue-500 text-xs"></i>
                 <span>{{ item.bairro.cidade }} - {{ item.bairro.estado }}</span>
               </div>
             </div>
 
-            <div class="bairro-stats-mini">
-              <div class="stat-item">
-                <span class="stat-value">{{ formatNumber(item.pontos_totais) }}</span>
-                <span class="stat-label">pts</span>
+            <!-- <div class="flex gap-3 flex-wrap">
+              <div class="flex align-items-center gap-1 text-xs font-semibold bg-blue-50 px-2 py-1 border-round">
+                <span class="font-bold text-color">{{ formatNumber(item.pontos_totais) }}</span>
+                <span class="text-color-secondary">pts</span>
               </div>
-              <div class="stat-item">
-                <span class="stat-value">{{ item.usuarios_ativos }}</span>
-                <span class="stat-label">usuários</span>
+              <div class="flex align-items-center gap-1 text-xs font-semibold bg-blue-50 px-2 py-1 border-round">
+                <span class="font-bold text-color">{{ item.usuarios_ativos }}</span>
+                <span class="text-color-secondary">usuários</span>
               </div>
-            </div>
+            </div> -->
           </div>
 
           <!-- Pontuação principal -->
-          <div class="bairro-score">
-            <div class="score-main">{{ formatNumber(item.pontos_totais) }}</div>
-            <div class="score-label">pontos</div>
+          <div class="bairro-score flex flex-column align-items-center text-center">
+            <div class="text-xl font-bold text-blue-600">{{ formatNumber(item.pontos_totais) }}</div>
+            <div class="text-xs text-color-secondary font-semibold uppercase">pontos</div>
           </div>
         </div>
       </div>
@@ -109,64 +110,78 @@
   styleClass="bairro-details-modal"
   *ngIf="selectedBairroDetails"
   (onHide)="closeBairroDetailsModal()">
-  <div class="modal-content">
+  <div class="p-4">
     <!-- Header do Bairro -->
-    <div class="bairro-details__header">
-      <div class="bairro-icon">
-        <i class="pi pi-map"></i>
+    <div class="flex align-items-center gap-3 p-4 surface-50 border-round-xl border-1 surface-border mb-4">
+      <div class="bairro-icon flex align-items-center justify-content-center border-circle shadow-3">
+        <i class="pi pi-map text-white text-xl"></i>
       </div>
-      <div class="bairro-title">
-        <h3>{{ selectedBairroDetails.bairro.nome }}</h3>
-        <p>{{ selectedBairroDetails.bairro.cidade }} - {{ selectedBairroDetails.bairro.estado }}</p>
+      <div class="flex-1">
+        <h3 class="m-0 mb-1 text-xl font-bold text-color">{{ selectedBairroDetails.bairro.nome }}</h3>
+        <p class="m-0 text-sm text-color-secondary">
+          {{ selectedBairroDetails.bairro.cidade }} - {{ selectedBairroDetails.bairro.estado }}
+        </p>
       </div>
-      <div class="bairro-position">
+      <div>
         <p-badge [value]="'#' + selectedBairroDetails.posicao" severity="info"></p-badge>
       </div>
     </div>
 
     <!-- Estatísticas Detalhadas -->
-    <div class="bairro-details__stats">
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-trophy"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ formatNumber(selectedBairroDetails.pontos_totais) }}</div>
-          <div class="stat-label">Total de Pontos</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-users"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ selectedBairroDetails.usuarios_ativos }}</div>
-          <div class="stat-label">Usuários Ativos</div>
+    <div class="grid gap-3 mb-4">
+      <div class="col-12 md:col-4">
+        <div
+          class="flex align-items-center gap-3 p-3 surface-0 border-1 surface-border border-round-xl hover:surface-50 transition-all transition-duration-200">
+          <div class="flex align-items-center justify-content-center w-3rem h-3rem border-circle primary-50">
+            <i class="pi pi-trophy text-primary text-xl"></i>
+          </div>
+          <div>
+            <div class="text-xl font-bold text-color">{{ formatNumber(selectedBairroDetails.pontos_totais) }}</div>
+            <div class="text-xs text-color-secondary font-medium uppercase">Total de Pontos</div>
+          </div>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="pi pi-chart-line"></i>
+      <div class="col-12 md:col-4">
+        <div
+          class="flex align-items-center gap-3 p-3 surface-0 border-1 surface-border border-round-xl hover:surface-50 transition-all transition-duration-200">
+          <div class="flex align-items-center justify-content-center w-3rem h-3rem border-circle primary-50">
+            <i class="pi pi-users text-primary text-xl"></i>
+          </div>
+          <div>
+            <div class="text-xl font-bold text-color">{{ selectedBairroDetails.usuarios_ativos }}</div>
+            <div class="text-xs text-color-secondary font-medium uppercase">Usuários Ativos</div>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ formatNumber(selectedBairroDetails.media_pontuacao) }}</div>
-          <div class="stat-label">Média de Pontos</div>
+      </div>
+
+      <div class="col-12 md:col-4">
+        <div
+          class="flex align-items-center gap-3 p-3 surface-0 border-1 surface-border border-round-xl hover:surface-50 transition-all transition-duration-200">
+          <div class="flex align-items-center justify-content-center w-3rem h-3rem border-circle primary-50">
+            <i class="pi pi-chart-line text-primary text-xl"></i>
+          </div>
+          <div>
+            <div class="text-xl font-bold text-color">{{ formatNumber(selectedBairroDetails.media_pontuacao) }}</div>
+            <div class="text-xs text-color-secondary font-medium uppercase">Média de Pontos</div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Informações Adicionais -->
-    <div class="bairro-details__info">
-      <h4>Informações do Ranking</h4>
-      <div class="info-item">
-        <span class="info-label">Posição:</span>
-        <span class="info-value">#{{ selectedBairroDetails.posicao }}</span>
+    <div class="p-3 surface-50 border-round-xl border-1 surface-border">
+      <h4 class="flex align-items-center gap-2 m-0 mb-3 text-base font-semibold text-color">
+        <span class="w-1 h-3 bg-primary border-round-sm"></span>
+        Informações do Ranking
+      </h4>
+      <div class="flex justify-content-between align-items-center py-2 border-bottom-1 surface-border">
+        <span class="text-sm text-color-secondary font-medium">Posição:</span>
+        <span class="text-sm text-color font-semibold">#{{ selectedBairroDetails.posicao }}</span>
       </div>
-      <div class="info-item">
-        <span class="info-label">Localização:</span>
-        <span class="info-value">
+      <div class="flex justify-content-between align-items-center py-2">
+        <span class="text-sm text-color-secondary font-medium">Localização:</span>
+        <span class="text-sm text-color font-semibold">
           {{ selectedBairroDetails.bairro.cidade }} - {{ selectedBairroDetails.bairro.estado }}
         </span>
       </div>
@@ -174,7 +189,7 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="dialog-actions">
+    <div class="flex justify-content-end gap-2">
       <p-button
         label="Fechar"
         icon="pi pi-times"
