@@ -39,8 +39,9 @@ export class AuthService {
     response.cookie('token', token, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
+      sameSite: 'lax', // Mudado de 'none' para 'lax' para melhor compatibilidade mobile
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+      path: '/',
       // Não definir domain para permitir cookies entre subdomínios do Vercel
     });
 
@@ -70,8 +71,9 @@ export class AuthService {
     response.cookie('token', token, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
+      sameSite: 'lax', // Mudado de 'none' para 'lax' para melhor compatibilidade mobile
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+      path: '/',
       // Não definir domain para permitir cookies entre subdomínios do Vercel
     });
 
@@ -84,7 +86,12 @@ export class AuthService {
   }
 
   async logout(response: Response) {
-    response.clearCookie('token');
+    response.clearCookie('token', {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
     return { message: 'Logout realizado com sucesso' };
   }
 
@@ -159,8 +166,9 @@ export class AuthService {
     response.cookie('token', token, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
+      sameSite: 'lax', // Mudado de 'none' para 'lax' para melhor compatibilidade mobile
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+      path: '/',
       // Não definir domain para permitir cookies entre subdomínios do Vercel
     });
 

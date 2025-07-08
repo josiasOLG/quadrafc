@@ -45,13 +45,30 @@ async function createApp() {
     origin: [
       'http://localhost:4200',
       'http://localhost:2001',
+      'http://localhost:3000',
+      'http://127.0.0.1:4200',
+      'http://127.0.0.1:2001',
+      'https://quadrafc.vercel.app',
       'https://quadrafc-frontend.vercel.app',
       'https://quadrafc-admin.vercel.app',
       // Add your custom domains here
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Requested-With',
+      'X-iOS-PWA',
+      'X-iOS-PWA-Retry',
+      'X-iOS-PWA-Session-Refresh',
+      'X-iOS-PWA-Touch',
+      'Cache-Control',
+      'Pragma',
+      'Expires',
+    ],
+    exposedHeaders: ['Set-Cookie'],
     optionsSuccessStatus: 200,
   });
 

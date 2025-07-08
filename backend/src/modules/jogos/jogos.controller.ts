@@ -84,34 +84,6 @@ export class JogosController {
     return this.jogosService.findAll();
   }
 
-  @Get('api/test/:data')
-  @Public()
-  @ResponseMessage('Teste da API externa')
-  @ApiOperation({ summary: 'Testar API externa diretamente' })
-  async testApiExterna(@Param('data') data: string) {
-    // Inject FootballApiService diretamente para teste
-    const { FootballApiService } = await import('../football-api/football-api.service');
-    const { ConfigService } = await import('@nestjs/config');
-
-    const configService = new ConfigService();
-    const footballApiService = new FootballApiService(configService);
-
-    try {
-      const result = await footballApiService.getJogosPorData(data);
-      return {
-        success: true,
-        data: result,
-        message: 'API chamada com sucesso',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        message: 'Erro ao chamar API',
-      };
-    }
-  }
-
   @Get(':id')
   @Public()
   @ResponseMessage('Jogo recuperado com sucesso')
