@@ -14,16 +14,15 @@ import { User } from '../../schemas/user.schema';
     <div class="user-header">
       <!-- 1. Dashboard Icon + Avatar + Pontos -->
       <div class="user-header__top">
-        <i class="pi pi-th-large user-header__dashboard-icon"></i>
+        <p-avatar
+          [image]="user?.foto_perfil || user?.avatarUrl"
+          [label]="user?.nome?.charAt(0)"
+          size="large"
+          shape="circle"
+          styleClass="user-header__avatar"
+        >
+        </p-avatar>
         <div class="user-header__avatar-points-container">
-          <p-avatar
-            [image]="user?.foto_perfil || user?.avatarUrl"
-            [label]="user?.nome?.charAt(0)"
-            size="large"
-            shape="circle"
-            styleClass="user-header__avatar"
-          >
-          </p-avatar>
           <div class="user-header__points">
             <div class="user-header__points-value">{{ getUserPoints() }}</div>
             <div class="user-header__points-label">pontos</div>

@@ -1,18 +1,16 @@
-import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
-import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { RankingService } from './ranking.service';
 
 @ApiTags('ranking')
 @Controller('ranking')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class RankingController {
   constructor(private readonly rankingService: RankingService) {}
 
   @Get('verificar-premium')
+  @Public()
   @ResponseMessage('Status do acesso premium verificado')
   @ApiOperation({ summary: 'Verificar se usuário tem acesso ao ranking premium' })
   async verificarAcessoPremium(@Request() req: any) {
@@ -20,6 +18,7 @@ export class RankingController {
   }
 
   @Post('desbloquear-nacional')
+  @Public()
   @ResponseMessage('Ranking nacional desbloqueado')
   @ApiOperation({ summary: 'Desbloquear acesso ao ranking nacional' })
   async desbloquearRankingNacional(@Request() req: any) {
@@ -27,6 +26,7 @@ export class RankingController {
   }
 
   @Get('acessos-disponiveis')
+  @Public()
   @ResponseMessage('Acessos disponíveis recuperados')
   @ApiOperation({ summary: 'Listar acessos premium disponíveis para o usuário' })
   async listarAcessosDisponiveis(@Request() req: any) {
@@ -34,6 +34,7 @@ export class RankingController {
   }
 
   @Get('filtros-disponiveis')
+  @Public()
   @ResponseMessage('Filtros disponíveis recuperados')
   @ApiOperation({ summary: 'Listar filtros de ranking disponíveis para o usuário' })
   async listarFiltrosDisponiveis(@Request() req: any) {
@@ -41,6 +42,7 @@ export class RankingController {
   }
 
   @Get('verificar-acesso')
+  @Public()
   @ResponseMessage('Acesso verificado')
   @ApiOperation({ summary: 'Verificar acesso específico do usuário' })
   @ApiQuery({ name: 'tipo', enum: ['estado', 'nacional'], description: 'Tipo de acesso' })
@@ -54,6 +56,7 @@ export class RankingController {
   }
 
   @Post('comprar-acesso-estado')
+  @Public()
   @ResponseMessage('Acesso ao estado comprado')
   @ApiOperation({ summary: 'Comprar acesso ao ranking de um estado' })
   @ApiBody({
@@ -70,6 +73,7 @@ export class RankingController {
   }
 
   @Post('comprar-acesso-nacional')
+  @Public()
   @ResponseMessage('Acesso nacional comprado')
   @ApiOperation({ summary: 'Comprar acesso ao ranking nacional' })
   async comprarAcessoNacional(@Request() req: any) {
@@ -77,6 +81,7 @@ export class RankingController {
   }
 
   @Post('comprar-acesso-cidade')
+  @Public()
   @ResponseMessage('Acesso à cidade comprado')
   @ApiOperation({ summary: 'Comprar acesso ao ranking de uma cidade específica' })
   @ApiBody({
@@ -94,6 +99,7 @@ export class RankingController {
   }
 
   @Post('comprar-assinatura-premium')
+  @Public()
   @ResponseMessage('Assinatura premium contratada')
   @ApiOperation({ summary: 'Comprar assinatura premium vitalícia (500 moedas/mês)' })
   @ApiBody({
@@ -109,6 +115,7 @@ export class RankingController {
   }
 
   @Get('usuarios-cidade')
+  @Public()
   @ResponseMessage('Ranking de usuários da cidade recuperado')
   @ApiOperation({ summary: 'Buscar ranking de usuários de uma cidade específica' })
   @ApiQuery({ name: 'cidade', required: true, description: 'Nome da cidade' })
