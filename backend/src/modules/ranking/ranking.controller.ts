@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { RankingService } from './ranking.service';
@@ -138,6 +139,7 @@ export class RankingController {
   }
 
   @Get('bairros-cidade')
+  @Public()
   @ResponseMessage('Ranking de bairros da cidade recuperado')
   @ApiOperation({ summary: 'Buscar ranking de bairros de uma cidade específica' })
   @ApiQuery({ name: 'cidade', required: true, description: 'Nome da cidade' })

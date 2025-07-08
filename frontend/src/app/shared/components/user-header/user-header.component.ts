@@ -52,14 +52,14 @@ import { User } from '../../schemas/user.schema';
           <div class="user-header__stat-value">{{ getUserPoints() }}</div>
           <div class="user-header__stat-label">Pontos</div>
         </div>
-        <div class="user-header__stat-card">
+        <!-- <div class="user-header__stat-card">
           <div class="user-header__stat-value">{{ getUserCoins() }}</div>
           <div class="user-header__stat-label">Moedas</div>
         </div>
         <div class="user-header__stat-card">
           <div class="user-header__stat-value">{{ getUserStreak() }}</div>
           <div class="user-header__stat-label">Sequência</div>
-        </div>
+        </div> -->
       </div>
     </div>
   `,
