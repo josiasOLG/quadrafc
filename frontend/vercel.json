@@ -1,15 +1,18 @@
 {
   "version": 2,
-  "name": "quadrafc-frontend",
-  "framework": "angular",
-  "outputDirectory": "dist/quadrafc",
-  "buildCommand": "ng build --configuration=production",
-  "installCommand": "npm ci",
-  "devCommand": "ng serve --port $PORT",
-  "env": {
-    "NODE_ENV": "production"
-  },
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/quadrafc"
+      }
+    }
+  ],
   "routes": [
+    {
+      "handle": "filesystem"
+    },
     {
       "src": "/.*",
       "dest": "/index.html"
