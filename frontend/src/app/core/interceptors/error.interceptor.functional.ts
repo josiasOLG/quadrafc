@@ -1,12 +1,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastService } from '../../shared/services/toast.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
   const toastService = inject(ToastService);
 
   return next(req).pipe(
@@ -14,8 +12,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let errorMessage = 'Erro inesperado';
 
       if (error.status === 401) {
-        errorMessage = 'Sessão expirada. Faça login novamente.';
-        router.navigate(['/auth/login']);
+        errorMessage = 'Não autorizado. Verifique suas credenciais.';
       } else if (error.status === 403) {
         errorMessage = 'Acesso negado';
       } else if (error.status === 404) {
