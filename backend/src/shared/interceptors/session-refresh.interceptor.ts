@@ -25,8 +25,12 @@ export class SessionRefreshInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       catchError((error) => {
-        // Se for um erro 401 (Unauthorized), tentar renovar a sessão
-        if (error instanceof UnauthorizedException) {
+        // Só tentar renovar sessão se for realmente um erro 401 do nosso backend
+        if (
+          error instanceof UnauthorizedException &&
+          context.getType() === 'http' &&
+          error.message !== 'CORS_ERROR'
+        ) {
           return from(this.tryRefreshSession(context)).pipe(
             switchMap((refreshed) => {
               if (refreshed) {
@@ -41,7 +45,7 @@ export class SessionRefreshInterceptor implements NestInterceptor {
           );
         }
 
-        // Para outros erros, apenas repassa
+        // Para outros erros (incluindo CORS), apenas repassa
         return throwError(() => error);
       })
     );
