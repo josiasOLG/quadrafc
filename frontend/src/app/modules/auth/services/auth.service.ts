@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { PremiumPermissionsService } from '../../../core/services/premium-permissions.service';
 import { CreateUserDto, LoginDto, RegisterUserDto, User } from '../../../shared/schemas';
 import { HttpService } from '../../../shared/services/http.service';
@@ -26,15 +26,42 @@ export class AuthService {
     private cookieService: CookieService,
     private premiumPermissionsService: PremiumPermissionsService
   ) {
-    // Verificar imediatamente se tem cookie para evitar loading desnecessário
-    const storedUser = this.cookieService.get(this.USER_COOKIE_KEY);
+    // Verificar imediatamente se tem dados salvos para evitar loading desnecessário
+    let storedUser = this.cookieService.get(this.USER_COOKIE_KEY);
+
+    // BACKUP: Se não tem cookie, tentar localStorage (importante para PWA iOS)
+    if (!storedUser) {
+      try {
+        storedUser = localStorage.getItem(this.USER_COOKIE_KEY) || '';
+        // Verificar se os dados não são muito antigos (7 dias)
+        const timestamp = localStorage.getItem(this.USER_COOKIE_KEY + '_timestamp');
+        if (timestamp) {
+          const age = Date.now() - parseInt(timestamp);
+          const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 dias
+          if (age > maxAge) {
+            localStorage.removeItem(this.USER_COOKIE_KEY);
+            localStorage.removeItem(this.USER_COOKIE_KEY + '_timestamp');
+            storedUser = '';
+          }
+        }
+      } catch {
+        storedUser = '';
+      }
+    }
+
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         this.currentUserSubject.next(user);
         this.loadingSubject.next(false); // Para de carregar imediatamente
-      } catch (error) {
+      } catch {
         this.cookieService.delete(this.USER_COOKIE_KEY);
+        try {
+          localStorage.removeItem(this.USER_COOKIE_KEY);
+          localStorage.removeItem(this.USER_COOKIE_KEY + '_timestamp');
+        } catch {
+          // Ignore localStorage errors
+        }
       }
     }
 
@@ -168,6 +195,30 @@ export class AuthService {
     return this.httpService.get<{ exists: boolean }>('auth/check-email', { email });
   }
 
+  // Método para verificar se a sessão ainda está válida (útil para PWA)
+  validateSession(): Observable<boolean> {
+    if (!this.currentUser) {
+      return of(false);
+    }
+
+    return this.httpService.get<User>('auth/profile').pipe(
+      tap((user) => {
+        this.setCurrentUser(user);
+        // Atualizar timestamp do localStorage
+        try {
+          localStorage.setItem(this.USER_COOKIE_KEY + '_timestamp', Date.now().toString());
+        } catch {
+          // Ignore localStorage errors
+        }
+      }),
+      map(() => true),
+      catchError(() => {
+        this.clearCurrentUser();
+        return of(false);
+      })
+    );
+  }
+
   private initializeUser(): void {
     // Se já carregou do cookie, só faz verificação em background
     if (this.currentUser) {
@@ -205,21 +256,40 @@ export class AuthService {
 
   private setCurrentUser(user: User): void {
     this.currentUserSubject.next(user);
-    // Salvar no cookie com expiração de 7 dias
+    const userJson = JSON.stringify(user);
+
+    // Salvar no cookie com configurações otimizadas para PWA iOS
     this.cookieService.set(
       this.USER_COOKIE_KEY,
-      JSON.stringify(user),
+      userJson,
       7, // 7 dias
       '/', // path
       undefined, // domain
-      true, // secure (apenas HTTPS em produção)
-      'Strict' // sameSite
+      false, // secure (false para desenvolvimento, será true em produção via backend httpOnly cookie)
+      'Lax' // sameSite - Lax é melhor para PWA iOS
     );
+
+    // BACKUP: Salvar também no localStorage para PWA iOS
+    try {
+      localStorage.setItem(this.USER_COOKIE_KEY, userJson);
+      localStorage.setItem(this.USER_COOKIE_KEY + '_timestamp', Date.now().toString());
+    } catch (error) {
+      console.warn('Erro ao salvar no localStorage:', error);
+    }
   }
 
   private clearCurrentUser(): void {
     this.currentUserSubject.next(null);
     this.cookieService.delete(this.USER_COOKIE_KEY, '/');
+
+    // Limpar também do localStorage
+    try {
+      localStorage.removeItem(this.USER_COOKIE_KEY);
+      localStorage.removeItem(this.USER_COOKIE_KEY + '_timestamp');
+    } catch {
+      console.warn('Erro ao limpar localStorage');
+    }
+
     // Limpar permissões quando usuário é removido
     this.premiumPermissionsService.clearPermissions();
   }
