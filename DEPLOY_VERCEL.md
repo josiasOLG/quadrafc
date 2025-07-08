@@ -31,6 +31,10 @@ vercel --prod
 - Output Directory: `api`
 - Install Command: `npm ci`
 
+npx pwa-asset-generator ./assets/icon.png ./public/icons \ -m
+./public/manifest.webmanifest \ -i index.html \ --padding "10%" \ --background
+"#ffffff" \ --path "/icons"
+
 ### 2. Frontend (App Principal)
 
 ```bash

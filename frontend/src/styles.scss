@@ -263,6 +263,15 @@ body.ios-pwa {
   }
 }
 
+// ===================================
+// PWA iOS STATUS BAR
+// ===================================
+@media all and (display-mode: standalone) {
+  body {
+    background-color: #014473;
+  }
+}
+
 // Garantir Inter em todos os elementos de texto, mas não em ícones
 h1,
 h2,
