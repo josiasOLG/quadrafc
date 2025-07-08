@@ -57,16 +57,18 @@ async function createApp() {
   // Global prefix
   app.setGlobalPrefix('api');
 
-  // Swagger documentation
-  const config = new DocumentBuilder()
-    .setTitle('QuadraFC API')
-    .setDescription('API para o app de palpites de futebol brasileiro')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  // Swagger documentation - Only in development
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('QuadraFC API')
+      .setDescription('API para o app de palpites de futebol brasileiro')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  }
 
   await app.init();
   cachedApp = app;
@@ -76,6 +78,18 @@ async function createApp() {
 // For Vercel serverless functions
 export default async function handler(req: any, res: any) {
   const app = await createApp();
+
+  // Simple API status route
+  if (req.url === '/api' || req.url === '/api/') {
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+      message: 'QuadraFC API is running! 🚀',
+      version: '1.0.0',
+      docs: process.env.NODE_ENV !== 'production' ? '/docs' : 'Swagger disabled in production',
+      environment: process.env.NODE_ENV || 'development',
+    });
+  }
+
   const expressApp = app.getHttpAdapter().getInstance();
   return expressApp(req, res);
 }
