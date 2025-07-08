@@ -11,6 +11,7 @@ import { LoginDto } from '../../shared/dto/login.dto';
 import { RegisterDto } from '../../shared/dto/register.dto';
 import { BairrosService } from '../bairros/bairros.service';
 import { UsersService } from '../users/users.service';
+import { SessionService } from './session.service';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,8 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private bairrosService: BairrosService
+    private bairrosService: BairrosService,
+    private sessionService: SessionService
   ) {}
 
   async register(registerDto: RegisterDto, response: Response) {
@@ -53,7 +55,7 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto, response: Response) {
+  async login(loginDto: LoginDto, response: Response, request?: any) {
     // Validar usuário
     const user = await this.usersService.findByEmail(loginDto.email);
     if (
@@ -63,18 +65,38 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    // Gerar JWT
-    const payload = { email: user.email, sub: user._id };
-    const token = this.jwtService.sign(payload);
+    // Extrair informações do request
+    const deviceInfo = this.getDeviceInfo(request);
+    const ipAddress = this.getClientIP(request);
+    const userAgent = request?.headers?.['user-agent'] || 'Unknown';
 
-    // Configurar cookie httpOnly
-    response.cookie('token', token, {
+    // Criar sessão no banco
+    const sessionToken = await this.sessionService.createOrUpdateSession(
+      user._id.toString(),
+      deviceInfo,
+      ipAddress,
+      userAgent
+    );
+
+    // Configurar cookie com session token
+    response.cookie('session_token', sessionToken, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: 'lax', // Mudado de 'none' para 'lax' para melhor compatibilidade mobile
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
+      path: '/',
+    });
+
+    // Também manter JWT como backup
+    const payload = { email: user.email, sub: user._id };
+    const jwtToken = this.jwtService.sign(payload);
+
+    response.cookie('token', jwtToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
       path: '/',
-      // Não definir domain para permitir cookies entre subdomínios do Vercel
     });
 
     // Remover senha do retorno
@@ -85,13 +107,28 @@ export class AuthService {
     };
   }
 
-  async logout(response: Response) {
+  async logout(response: Response, request?: any) {
+    // Invalidar sessão no banco se existir
+    const sessionToken = request?.cookies?.session_token;
+    if (sessionToken) {
+      await this.sessionService.invalidateSession(sessionToken);
+    }
+
+    // Limpar cookies
+    response.clearCookie('session_token', {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
     response.clearCookie('token', {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
       sameSite: 'lax',
       path: '/',
     });
+
     return { message: 'Logout realizado com sucesso' };
   }
 
@@ -179,5 +216,33 @@ export class AuthService {
       message: 'Token renovado com sucesso',
       timestamp: new Date().toISOString(),
     };
+  }
+
+  // Métodos auxiliares para sessões
+  private getDeviceInfo(request: any): string {
+    const userAgent = request?.headers?.['user-agent'] || '';
+
+    if (userAgent.includes('iPhone')) return 'iPhone';
+    if (userAgent.includes('iPad')) return 'iPad';
+    if (userAgent.includes('Android')) return 'Android';
+    if (userAgent.includes('Windows')) return 'Windows';
+    if (userAgent.includes('Mac')) return 'Mac';
+    if (userAgent.includes('Linux')) return 'Linux';
+
+    return 'Unknown Device';
+  }
+
+  private getClientIP(request: any): string {
+    return (
+      request?.ip ||
+      request?.connection?.remoteAddress ||
+      request?.socket?.remoteAddress ||
+      request?.headers?.['x-forwarded-for']?.split(',')[0] ||
+      'Unknown IP'
+    );
+  }
+
+  async validateSessionToken(sessionToken: string): Promise<string | null> {
+    return await this.sessionService.validateSession(sessionToken);
   }
 }

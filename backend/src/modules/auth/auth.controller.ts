@@ -41,8 +41,12 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
-  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) response: Response) {
-    return this.authService.login(loginDto, response);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+    @Request() req
+  ) {
+    return this.authService.login(loginDto, response, req);
   }
 
   @Post('logout')
@@ -50,8 +54,8 @@ export class AuthController {
   @ResponseMessage('Logout realizado com sucesso')
   @ApiOperation({ summary: 'Fazer logout' })
   @ApiResponse({ status: 200, description: 'Logout realizado com sucesso' })
-  async logout(@Res({ passthrough: true }) response: Response) {
-    return this.authService.logout(response);
+  async logout(@Res({ passthrough: true }) response: Response, @Request() req) {
+    return this.authService.logout(response, req);
   }
 
   @Get('profile')
@@ -62,6 +66,21 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   async getProfile(@Request() req) {
     return this.authService.getProfile(req.user._id || req.user.sub);
+  }
+
+  @Get('validate-session')
+  @ApiBearerAuth()
+  @ResponseMessage('Sessão validada com sucesso')
+  @ApiOperation({ summary: 'Validar sessão atual' })
+  @ApiResponse({ status: 200, description: 'Sessão válida' })
+  @ApiResponse({ status: 401, description: 'Sessão inválida' })
+  async validateSession(@Request() req) {
+    const user = await this.authService.getProfile(req.user._id || req.user.sub);
+    return {
+      valid: true,
+      user,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   @Put('profile')
