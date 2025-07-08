@@ -15,6 +15,10 @@
   &--podium {
     background: linear-gradient(135deg, #fff8e1 0%, #fffbf0 100%);
   }
+
+  &--lower-rank {
+    background: var(--secondary-color);
+  }
 }
 
 // BADGE DE POSIÇÃO

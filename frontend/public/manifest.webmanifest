@@ -5,24 +5,14 @@
   "theme_color": "#1e3a8a",
   "background_color": "#ffffff",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "minimal-ui",
-    "standalone",
-    "browser"
-  ],
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
   "scope": "/",
   "start_url": "/?utm_source=pwa&utm_medium=homescreen",
   "id": "quadrafc-pwa-2025",
   "lang": "pt-BR",
   "dir": "ltr",
-  "categories": [
-    "sports",
-    "games",
-    "entertainment",
-    "lifestyle"
-  ],
+  "categories": ["sports", "games", "entertainment", "lifestyle"],
   "screenshots": [
     {
       "src": "icons/icon-512x512.png",
@@ -190,13 +180,7 @@
     {
       "action": "/",
       "accept": {
-        "image/*": [
-          ".png",
-          ".jpg",
-          ".jpeg",
-          ".gif",
-          ".webp"
-        ]
+        "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"]
       }
     }
   ]
