@@ -37,14 +37,60 @@ export class SessionService {
     return sessionToken;
   }
 
+  async createOrUpdateSessionWithToken(
+    userId: string,
+    deviceInfo: string,
+    ipAddress: string,
+    userAgent: string,
+    jwtToken: string
+  ): Promise<string> {
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 dias
+    const now = new Date();
+
+    console.log('🔍 SessionService - Criando/atualizando sessão para userId:', userId);
+    console.log('🔍 SessionService - Token JWT:', jwtToken.substring(0, 20) + '...');
+
+    // Atualizar ou criar sessão (apenas uma por usuário) com o JWT token
+    const result = await this.sessionModel.findOneAndUpdate(
+      { userId },
+      {
+        userId,
+        sessionToken: jwtToken, // Usar o JWT token como sessionToken
+        deviceInfo,
+        ipAddress,
+        userAgent,
+        isActive: true,
+        expiresAt,
+        lastActivity: now,
+      },
+      { upsert: true, new: true }
+    );
+
+    console.log('✅ SessionService - Sessão salva:', result ? 'Sucesso' : 'Falha');
+    console.log('🔍 SessionService - ID da sessão:', result?._id);
+
+    return jwtToken;
+  }
+
   async validateSession(sessionToken: string): Promise<string | null> {
+    console.log('🔍 SessionService - Validando token:', sessionToken.substring(0, 20) + '...');
+
     const session = await this.sessionModel.findOne({
       sessionToken,
       isActive: true,
       expiresAt: { $gt: new Date() },
     });
 
+    console.log('🔍 SessionService - Sessão encontrada:', session ? 'Sim' : 'Não');
+
+    if (session) {
+      console.log('🔍 SessionService - UserId da sessão:', session.userId);
+      console.log('🔍 SessionService - Sessão ativa:', session.isActive);
+      console.log('🔍 SessionService - Expira em:', session.expiresAt);
+    }
+
     if (!session) {
+      console.error('❌ SessionService - Sessão não encontrada ou expirada');
       return null;
     }
 
@@ -105,5 +151,18 @@ export class SessionService {
   // Método para atualizar última atividade (para o interceptor)
   async updateSessionActivity(sessionToken: string): Promise<void> {
     await this.sessionModel.updateOne({ sessionToken }, { lastActivity: new Date() });
+  }
+
+  async updateSessionToken(userId: string, newToken: string): Promise<void> {
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 dias
+
+    await this.sessionModel.findOneAndUpdate(
+      { userId, isActive: true },
+      {
+        sessionToken: newToken,
+        expiresAt,
+        lastActivity: new Date(),
+      }
+    );
   }
 }

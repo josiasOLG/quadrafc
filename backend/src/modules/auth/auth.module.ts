@@ -9,7 +9,6 @@ import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { SessionService } from './session.service';
-import { JwtSessionStrategy } from './strategies/jwt-session.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
@@ -23,14 +22,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '7d'),
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '30d'), // Aumentado para 30 dias
         },
       }),
       inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, SessionService, JwtStrategy, JwtSessionStrategy],
+  providers: [AuthService, SessionService, JwtStrategy],
   exports: [AuthService, SessionService],
 })
 export class AuthModule {}

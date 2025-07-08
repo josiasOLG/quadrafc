@@ -5,7 +5,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '../src/app.module';
 import { GlobalExceptionFilter } from '../src/shared/filters/global-exception.filter';
 import { ResponseTransformInterceptor } from '../src/shared/interceptors/response-transform.interceptor';
-import cookieParser = require('cookie-parser');
 
 let cachedApp: any = null;
 
@@ -18,11 +17,19 @@ async function createApp() {
     logger: ['error', 'warn'],
   });
 
+  // Validate required environment variables for JWT
+  const requiredEnvVars = ['JWT_SECRET'];
+  const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+
+  if (missingEnvVars.length > 0) {
+    console.error('❌ Missing required environment variables:', missingEnvVars);
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+    }
+  }
+
   const configService = app.get(ConfigService);
   const reflector = app.get(Reflector);
-
-  // Cookie parser middleware
-  app.use(cookieParser());
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -40,7 +47,7 @@ async function createApp() {
     })
   );
 
-  // CORS configuration
+  // CORS configuration for JWT tokens
   app.enableCors({
     origin: [
       'http://localhost:4200',
@@ -53,27 +60,27 @@ async function createApp() {
       'https://quadrafc-admin.vercel.app',
       // Add your custom domains here
     ],
-    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
       'Authorization',
       'Accept',
       'X-Requested-With',
-      'X-iOS-PWA',
-      'X-iOS-PWA-Retry',
-      'X-iOS-PWA-Session-Refresh',
-      'X-iOS-PWA-Touch',
       'Cache-Control',
       'Pragma',
       'Expires',
     ],
-    exposedHeaders: ['Set-Cookie'],
     optionsSuccessStatus: 200,
   });
 
   // Global prefix
   app.setGlobalPrefix('api');
+
+  // Trust proxy for JWT in production (Vercel)
+  if (process.env.NODE_ENV === 'production') {
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.set('trust proxy', 1);
+  }
 
   // Swagger documentation - Only in development
   if (process.env.NODE_ENV !== 'production') {
@@ -103,6 +110,7 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({
       message: 'QuadraFC API is running! 🚀',
       version: '1.0.0',
+      authentication: 'JWT Bearer Token',
       docs: process.env.NODE_ENV !== 'production' ? '/docs' : 'Swagger disabled in production',
       environment: process.env.NODE_ENV || 'development',
     });

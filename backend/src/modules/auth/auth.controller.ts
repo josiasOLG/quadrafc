@@ -95,12 +95,12 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Sessão renovada com sucesso')
+  @ResponseMessage('Token renovado com sucesso')
   @ApiOperation({ summary: 'Renovar token de autenticação' })
   @ApiResponse({ status: 200, description: 'Token renovado com sucesso' })
   @ApiResponse({ status: 401, description: 'Token inválido ou expirado' })
-  async refreshToken(@Request() req, @Res({ passthrough: true }) response: Response) {
-    return this.authService.refreshToken(req.user._id || req.user.sub, response);
+  async refreshToken(@Request() req) {
+    return this.authService.refreshToken(req.user._id || req.user.sub);
   }
 
   @Get('ping')
