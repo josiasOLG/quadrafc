@@ -1,0 +1,63 @@
+// ===================================
+// CSS CUSTOM PROPERTIES (CSS VARIABLES)
+// ===================================
+
+:root {
+  // Cores principais
+  --primary-color: var(--qfc-primary-hover);
+  --primary-color-text: #ffffff;
+  
+  // Superfícies
+  --surface-0: #ffffff;
+  --surface-50: #f8f9fa;
+  --surface-100: #e9ecef;
+  --surface-200: #dee2e6;
+  --surface-300: #ced4da;
+  --surface-400: #adb5bd;
+  --surface-500: #6c757d;
+  --surface-600: #495057;
+  --surface-700: #343a40;
+  --surface-800: #212529;
+  --surface-900: #121212;
+  
+  // Escala de cinza
+  --gray-50: #f8f9fa;
+  --gray-100: #e9ecef;
+  --gray-200: #dee2e6;
+  --gray-300: #ced4da;
+  --gray-400: #adb5bd;
+  --gray-500: #6c757d;
+  --gray-600: #495057;
+  --gray-700: #343a40;
+  --gray-800: #212529;
+  --gray-900: #121212;
+  
+  // Layout
+  --content-padding: 1rem;
+  --inline-spacing: 0.5rem;
+  --border-radius: 6px;
+  
+  // Superfícies específicas
+  --surface-ground: #efefef;
+  --surface-section: #ffffff;
+  --surface-card: #ffffff;
+  --surface-overlay: #ffffff;
+  --surface-border: #ddd;
+  --surface-hover: #f8f9fa;
+  
+  // Estados interativos
+  --focus-ring: 0 0 0 0.2rem #fbd38d;
+  --maskbg: rgba(0, 0, 0, 0.4);
+  --highlight-bg: var(--primary-color);
+  --highlight-text-color: var(--primary-color-text);
+  
+  // Tipografia
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+// Mobile first responsive
+@media (max-width: 768px) {
+  :root {
+    --content-padding: 0.5rem;
+  }
+}

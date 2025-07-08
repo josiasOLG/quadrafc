@@ -1,0 +1,76 @@
+// ===================================
+// SETTINGS - VARIABLES
+// ===================================
+// Global variables, config switches
+
+// QuadraFC Color Palette
+:root {
+  // Cores principais do QuadraFC
+  --qfc-primary: #1e3a8a;
+  --qfc-primary-hover: #ff6a3d;
+  --qfc-secondary: #3b82f6;
+  --qfc-accent: #fbbf24;
+  
+  // Cores do sistema
+  --qfc-success: #10b981;
+  --qfc-warning: #f59e0b;
+  --qfc-error: #ef4444;
+  --qfc-info: #3b82f6;
+  
+  // Cores neutras
+  --qfc-white: #ffffff;
+  --qfc-black: #000000;
+  --qfc-gray-50: #f8f9fa;
+  --qfc-gray-100: #e9ecef;
+  --qfc-gray-200: #dee2e6;
+  --qfc-gray-300: #ced4da;
+  --qfc-gray-400: #adb5bd;
+  --qfc-gray-500: #6c757d;
+  --qfc-gray-600: #495057;
+  --qfc-gray-700: #343a40;
+  --qfc-gray-800: #212529;
+  --qfc-gray-900: #121212;
+}
+
+// SCSS Variables (para compatibilidade com mixins)
+$qfc-primary: var(--qfc-primary);
+$qfc-primary-hover: var(--qfc-primary-hover);
+$qfc-secondary: var(--qfc-secondary);
+$qfc-accent: var(--qfc-accent);
+
+// Breakpoints
+$breakpoints: (
+  'xs': 0,
+  'sm': 576px,
+  'md': 768px,
+  'lg': 992px,
+  'xl': 1200px,
+  'xxl': 1400px
+);
+
+// Spacing
+$spacing-base: 1rem;
+$spacing-scale: (
+  'xs': 0.25rem,
+  'sm': 0.5rem,
+  'md': 1rem,
+  'lg': 1.5rem,
+  'xl': 2rem,
+  'xxl': 3rem
+);
+
+// Typography
+$font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-family-icons: 'primeicons';
+
+// Z-index layers
+$z-index: (
+  'dropdown': 1000,
+  'sticky': 1020,
+  'fixed': 1030,
+  'modal-backdrop': 1040,
+  'modal': 1050,
+  'popover': 1060,
+  'tooltip': 1070,
+  'toast': 1080
+);

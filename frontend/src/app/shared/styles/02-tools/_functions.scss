@@ -1,0 +1,37 @@
+// ===================================
+// TOOLS - FUNCTIONS
+// ===================================
+// Globally available functions
+
+// Get z-index value
+@function z($layer) {
+  @if map-has-key($z-index, $layer) {
+    @return map-get($z-index, $layer);
+  } @else {
+    @warn "Invalid z-index layer: #{$layer}.";
+    @return 0;
+  }
+}
+
+// Get spacing value
+@function spacing($size) {
+  @if map-has-key($spacing-scale, $size) {
+    @return map-get($spacing-scale, $size);
+  } @else {
+    @warn "Invalid spacing size: #{$size}.";
+    @return $spacing-base;
+  }
+}
+
+// Convert px to rem
+@function rem($pixels, $base: 16px) {
+  @return ($pixels / $base) * 1rem;
+}
+
+// Strip unit from number
+@function strip-unit($number) {
+  @if type-of($number) == 'number' and not unitless($number) {
+    @return $number / ($number * 0 + 1);
+  }
+  @return $number;
+}

@@ -1,0 +1,92 @@
+// ===================================
+// FONT FAMILY GLOBAL SETUP
+// ===================================
+// Garantir que toda a aplicação use a fonte Inter, exceto ícones
+
+*:not([class*='pi-']):not(.pi) {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+// Aplicar Inter especificamente aos componentes PrimeNG
+.p-component,
+.p-element,
+.p-button,
+.p-inputtext,
+.p-dropdown,
+.p-calendar,
+.p-autocomplete,
+.p-dialog,
+.p-card,
+.p-panel,
+.p-tabview,
+.p-accordion,
+.p-menubar,
+.p-menu,
+.p-contextmenu,
+.p-breadcrumb,
+.p-steps,
+.p-tieredmenu,
+.p-megamenu,
+.p-sidebar,
+.p-toolbar,
+.p-paginator,
+.p-datatable,
+.p-tree,
+.p-treetable,
+.p-dataview,
+.p-picklist,
+.p-orderlist,
+.p-organizationchart,
+.p-carousel,
+.p-galleria,
+.p-image,
+.p-avatar,
+.p-badge,
+.p-chip,
+.p-tag,
+.p-progressbar,
+.p-progressspinner,
+.p-skeleton,
+.p-scrolltop,
+.p-terminal,
+.p-inplace,
+.p-toast,
+.p-message,
+.p-messages,
+.p-confirmdialog,
+.p-confirmationservice,
+.p-blockui,
+.p-defer,
+.p-focus-trap {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+// Garantir que os ícones PrimeIcons mantenham sua fonte original
+.pi,
+[class*='pi-'] {
+  font-family: 'primeicons' !important;
+}
+
+// Garantir Inter em todos os elementos de texto, mas não em ícones
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span:not(.pi):not([class*='pi-']),
+div:not(.pi):not([class*='pi-']),
+a,
+button,
+input,
+textarea,
+select,
+label,
+.text,
+.title,
+.subtitle,
+.content,
+.description {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
