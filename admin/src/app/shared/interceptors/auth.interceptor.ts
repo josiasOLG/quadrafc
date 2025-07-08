@@ -12,6 +12,8 @@ import { catchError } from 'rxjs/operators';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
+  private isRedirecting = false; // Flag para evitar múltiplos redirecionamentos
+
   constructor(private router: Router) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -31,8 +33,10 @@ export class AuthInterceptor implements HttpInterceptor {
         console.log('AuthInterceptor: Erro na requisição:', error.status, error.url);
 
         // Se erro 401, pode ser problema de autenticação
-        if (error.status === 401) {
+        if (error.status === 401 && !this.isRedirecting) {
           console.log('AuthInterceptor: Erro 401 - Token inválido ou expirado');
+
+          this.isRedirecting = true;
 
           // Limpar dados de autenticação local
           localStorage.removeItem('quadrafc_admin_user');
@@ -45,7 +49,11 @@ export class AuthInterceptor implements HttpInterceptor {
           // Só redirecionar se não estiver já na página de login
           if (!window.location.pathname.includes('/login')) {
             console.log('AuthInterceptor: Redirecionando para login');
-            this.router.navigate(['/login']);
+            this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
+              this.isRedirecting = false;
+            });
+          } else {
+            this.isRedirecting = false;
           }
         }
 

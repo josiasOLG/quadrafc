@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import cookieParser from 'cookie-parser';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from '../src/app.module';
 import { GlobalExceptionFilter } from '../src/shared/filters/global-exception.filter';
 import { ResponseTransformInterceptor } from '../src/shared/interceptors/response-transform.interceptor';
@@ -51,7 +51,8 @@ async function createApp() {
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    optionsSuccessStatus: 200,
   });
 
   // Global prefix

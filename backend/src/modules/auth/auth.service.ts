@@ -39,8 +39,9 @@ export class AuthService {
     response.cookie('token', token, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: 'strict',
+      sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+      // Não definir domain para permitir cookies entre subdomínios do Vercel
     });
 
     // Remover senha do retorno
@@ -69,8 +70,9 @@ export class AuthService {
     response.cookie('token', token, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
-      sameSite: 'strict',
+      sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+      // Não definir domain para permitir cookies entre subdomínios do Vercel
     });
 
     // Remover senha do retorno

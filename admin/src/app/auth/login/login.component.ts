@@ -48,7 +48,8 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     // Verificar se já está logado
     if (this.authService.isAuthenticated) {
-      this.router.navigate(['/dashboard']);
+      console.log('Usuário já autenticado, navegando para dashboard');
+      this.router.navigate(['/dashboard'], { replaceUrl: true });
       return;
     }
 

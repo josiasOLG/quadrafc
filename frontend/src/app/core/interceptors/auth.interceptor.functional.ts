@@ -7,9 +7,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Garantimos que todas as requisições incluam credentials para cookies
   const authReq = req.clone({
     setHeaders: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    withCredentials: true
+    withCredentials: true,
   });
 
   return next(authReq);

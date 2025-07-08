@@ -14,26 +14,16 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean> | Promise<boolean> | boolean {
     console.log('AuthGuard: Verificando autenticação para:', state.url);
-    console.log('AuthGuard: isAuthenticated:', this.authService.isAuthenticated);
-    console.log('AuthGuard: currentUser:', this.authService.currentUser);
 
-    // Debug do localStorage
-    console.log('AuthGuard: localStorage auth:', localStorage.getItem('quadrafc_admin_auth'));
-    console.log(
-      'AuthGuard: localStorage user exists:',
-      !!localStorage.getItem('quadrafc_admin_user')
-    );
+    // Evitar loop infinito verificando se já estamos na página de login
+    if (state.url === '/login') {
+      return true;
+    }
 
-    // Se não está autenticado mas há dados salvos, tentar recarregar
+    // Se não está autenticado mas há dados salvos, tentar recarregar UMA vez apenas
     if (!this.authService.isAuthenticated && this.authService.hasStoredAuthData()) {
       console.log('AuthGuard: Dados encontrados no storage, tentando recarregar...');
       this.authService.reloadAuthData();
-
-      // Verificar novamente após recarregar
-      if (this.authService.isAuthenticated) {
-        console.log('AuthGuard: Dados recarregados com sucesso, permitindo acesso');
-        return true;
-      }
     }
 
     if (this.authService.isAuthenticated) {
@@ -42,9 +32,10 @@ export class AuthGuard implements CanActivate {
     }
 
     console.log('AuthGuard: Usuário não autenticado, redirecionando para login');
-    // Redirecionar para login se não autenticado
+    // Usar replace para evitar loop de navegação
     this.router.navigate(['/login'], {
       queryParams: { returnUrl: state.url },
+      replaceUrl: true,
     });
     return false;
   }
@@ -61,11 +52,13 @@ export class AdminGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean> | Promise<boolean> | boolean {
     console.log('AdminGuard: Verificando permissões de admin para:', state.url);
-    console.log('AdminGuard: isAuthenticated:', this.authService.isAuthenticated);
-    console.log('AdminGuard: isAdmin:', this.authService.isAdmin);
-    console.log('AdminGuard: currentUser:', this.authService.currentUser);
 
-    // Se não está autenticado mas há dados salvos, tentar recarregar
+    // Evitar loop infinito verificando se já estamos na página de login
+    if (state.url === '/login') {
+      return true;
+    }
+
+    // Se não está autenticado mas há dados salvos, tentar recarregar UMA vez apenas
     if (!this.authService.isAuthenticated && this.authService.hasStoredAuthData()) {
       console.log('AdminGuard: Dados encontrados no storage, tentando recarregar...');
       this.authService.reloadAuthData();
@@ -77,8 +70,8 @@ export class AdminGuard implements CanActivate {
     }
 
     console.log('AdminGuard: Usuário não é admin, redirecionando para login');
-    // Redirecionar para login ou página de acesso negado
-    this.router.navigate(['/login']);
+    // Usar replace para evitar loop de navegação
+    this.router.navigate(['/login'], { replaceUrl: true });
     return false;
   }
 }
