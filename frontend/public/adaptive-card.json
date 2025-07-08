@@ -1,0 +1,108 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "Container",
+      "style": "emphasis",
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "Image",
+                  "url": "https://quadrafc.vercel.app/icons/apple-icon-180.png",
+                  "size": "small",
+                  "style": "person"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "QuadraFC",
+                  "weight": "bolder",
+                  "size": "medium",
+                  "color": "accent"
+                },
+                {
+                  "type": "TextBlock",
+                  "text": "Ranking Atual",
+                  "size": "small",
+                  "color": "default",
+                  "isSubtle": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "spacing": "medium",
+      "items": [
+        {
+          "type": "FactSet",
+          "facts": [
+            {
+              "title": "🥇 1º Lugar:",
+              "value": "${ranking.first.name}"
+            },
+            {
+              "title": "🥈 2º Lugar:",
+              "value": "${ranking.second.name}"
+            },
+            {
+              "title": "🥉 3º Lugar:",
+              "value": "${ranking.third.name}"
+            },
+            {
+              "title": "📊 Sua Posição:",
+              "value": "${user.position}º"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "spacing": "medium",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "Próxima Rodada: ${nextRound.name}",
+          "size": "small",
+          "weight": "bolder",
+          "color": "accent"
+        },
+        {
+          "type": "TextBlock",
+          "text": "Data: ${nextRound.date}",
+          "size": "small",
+          "isSubtle": true
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "Abrir App",
+      "url": "https://quadrafc.vercel.app/"
+    },
+    {
+      "type": "Action.OpenUrl",
+      "title": "Ver Ranking",
+      "url": "https://quadrafc.vercel.app/ranking"
+    }
+  ]
+}

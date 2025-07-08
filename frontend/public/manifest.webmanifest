@@ -1,60 +1,187 @@
 {
-  "name": "QuadraFC",
+  "name": "QuadraFC - Palpites Esportivos",
   "short_name": "QuadraFC",
-  "description": "Plataforma de palpites e entretenimento esportivo por bairros",
-  "theme_color": "#FF6A3D",
+  "description": "Plataforma de palpites esportivos por bairros. Participe, compita e ganhe prêmios!",
+  "theme_color": "#1e3a8a",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "./",
-  "start_url": "./",
+  "display_override": ["window-controls-overlay", "minimal-ui", "standalone", "browser"],
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/?utm_source=pwa&utm_medium=homescreen",
+  "id": "quadrafc-pwa-2025",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["sports", "games", "entertainment", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "QuadraFC - Tela Principal"
+    }
+  ],
   "icons": [
     {
       "src": "icons/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Fazer Palpite",
+      "short_name": "Palpite",
+      "description": "Fazer um novo palpite",
+      "url": "/palpites",
+      "icons": [
+        {
+          "src": "icons/apple-icon-180.png",
+          "sizes": "180x180"
+        }
+      ]
+    },
+    {
+      "name": "Ver Ranking",
+      "short_name": "Ranking",
+      "description": "Visualizar o ranking",
+      "url": "/ranking",
+      "icons": [
+        {
+          "src": "icons/apple-icon-180.png",
+          "sizes": "180x180"
+        }
+      ]
+    },
+    {
+      "name": "Meu Perfil",
+      "short_name": "Perfil",
+      "description": "Acessar meu perfil",
+      "url": "/perfil",
+      "icons": [
+        {
+          "src": "icons/apple-icon-180.png",
+          "sizes": "180x180"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "name": "ranking-widget",
+      "short_name": "Ranking",
+      "description": "Widget do ranking atual",
+      "tag": "ranking",
+      "template": "ranking-template",
+      "data": "/api/widget/ranking",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "icons/apple-icon-180.png",
+          "sizes": "180x180",
+          "label": "Widget Ranking"
+        }
+      ],
+      "icons": [
+        {
+          "src": "icons/apple-icon-180.png",
+          "sizes": "180x180"
+        }
+      ],
+      "auth": false,
+      "update": 900
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "note_taking": {
+    "new_note_url": "/nova-nota"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+quadrafc",
+      "url": "/?action=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share-target/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"]
+      }
     }
   ]
 }

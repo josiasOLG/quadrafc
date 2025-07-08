@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# PWA Resources
+Allow: /manifest.webmanifest
+Allow: /browserconfig.xml
+Allow: /icons/
+Allow: /.well-known/
+
+# Sitemap
+Sitemap: https://quadrafc.vercel.app/sitemap.xml
+
+# Disallow admin areas (if any)
+Disallow: /admin/
+Disallow: /api/admin/

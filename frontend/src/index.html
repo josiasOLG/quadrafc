@@ -1,16 +1,287 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
     <title>QuadraFC - Palpites Esportivos</title>
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <meta
       name="description"
       content="Plataforma de palpites esportivos por bairros. Participe, compita e ganhe prêmios!" />
+
+    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png" />
+
+    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.webmanifest" />
-    <meta name="theme-color" content="#FF6A3D" />
+    <link rel="alternate" type="application/json" href="android-chrome-manifest.json" />
+    <link rel="alternate" type="application/json" href="pwa-manifest.json" />
+
+    <!-- Theme colors -->
+    <meta name="theme-color" content="#1e3a8a" />
+    <meta name="msapplication-TileColor" content="#1e3a8a" />
+    <meta name="msapplication-navbutton-color" content="#1e3a8a" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Apple PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="QuadraFC" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Apple Icons -->
+    <link rel="apple-touch-icon" href="icons/apple-icon-180.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-icon-180.png" />
+
+    <!-- Apple Splash Screens -->
+    <link
+      href="icons/apple-splash-2048-2732.jpg"
+      media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2732-2048.jpg"
+      media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1668-2388.jpg"
+      media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2388-1668.jpg"
+      media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1536-2048.jpg"
+      media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2048-1536.jpg"
+      media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1668-2224.jpg"
+      media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2224-1668.jpg"
+      media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1620-2160.jpg"
+      media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2160-1620.jpg"
+      media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1290-2796.jpg"
+      media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2796-1290.jpg"
+      media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1179-2556.jpg"
+      media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2556-1179.jpg"
+      media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1284-2778.jpg"
+      media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2778-1284.jpg"
+      media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1170-2532.jpg"
+      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2532-1170.jpg"
+      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1125-2436.jpg"
+      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2436-1125.jpg"
+      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1242-2688.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2688-1242.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-828-1792.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1792-828.jpg"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1242-2208.jpg"
+      media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-2208-1242.jpg"
+      media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-750-1334.jpg"
+      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1334-750.jpg"
+      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-640-1136.jpg"
+      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      rel="apple-touch-startup-image" />
+    <link
+      href="icons/apple-splash-1136-640.jpg"
+      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+      rel="apple-touch-startup-image" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="QuadraFC" />
+    <meta name="keywords" content="palpites esportivos, futebol, competição, bairros, prêmios, apostas" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="QuadraFC - Palpites Esportivos" />
+    <meta
+      property="og:description"
+      content="Plataforma de palpites esportivos por bairros. Participe, compita e ganhe prêmios!" />
+    <meta property="og:image" content="icons/icon-512x512.png" />
+    <meta property="og:url" content="https://quadrafc.vercel.app" />
+    <meta property="og:site_name" content="QuadraFC" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="QuadraFC - Palpites Esportivos" />
+    <meta
+      name="twitter:description"
+      content="Plataforma de palpites esportivos por bairros. Participe, compita e ganhe prêmios!" />
+    <meta name="twitter:image" content="icons/icon-512x512.png" />
+
+    <!-- Microsoft -->
+    <meta name="msapplication-TileImage" content="icons/icon-144x144.png" />
+    <meta name="msapplication-config" content="browserconfig.xml" />
+
+    <!-- Android Configuration -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-title" content="QuadraFC" />
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Android Chrome -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#1e3a8a" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e3a8a" />
+
+    <!-- Samsung Internet -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+
+    <!-- Android Intent Filters -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="format-detection" content="date=no" />
+    <meta name="format-detection" content="address=no" />
+    <meta name="format-detection" content="email=no" />
+
+    <!-- Android Homescreen -->
+    <meta name="android-app-installable" content="yes" />
+    <meta name="android-app-package-name" content="app.quadrafc.pwa" />
+
+    <!-- Android Navigation Bar -->
+    <meta name="android-navigation-bar-color" content="#1e3a8a" />
+    <meta name="android-status-bar-color" content="#1e3a8a" />
+
+    <!-- Advanced PWA Features -->
+    <meta name="mobile-web-app-orientation" content="portrait" />
+    <meta name="mobile-web-app-fullscreen" content="yes" />
+
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="icons/apple-icon-180.png" as="image" />
+    <link rel="preload" href="icons/manifest-icon-512.maskable.png" as="image" />
+
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+
+    <!-- Resource Hints -->
+    <link rel="prefetch" href="/api/user" />
+    <link rel="prefetch" href="/api/rodadas" />
+
+    <!-- Critical CSS Inline -->
+    <style>
+      /* Prevent FOUC */
+      app-root {
+        display: block;
+        min-height: 100vh;
+      }
+
+      /* PWA Standalone Styles */
+      .pwa-standalone {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .ios-standalone {
+        --status-bar-height: 20px;
+      }
+
+      @media screen and (min-device-width: 375px) and (max-device-width: 414px) and (-webkit-min-device-pixel-ratio: 3) {
+        .ios-standalone {
+          --status-bar-height: 44px;
+        }
+      }
+
+      /* Loading Animation */
+      .initial-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+
+      .initial-loader .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid #ff6a3d;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
 
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -20,7 +291,80 @@
       rel="stylesheet" />
   </head>
   <body>
+    <!-- Initial Loader -->
+    <div class="initial-loader" id="initial-loader">
+      <div class="spinner"></div>
+    </div>
+
     <app-root></app-root>
-    <noscript>Please enable JavaScript to continue using this application.</noscript>
+    <noscript>
+      <div style="text-align: center; padding: 40px; font-family: Arial, sans-serif">
+        <h2>🚫 JavaScript Necessário</h2>
+        <p>O QuadraFC precisa do JavaScript habilitado para funcionar corretamente.</p>
+        <p>Por favor, habilite o JavaScript no seu navegador e recarregue a página.</p>
+      </div>
+    </noscript>
+
+    <!-- Advanced PWA Script -->
+    <script>
+      // Remove initial loader when app loads
+      window.addEventListener('load', function () {
+        const loader = document.getElementById('initial-loader');
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.transition = 'opacity 0.5s ease';
+          setTimeout(() => loader.remove(), 500);
+        }
+      });
+
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker
+            .register('/ngsw-worker.js')
+            .then((registration) => {
+              console.log('✅ SW registered:', registration);
+            })
+            .catch((error) => {
+              console.log('❌ SW registration failed:', error);
+            });
+        });
+      }
+
+      // Performance monitoring
+      window.addEventListener('load', function () {
+        if ('performance' in window) {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          console.log('📊 Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+        }
+      });
+
+      // Offline detection
+      window.addEventListener('online', function () {
+        console.log('🌐 App is online');
+        document.body.classList.remove('offline');
+      });
+
+      window.addEventListener('offline', function () {
+        console.log('📴 App is offline');
+        document.body.classList.add('offline');
+      });
+
+      // Prevent zooming on iOS
+      document.addEventListener('gesturestart', function (e) {
+        e.preventDefault();
+      });
+
+      // Prevent scrolling beyond app boundaries
+      document.addEventListener(
+        'touchmove',
+        function (e) {
+          if (e.scale !== 1) {
+            e.preventDefault();
+          }
+        },
+        { passive: false }
+      );
+    </script>
   </body>
 </html>

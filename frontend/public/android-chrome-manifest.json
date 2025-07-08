@@ -1,0 +1,43 @@
+{
+  "name": "QuadraFC",
+  "short_name": "QuadraFC",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1e3a8a",
+  "background_color": "#ffffff",
+  "scope": "/",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "webapk": {
+    "shell_apk_version": 100,
+    "manifest_url": "https://quadrafc.vercel.app/manifest.webmanifest",
+    "package_name": "org.chromium.webapk.quadrafc",
+    "version": "1.0.0",
+    "update_interval": 86400,
+    "icon_urls": [
+      "https://quadrafc.vercel.app/icons/apple-icon-180.png",
+      "https://quadrafc.vercel.app/icons/manifest-icon-192.maskable.png",
+      "https://quadrafc.vercel.app/icons/manifest-icon-512.maskable.png"
+    ]
+  },
+  "android": {
+    "minSdkVersion": 21,
+    "targetSdkVersion": 34,
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.WAKE_LOCK"
+    ],
+    "intentFilters": [
+      {
+        "action": "android.intent.action.VIEW",
+        "category": ["android.intent.category.DEFAULT", "android.intent.category.BROWSABLE"],
+        "data": {
+          "scheme": "https",
+          "host": "quadrafc.vercel.app"
+        }
+      }
+    ]
+  }
+}
