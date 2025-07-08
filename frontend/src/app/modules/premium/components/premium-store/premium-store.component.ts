@@ -10,12 +10,12 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { AuthService } from '../../../../core/services/auth.service';
 import { PremiumPermissionsService } from '../../../../core/services/premium-permissions.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { User } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { RankingService } from '../../../ranking/services/ranking.service';
 
 interface CidadeOption {

@@ -53,18 +53,34 @@ export class AuthService {
 
   initializeAuth(): Promise<void> {
     return new Promise((resolve) => {
+      // Verificar se existe um cookie de login simples primeiro
+      const hasLoginCookie = this.cookieService.check('isLoggedIn');
+
+      if (!hasLoginCookie) {
+        // Sem cookie, não faz sentido verificar sessão
+        this.currentUserSubject.next(null);
+        this.loadingSubject.next(false);
+        resolve();
+        return;
+      }
+
       // Verificar sessão no backend
       this.httpService.get<any>('auth/validate-session').subscribe({
         next: (response) => {
           if (response.valid && response.user) {
             this.currentUserSubject.next(response.user);
             this.premiumPermissionsService.loadPermissions().subscribe();
+          } else {
+            // Sessão inválida, limpar cookie
+            this.clearLoginCookie();
+            this.currentUserSubject.next(null);
           }
           this.loadingSubject.next(false);
           resolve();
         },
         error: () => {
-          // Sessão inválida ou não existe
+          // Sessão inválida ou não existe, limpar cookie
+          this.clearLoginCookie();
           this.currentUserSubject.next(null);
           this.loadingSubject.next(false);
           resolve();
@@ -79,6 +95,7 @@ export class AuthService {
         this.currentUserSubject.next(response.user);
         this.loadingSubject.next(false);
         this.premiumPermissionsService.loadPermissions().subscribe();
+        this.setLoginCookie(); // Define o cookie de login simples
       })
     );
   }
@@ -89,6 +106,7 @@ export class AuthService {
         this.currentUserSubject.next(response.user);
         this.loadingSubject.next(false);
         this.premiumPermissionsService.loadPermissions().subscribe();
+        this.setLoginCookie(); // Define o cookie de login simples
       })
     );
   }
@@ -98,6 +116,7 @@ export class AuthService {
       tap(() => {
         this.currentUserSubject.next(null);
         this.premiumPermissionsService.clearPermissions();
+        this.clearLoginCookie(); // Limpa o cookie de login simples
       })
     );
   }
@@ -148,6 +167,7 @@ export class AuthService {
     return this.httpService.post<{ message: string }>('auth/delete-account', { password }).pipe(
       tap(() => {
         this.currentUserSubject.next(null);
+        this.clearLoginCookie(); // Limpar cookie ao deletar conta
       })
     );
   }
@@ -170,11 +190,29 @@ export class AuthService {
 
         if (error.status === 401) {
           this.currentUserSubject.next(null);
+          this.clearLoginCookie(); // Limpar cookie em caso de 401
           return of(false);
         }
 
         return of(!!this.currentUser);
       })
     );
+  }
+
+  // Métodos para gerenciar cookie simples
+  private setLoginCookie(): void {
+    // Cookie simples que dura 30 dias
+    this.cookieService.set('isLoggedIn', 'true', 30, '/', undefined, true, 'Lax');
+  }
+
+  private clearLoginCookie(): void {
+    this.cookieService.delete('isLoggedIn', '/');
+  }
+
+  // Método para limpar sessão local sem fazer chamada para o backend
+  clearLocalSession(): void {
+    this.currentUserSubject.next(null);
+    this.premiumPermissionsService.clearPermissions();
+    this.clearLoginCookie();
   }
 }

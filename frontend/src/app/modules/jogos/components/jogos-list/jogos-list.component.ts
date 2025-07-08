@@ -21,12 +21,12 @@ import { AppButtonComponent } from '../../../../shared/components/app-button/app
 import { AppModalComponent } from '../../../../shared/components/app-modal/app-modal.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
-import { AuthService } from '../../../../core/services/auth.service';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { Palpite } from '../../../../shared/schemas/palpite.schema';
 import { User } from '../../../../shared/schemas/user.schema';
 import { PalpitesService } from '../../../../shared/services/palpites.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { JogosService } from '../../services/jogos.service';
 
 // Interface para jogos que vêm da API

@@ -9,10 +9,10 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { AuthService } from '../../../../core/services/auth.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { User } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { RankingService } from '../../services/ranking.service';
 
 interface RankingBairro {

@@ -1,16 +1,23 @@
+import {
+  HttpErrorResponse,
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { AuthService } from '../../modules/auth/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-
   constructor(
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -29,6 +36,8 @@ export class ErrorInterceptor implements HttpInterceptor {
           case 401:
             errorMessage = 'Sessão expirada. Faça login novamente.';
             this.toastService.error('Sessão Expirada', errorMessage);
+            // Limpar estado local sem fazer chamada para o backend
+            this.authService.clearLocalSession();
             this.router.navigate(['/auth/login']);
             return throwError(() => error);
           case 403:

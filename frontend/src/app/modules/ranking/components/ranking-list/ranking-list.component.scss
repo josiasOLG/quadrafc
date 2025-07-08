@@ -17,7 +17,7 @@
   }
 
   &--lower-rank {
-    background: var(--secondary-color);
+    background: var(--qfc-secondary);
   }
 }
 
@@ -39,7 +39,10 @@
     background: var(--primary-color);
   }
   &--top10 {
-    background: var(--secondary-color);
+    background: var(--qfc-secondary);
+  }
+  &--first {
+    background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
   }
 }
 

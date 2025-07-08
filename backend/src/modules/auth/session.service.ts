@@ -96,4 +96,14 @@ export class SessionService {
   private generateSessionToken(): string {
     return crypto.randomBytes(32).toString('hex');
   }
+
+  // Método para buscar sessão por token (para o interceptor)
+  async findSessionByToken(sessionToken: string): Promise<UserSession | null> {
+    return await this.sessionModel.findOne({ sessionToken });
+  }
+
+  // Método para atualizar última atividade (para o interceptor)
+  async updateSessionActivity(sessionToken: string): Promise<void> {
+    await this.sessionModel.updateOne({ sessionToken }, { lastActivity: new Date() });
+  }
 }

@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SeedService } from './database/seed.service'; // Reativado para criar dados iniciais
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
+import { SessionRefreshInterceptor } from './shared/interceptors/session-refresh.interceptor';
 import { PremiumAccessModule } from './shared/modules/premium-access.module';
 
 // Modules
@@ -67,6 +68,10 @@ import { UsersModule } from './modules/users/users.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SessionRefreshInterceptor,
     },
     SeedService, // Reativado para criar bairros e usuários iniciais para ranking
   ],

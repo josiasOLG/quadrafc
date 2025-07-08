@@ -1,20 +1,20 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
-import { TagModule } from 'primeng/tag';
-import { TabViewModule } from 'primeng/tabview';
-import { SkeletonModule } from 'primeng/skeleton';
-import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { SkeletonModule } from 'primeng/skeleton';
+import { TabViewModule } from 'primeng/tabview';
+import { TagModule } from 'primeng/tag';
 
-import { LojaService } from '../../services/loja.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { ToastService } from '../../../../shared/services/toast.service';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { User } from '../../../../shared/schemas/user.schema';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { AuthService } from '../../../auth/services/auth.service';
+import { LojaService } from '../../services/loja.service';
 
 interface ItemLoja {
   id: string;
@@ -53,10 +53,10 @@ interface Categoria {
     SkeletonModule,
     DialogModule,
     ConfirmDialogModule,
-    CurrencyFormatPipe
+    CurrencyFormatPipe,
   ],
   templateUrl: './loja-list.component.html',
-  styleUrls: ['./loja-list.component.scss']
+  styleUrls: ['./loja-list.component.scss'],
 })
 export class LojaListComponent implements OnInit {
   user: User | null = null;
@@ -78,7 +78,7 @@ export class LojaListComponent implements OnInit {
   }
 
   private loadUser(): void {
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe((user) => {
       this.user = user;
     });
   }
@@ -103,7 +103,7 @@ export class LojaListComponent implements OnInit {
               icone: 'pi-star',
               raridade: 'epico',
               disponivel: true,
-              ja_possui: false
+              ja_possui: false,
             },
             {
               id: 'avatar-2',
@@ -116,9 +116,9 @@ export class LojaListComponent implements OnInit {
               disponivel: true,
               limitado: true,
               data_limite: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              ja_possui: false
-            }
-          ]
+              ja_possui: false,
+            },
+          ],
         },
         {
           id: 'temas',
@@ -134,7 +134,7 @@ export class LojaListComponent implements OnInit {
               icone: 'pi-moon',
               raridade: 'raro',
               disponivel: true,
-              ja_possui: false
+              ja_possui: false,
             },
             {
               id: 'tema-2',
@@ -145,9 +145,9 @@ export class LojaListComponent implements OnInit {
               icone: 'pi-flag',
               raridade: 'comum',
               disponivel: true,
-              ja_possui: false
-            }
-          ]
+              ja_possui: false,
+            },
+          ],
         },
         {
           id: 'powerups',
@@ -164,7 +164,7 @@ export class LojaListComponent implements OnInit {
               raridade: 'comum',
               disponivel: true,
               efeito: 'Multiplica por 2 os pontos do próximo acerto',
-              ja_possui: false
+              ja_possui: false,
             },
             {
               id: 'powerup-2',
@@ -176,17 +176,16 @@ export class LojaListComponent implements OnInit {
               raridade: 'raro',
               disponivel: true,
               efeito: 'Evita quebrar a sequência uma vez',
-              ja_possui: false
-            }
-          ]
-        }
+              ja_possui: false,
+            },
+          ],
+        },
       ];
-
     } catch (error) {
       console.error('Erro ao carregar itens da loja:', error);
       this.toastService.show({
         detail: 'Erro ao carregar itens da loja',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       this.isLoading = false;
@@ -216,26 +215,25 @@ export class LojaListComponent implements OnInit {
 
     try {
       // Simular compra (em produção chamaria o serviço)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Atualizar moedas do usuário (simulado)
       const novasMoedas = (this.user.moedas || 0) - this.selectedItem.preco_moedas;
 
       this.toastService.show({
         detail: `${this.selectedItem.nome} comprado com sucesso!`,
-        severity: 'success'
+        severity: 'success',
       });
 
       // Marcar item como possuído
       this.selectedItem.ja_possui = true;
 
       this.closeConfirmDialog();
-
     } catch (error) {
       console.error('Erro ao comprar item:', error);
       this.toastService.show({
         detail: 'Erro ao comprar item',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       this.isComprandoItem = false;
@@ -252,11 +250,16 @@ export class LojaListComponent implements OnInit {
 
   getRaridadeSeverity(raridade: string): string {
     switch (raridade) {
-      case 'comum': return 'secondary';
-      case 'raro': return 'info';
-      case 'epico': return 'warning';
-      case 'lendario': return 'danger';
-      default: return 'secondary';
+      case 'comum':
+        return 'secondary';
+      case 'raro':
+        return 'info';
+      case 'epico':
+        return 'warning';
+      case 'lendario':
+        return 'danger';
+      default:
+        return 'secondary';
     }
   }
 

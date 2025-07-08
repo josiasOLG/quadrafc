@@ -1,26 +1,32 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
-import { TagModule } from 'primeng/tag';
-import { TabViewModule } from 'primeng/tabview';
-import { ProgressBarModule } from 'primeng/progressbar';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
 import { FileUploadModule } from 'primeng/fileupload';
+import { InputTextModule } from 'primeng/inputtext';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TabViewModule } from 'primeng/tabview';
+import { TagModule } from 'primeng/tag';
 
-import { AuthService } from '../../../../core/services/auth.service';
-import { PalpitesService } from '../../../../shared/services/palpites.service';
-import { ToastService } from '../../../../shared/services/toast.service';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
-import { User } from '../../../../shared/schemas/user.schema';
 import { Palpite } from '../../../../shared/schemas/palpite.schema';
+import { User } from '../../../../shared/schemas/user.schema';
+import { PalpitesService } from '../../../../shared/services/palpites.service';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { AuthService } from '../../../auth/services/auth.service';
 
 interface UserStats {
   total_palpites: number;
@@ -62,10 +68,10 @@ interface Conquista {
     FileUploadModule,
     SkeletonModule,
     CurrencyFormatPipe,
-    TimeAgoPipe
+    TimeAgoPipe,
   ],
   templateUrl: './perfil.component.html',
-  styleUrls: ['./perfil.component.scss']
+  styleUrls: ['./perfil.component.scss'],
 })
 export class PerfilComponent implements OnInit {
   user: User | null = null;
@@ -85,7 +91,7 @@ export class PerfilComponent implements OnInit {
   ) {
     this.editForm = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email]],
     });
   }
 
@@ -97,12 +103,12 @@ export class PerfilComponent implements OnInit {
   }
 
   private loadUserData(): void {
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe((user) => {
       this.user = user;
       if (user) {
         this.editForm.patchValue({
           nome: user.nome,
-          email: user.email
+          email: user.email,
         });
       }
     });
@@ -115,16 +121,16 @@ export class PerfilComponent implements OnInit {
           this.userStats = {
             ...stats,
             nivel: this.user?.nivel || 1,
-            posicao_ranking: 0 // TODO: buscar do ranking service
+            posicao_ranking: 0, // TODO: buscar do ranking service
           };
         },
         error: (error) => {
           console.error('Erro ao carregar estatísticas:', error);
           this.toastService.show({
             detail: 'Erro ao carregar estatísticas',
-            severity: 'error'
+            severity: 'error',
           });
-        }
+        },
       });
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
@@ -141,9 +147,9 @@ export class PerfilComponent implements OnInit {
           console.error('Erro ao carregar palpites recentes:', error);
           this.toastService.show({
             detail: 'Erro ao carregar palpites recentes',
-            severity: 'error'
+            severity: 'error',
           });
-        }
+        },
       });
     } catch (error) {
       console.error('Erro ao carregar palpites:', error);
@@ -160,7 +166,7 @@ export class PerfilComponent implements OnInit {
           descricao: 'Fez seu primeiro palpite',
           icone: 'pi-star',
           data_conquista: new Date(),
-          raridade: 'comum'
+          raridade: 'comum',
         },
         {
           id: '2',
@@ -168,8 +174,8 @@ export class PerfilComponent implements OnInit {
           descricao: 'Acertou 5 palpites seguidos',
           icone: 'pi-bolt',
           data_conquista: new Date(),
-          raridade: 'raro'
-        }
+          raridade: 'raro',
+        },
       ];
     } catch (error) {
       console.error('Erro ao carregar conquistas:', error);
@@ -188,7 +194,7 @@ export class PerfilComponent implements OnInit {
     if (this.user) {
       this.editForm.patchValue({
         nome: this.user.nome,
-        email: this.user.email
+        email: this.user.email,
       });
     }
   }
@@ -203,12 +209,12 @@ export class PerfilComponent implements OnInit {
       const formData = this.editForm.value;
       await this.authService.updateProfile({
         nome: formData.nome,
-        email: formData.email
+        email: formData.email,
       });
 
       this.toastService.show({
         detail: 'Perfil atualizado com sucesso!',
-        severity: 'success'
+        severity: 'success',
       });
 
       this.closeEditDialog();
@@ -216,7 +222,7 @@ export class PerfilComponent implements OnInit {
       console.error('Erro ao atualizar perfil:', error);
       this.toastService.show({
         detail: 'Erro ao atualizar perfil',
-        severity: 'error'
+        severity: 'error',
       });
     } finally {
       this.isUpdating = false;
@@ -234,7 +240,8 @@ export class PerfilComponent implements OnInit {
     const pontosNivelAtual = (this.userStats.nivel - 1) * 1000;
     const pontosProximoNivel = this.userStats.nivel * 1000;
 
-    const progress = ((pontosAtual - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
+    const progress =
+      ((pontosAtual - pontosNivelAtual) / (pontosProximoNivel - pontosNivelAtual)) * 100;
     return Math.min(Math.max(progress, 0), 100);
   }
 
@@ -247,17 +254,27 @@ export class PerfilComponent implements OnInit {
     return Math.max(pontosProximoNivel - pontosAtual, 0);
   }
 
-  getConquistaSeverity(raridade: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' {
+  getConquistaSeverity(
+    raridade: string
+  ): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' {
     switch (raridade) {
-      case 'comum': return 'secondary';
-      case 'raro': return 'info';
-      case 'epico': return 'warning';
-      case 'lendario': return 'danger';
-      default: return 'secondary';
+      case 'comum':
+        return 'secondary';
+      case 'raro':
+        return 'info';
+      case 'epico':
+        return 'warning';
+      case 'lendario':
+        return 'danger';
+      default:
+        return 'secondary';
     }
   }
 
-  getPalpiteStatus(palpite: Palpite): { label: string; severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast' } {
+  getPalpiteStatus(palpite: Palpite): {
+    label: string;
+    severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
+  } {
     switch (palpite.status) {
       case 'ganhou':
         return { label: 'Acertou', severity: 'success' };
