@@ -1,0 +1,181 @@
+// ===================================
+// VENDOR - PRIMENG CUSTOMIZATIONS
+// ===================================
+// Third-party and vendor overrides
+
+// Z-index fixes para overlays do PrimeNG
+.p-calendar {
+  .p-datepicker {
+    z-index: z('modal') !important;
+  }
+}
+
+.p-autocomplete-panel {
+  z-index: z('modal') !important;
+}
+
+.p-dropdown-panel {
+  z-index: z('modal') !important;
+}
+
+.p-dialog {
+  z-index: z('modal') !important;
+}
+
+.p-component-overlay {
+  z-index: z('modal') !important;
+}
+
+.p-overlaypanel {
+  z-index: z('popover') !important;
+}
+
+.p-tooltip {
+  z-index: z('tooltip') !important;
+}
+
+// Button customizations
+.p-button {
+  background: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  font-family: var(--font-family) !important;
+
+  &:enabled:hover {
+    background: rgba(255, 106, 61, 0.92);
+    border-color: rgba(255, 106, 61, 0.92);
+  }
+
+  &:enabled:active {
+    background: rgba(255, 106, 61, 0.68);
+    border-color: rgba(255, 106, 61, 0.68);
+  }
+}
+
+.p-button.p-button-outlined {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+
+  &:enabled:hover {
+    background: var(--primary-color);
+    color: var(--primary-color-text);
+    border: 1px solid var(--primary-color);
+  }
+}
+
+.p-button-outlined {
+  border-color: transparent !important;
+}
+
+// Dialog customizations
+::ng-deep .p-dialog {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--surface-200);
+
+  .p-dialog-header {
+    background: var(--surface-0);
+    border-bottom: 1px solid var(--surface-200);
+    padding: 1.5rem;
+
+    .p-dialog-title {
+      font-family: var(--font-family) !important;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .p-dialog-header-close {
+      background: transparent;
+      border: none;
+      color: var(--text-color-secondary);
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      @include transition();
+
+      &:hover {
+        background: var(--surface-100);
+        color: var(--text-color);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 0.2rem var(--primary-color-200);
+      }
+
+      .p-button-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .p-dialog-content {
+    background: var(--surface-0);
+    padding: 1.5rem;
+    font-family: var(--font-family) !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--surface-0);
+    border-top: 1px solid var(--surface-200);
+    padding: 1rem 1.5rem;
+  }
+
+  .p-dialog-mask {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: none;
+  }
+}
+
+// Aplicar Inter especificamente aos componentes PrimeNG
+.p-component,
+.p-element,
+.p-button,
+.p-inputtext,
+.p-dropdown,
+.p-calendar,
+.p-autocomplete,
+.p-dialog,
+.p-card,
+.p-panel,
+.p-tabview,
+.p-accordion,
+.p-menubar,
+.p-menu,
+.p-contextmenu,
+.p-breadcrumb,
+.p-steps,
+.p-tieredmenu,
+.p-megamenu,
+.p-sidebar,
+.p-toolbar,
+.p-paginator,
+.p-datatable,
+.p-tree,
+.p-treetable,
+.p-dataview,
+.p-picklist,
+.p-orderlist,
+.p-organizationchart,
+.p-carousel,
+.p-galleria,
+.p-image,
+.p-avatar,
+.p-badge,
+.p-chip,
+.p-tag,
+.p-progressbar,
+.p-progressspinner,
+.p-skeleton,
+.p-scrolltop,
+.p-terminal,
+.p-inplace,
+.p-toast,
+.p-message,
+.p-messages,
+.p-confirmdialog,
+.p-confirmationservice,
+.p-blockui,
+.p-defer,
+.p-focus-trap {
+  font-family: var(--font-family) !important;
+}

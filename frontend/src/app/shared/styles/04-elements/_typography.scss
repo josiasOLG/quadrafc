@@ -1,0 +1,158 @@
+// ===================================
+// ELEMENTS - TYPOGRAPHY
+// ===================================
+// Unclassed HTML elements (type selectors)
+
+// Garantir que toda a aplicação use a fonte Inter, exceto ícones
+*:not([class*='pi-']):not(.pi) {
+  font-family: var(--font-family) !important;
+}
+
+// Garantir que os ícones PrimeIcons mantenham sua fonte original
+.pi,
+[class*='pi-'] {
+  font-family: 'primeicons' !important;
+}
+
+// Garantir Inter em todos os elementos de texto, mas não em ícones
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span:not(.pi):not([class*='pi-']),
+div:not(.pi):not([class*='pi-']),
+a,
+button,
+input,
+textarea,
+select,
+label,
+.text,
+.title,
+.subtitle,
+.content,
+.description {
+  font-family: var(--font-family) !important;
+}
+
+// Typography hierarchy
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--surface-800);
+}
+
+h1 {
+  font-size: 2.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+h2 {
+  font-size: 2rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+}
+
+h3 {
+  font-size: 1.75rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+}
+
+h4 {
+  font-size: 1.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+// Links
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Lists
+ul,
+ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.25rem;
+}
+
+// Code
+code {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  background-color: var(--surface-100);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+pre {
+  background-color: var(--surface-100);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+
+  code {
+    background: none;
+    padding: 0;
+  }
+}
+
+// Emphasis
+strong,
+b {
+  font-weight: 600;
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+// Small text
+small {
+  font-size: 0.875em;
+  color: var(--surface-600);
+}

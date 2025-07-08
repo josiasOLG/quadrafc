@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:host": "ng serve --host 192.168.18.5 --port 4200",
     "build": "ng build --configuration=production",
     "vercel-build": "ng build --configuration=production --ssr=false",
     "watch": "ng build --watch --configuration development",

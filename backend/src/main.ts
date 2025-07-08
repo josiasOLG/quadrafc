@@ -32,6 +32,7 @@ async function bootstrap() {
       'https://quadrafc.vercel.app',
       'https://quadrafc-frontend.vercel.app',
       'https://quadrafc-admin.vercel.app',
+      'http://192.168.18.5:4200',
       configService.get('CORS_ORIGIN', 'http://localhost:4200'),
     ].filter(Boolean),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

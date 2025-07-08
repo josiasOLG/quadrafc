@@ -58,6 +58,7 @@ async function createApp() {
       'https://quadrafc.vercel.app',
       'https://quadrafc-frontend.vercel.app',
       'https://quadrafc-admin.vercel.app',
+      'http://192.168.18.5:4200',
       // Add your custom domains here
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

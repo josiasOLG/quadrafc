@@ -1,0 +1,149 @@
+// ===================================
+// OBJECTS - LAYOUT PATTERNS
+// ===================================
+// Class-based selectors which define undecorated design patterns
+
+// Global scroll control
+html,
+body {
+  overflow: hidden !important;
+  height: 100vh;
+  width: 100vw;
+}
+
+// Main app container
+.o-app-container {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+// Main content area
+.o-main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+// Container
+.o-container {
+  @include container();
+}
+
+// Flex utilities
+.o-flex {
+  display: flex;
+}
+
+.o-flex--center {
+  @include flex-center();
+}
+
+.o-flex--between {
+  @include flex-between();
+}
+
+.o-flex--column {
+  @include flex-column();
+}
+
+.o-flex--wrap {
+  flex-wrap: wrap;
+}
+
+// Grid system
+.o-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.o-grid--2-cols {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.o-grid--3-cols {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.o-grid--4-cols {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.o-grid--responsive {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+// Media object
+.o-media {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.o-media__object {
+  flex-shrink: 0;
+}
+
+.o-media__content {
+  flex: 1;
+}
+
+// Stack (vertical spacing)
+.o-stack > * + * {
+  margin-top: 1rem;
+}
+
+.o-stack--small > * + * {
+  margin-top: 0.5rem;
+}
+
+.o-stack--large > * + * {
+  margin-top: 2rem;
+}
+
+// Cluster (horizontal spacing)
+.o-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.o-cluster--center {
+  justify-content: center;
+}
+
+.o-cluster--end {
+  justify-content: flex-end;
+}
+
+// Switcher (responsive layout)
+.o-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.o-switcher > * {
+  flex-grow: 1;
+  flex-basis: calc((30rem - 100%) * 999);
+}
+
+// Cover (full height with header/footer)
+.o-cover {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.o-cover__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

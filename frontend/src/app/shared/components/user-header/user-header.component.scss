@@ -4,7 +4,11 @@
 
 // Importar o efeito de aurora boreal
 @import '../../styles/aurora-boreal';
-
+body.ios-pwa {
+  .user-header {
+    padding-top: 40px;
+  }
+}
 .user-header {
   background: var(--qfc-gradient-primary);
   color: var(--qfc-text-inverse);

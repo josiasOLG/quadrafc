@@ -106,7 +106,7 @@
 // Layout utilities
 .container {
   padding: var(--content-padding);
-  
+
   @media (max-width: 768px) {
     padding: 0.5rem;
   }

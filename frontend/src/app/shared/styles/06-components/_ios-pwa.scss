@@ -1,0 +1,137 @@
+// ===================================
+// COMPONENTS - IOS PWA
+// ===================================
+// Specific UI components for iOS PWA handling
+
+// iOS PWA main styles
+.c-ios-pwa {
+  // Padding principal para compensar a ausência da URL bar no PWA iOS
+  padding-top: 44px !important;
+
+  // Para dispositivos com safe area (iPhone X e superiores)
+  @supports (padding: max(0px)) {
+    padding-top: max(44px, env(safe-area-inset-top)) !important;
+  }
+
+  // Ajustes específicos para iPad em modo PWA
+  &--ipad {
+    padding-top: 24px !important;
+
+    @supports (padding: max(0px)) {
+      padding-top: max(24px, env(safe-area-inset-top)) !important;
+    }
+  }
+
+  // Ajustes específicos para iPhone em modo PWA
+  &--iphone {
+    // iPhones com notch (iPhone X, 11, 12, 13, 14, 15 Pro Max, etc.)
+    @media screen and (min-device-width: 375px) and (max-device-width: 430px) and (-webkit-min-device-pixel-ratio: 3) {
+      padding-top: 47px !important;
+
+      @supports (padding: max(0px)) {
+        padding-top: max(47px, env(safe-area-inset-top)) !important;
+      }
+    }
+
+    // iPhones sem notch (iPhone 6, 7, 8, SE, etc.)
+    @media screen and (min-device-width: 320px) and (max-device-width: 414px) and (-webkit-min-device-pixel-ratio: 2) {
+      padding-top: 44px !important;
+
+      @supports (padding: max(0px)) {
+        padding-top: max(44px, env(safe-area-inset-top)) !important;
+      }
+    }
+  }
+
+  // Propriedades de layout
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+  transition: padding-top 0.3s ease-in-out;
+}
+
+// Safe area support
+.c-ios-pwa--safe-area {
+  @include ios-safe-area();
+}
+
+// Status bar overlay
+.c-ios-pwa-status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-area-top);
+  background-color: var(--status-bar-color);
+  z-index: z('modal');
+  pointer-events: none;
+}
+
+// Status bar color fix
+@supports (-webkit-touch-callout: none) {
+  .c-ios-pwa-status-bar-fix {
+    padding-top: var(--safe-area-top);
+    background-color: var(--status-bar-color);
+  }
+
+  .c-ios-pwa::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--safe-area-top);
+    background-color: var(--status-bar-color);
+    z-index: z('modal');
+    pointer-events: none;
+  }
+
+  .c-ios-pwa .o-app-container,
+  .c-ios-pwa app-root {
+    padding-top: var(--safe-area-top);
+    min-height: calc(100vh - var(--safe-area-top) - var(--safe-area-bottom));
+  }
+
+  .c-ios-pwa .c-header,
+  .c-ios-pwa .c-main-header,
+  .c-ios-pwa .c-app-header {
+    padding-top: calc(var(--safe-area-top) + 1rem);
+    background-color: var(--status-bar-color);
+  }
+
+  .c-ios-pwa .c-bottom-navigation,
+  .c-ios-pwa .c-tabbar,
+  .c-ios-pwa .c-bottom-tabs {
+    padding-bottom: calc(var(--safe-area-bottom) + 0.5rem);
+  }
+}
+
+// Landscape orientation support
+@media screen and (orientation: landscape) {
+  .c-ios-pwa {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-left: constant(safe-area-inset-left);
+    padding-right: constant(safe-area-inset-right);
+  }
+}
+
+// PWA standalone mode
+@media all and (display-mode: standalone) {
+  .c-ios-pwa {
+    background-color: #014473;
+  }
+}
+
+// Legacy support (usando as classes antigas para compatibilidade)
+body.ios-pwa {
+  @extend .c-ios-pwa;
+}
+
+body.ios-pwa.ios-pwa-iphone {
+  @extend .c-ios-pwa--iphone;
+}
+
+body.ios-pwa.ios-pwa-ipad {
+  @extend .c-ios-pwa--ipad;
+}
