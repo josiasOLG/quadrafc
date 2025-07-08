@@ -144,4 +144,32 @@ export class AuthService {
 
     return result;
   }
+
+  async refreshToken(userId: string, response: Response) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Usuário não encontrado');
+    }
+
+    // Gerar novo JWT
+    const payload = { email: user.email, sub: user._id };
+    const token = this.jwtService.sign(payload);
+
+    // Configurar novo cookie httpOnly
+    response.cookie('token', token, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+      // Não definir domain para permitir cookies entre subdomínios do Vercel
+    });
+
+    // Remover senha do retorno
+    const { passwordHash, ...result } = user.toObject();
+    return {
+      user: result,
+      message: 'Token renovado com sucesso',
+      timestamp: new Date().toISOString(),
+    };
+  }
 }

@@ -1,11 +1,21 @@
-import { Controller, Post, Body, Res, HttpCode, HttpStatus, Get, Request, Put } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Put,
+  Request,
+  Res,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { AuthService } from './auth.service';
-import { RegisterDto } from '../../shared/dto/register.dto';
-import { LoginDto } from '../../shared/dto/login.dto';
 import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
+import { LoginDto } from '../../shared/dto/login.dto';
+import { RegisterDto } from '../../shared/dto/register.dto';
+import { AuthService } from './auth.service';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -19,10 +29,7 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Usuário criado com sucesso' })
   @ApiResponse({ status: 409, description: 'Email já está em uso' })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
-  async register(
-    @Body() registerDto: RegisterDto,
-    @Res({ passthrough: true }) response: Response
-  ) {
+  async register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) response: Response) {
     return this.authService.register(registerDto, response);
   }
 
@@ -34,10 +41,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
-  async login(
-    @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) response: Response) {
     return this.authService.login(loginDto, response);
   }
 
@@ -68,5 +72,39 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   async updateProfile(@Request() req, @Body() updateData: any) {
     return this.authService.updateProfile(req.user._id || req.user.sub, updateData);
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Sessão renovada com sucesso')
+  @ApiOperation({ summary: 'Renovar token de autenticação' })
+  @ApiResponse({ status: 200, description: 'Token renovado com sucesso' })
+  @ApiResponse({ status: 401, description: 'Token inválido ou expirado' })
+  async refreshToken(@Request() req, @Res({ passthrough: true }) response: Response) {
+    return this.authService.refreshToken(req.user._id || req.user.sub, response);
+  }
+
+  @Get('ping')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Sessão válida')
+  @ApiOperation({ summary: 'Verificar se a sessão está ativa' })
+  @ApiResponse({ status: 200, description: 'Sessão válida' })
+  @ApiResponse({ status: 401, description: 'Sessão inválida' })
+  async ping(@Request() req) {
+    return {
+      valid: true,
+      userId: req.user._id || req.user.sub,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('me')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Dados do usuário obtidos com sucesso')
+  @ApiOperation({ summary: 'Obter dados básicos do usuário autenticado (alias para profile)' })
+  @ApiResponse({ status: 200, description: 'Dados obtidos com sucesso' })
+  @ApiResponse({ status: 401, description: 'Não autorizado' })
+  async getMe(@Request() req) {
+    return this.authService.getProfile(req.user._id || req.user.sub);
   }
 }
