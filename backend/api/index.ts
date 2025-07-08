@@ -1,10 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
-import * as express from 'express';
 import { AppModule } from '../src/app.module';
 import { GlobalExceptionFilter } from '../src/shared/filters/global-exception.filter';
 import { ResponseTransformInterceptor } from '../src/shared/interceptors/response-transform.interceptor';
@@ -16,8 +14,7 @@ async function createApp() {
     return cachedApp;
   }
 
-  const expressApp = express();
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp), {
+  const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn'],
   });
 
