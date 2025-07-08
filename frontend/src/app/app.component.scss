@@ -1,6 +1,12 @@
 @import 'shared/styles/variables';
 @import 'shared/styles/mixins';
 
+body.ios-pwa {
+  .main-content {
+    padding-top: 44px;
+  }
+}
+
 .app-container {
   height: 100vh;
   width: 100vw;
