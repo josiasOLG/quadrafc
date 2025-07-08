@@ -2,81 +2,22 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
-import { AvatarModule } from 'primeng/avatar';
-import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { ProgressBarModule } from 'primeng/progressbar';
 
 import { AuthService } from '../../modules/auth/services/auth.service';
 import { User } from '../schemas/user.schema';
+import { UserHeaderComponent } from './user-header/user-header.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    CardModule,
-    ButtonModule,
-    ProgressBarModule,
-    AvatarModule,
-    BadgeModule,
-  ],
+  imports: [CommonModule, RouterModule, ButtonModule, UserHeaderComponent],
   template: `
     <!-- LAYOUT PRINCIPAL COM HEADER FIXO E BOTTOM NAV -->
     <div class="main-layout">
       <!-- Header Fixo com Stats do Usuário -->
       <div class="main-layout__header">
-        <!-- 1. Dashboard Icon + Avatar -->
-        <div class="main-layout__header-top">
-          <i class="pi pi-th-large main-layout__dashboard-icon"></i>
-          <p-avatar
-            [image]="user?.foto_perfil || user?.avatarUrl"
-            [label]="user?.nome?.charAt(0)"
-            size="large"
-            shape="circle"
-            styleClass="main-layout__avatar"
-          >
-          </p-avatar>
-        </div>
-
-        <!-- 2. Nome em negrito -->
-        <div class="main-layout__user-name">
-          {{ user?.nome || 'Usuário' }}
-        </div>
-
-        <!-- 3. Cidade e Estado -->
-        <div class="main-layout__user-location">
-          <i class="pi pi-map-marker"></i>
-          {{ getBairroInfo() }}
-        </div>
-
-        <!-- 4. Barra de Progresso -->
-        <div class="main-layout__level-progress">
-          <div class="main-layout__level-info">
-            <span class="main-layout__level-text">Nível {{ getUserLevel() }}</span>
-            <span class="main-layout__progress-text">{{ getLevelProgress() }}%</span>
-          </div>
-          <p-progressBar [value]="getLevelProgress()" styleClass="main-layout__progress-bar">
-          </p-progressBar>
-        </div>
-
-        <!-- 5. Cards de Stats -->
-        <div class="main-layout__stats">
-          <div class="main-layout__stat-card">
-            <div class="main-layout__stat-value">{{ getUserPoints() }}</div>
-            <div class="main-layout__stat-label">Pontos</div>
-          </div>
-          <div class="main-layout__stat-card">
-            <div class="main-layout__stat-value">{{ getUserCoins() }}</div>
-            <div class="main-layout__stat-label">Moedas</div>
-          </div>
-          <div class="main-layout__stat-card">
-            <div class="main-layout__stat-value">{{ getUserStreak() }}</div>
-            <div class="main-layout__stat-label">Sequência</div>
-          </div>
-        </div>
+        <app-user-header [user]="user"></app-user-header>
       </div>
 
       <!-- Conteúdo Principal (Router Outlet) -->

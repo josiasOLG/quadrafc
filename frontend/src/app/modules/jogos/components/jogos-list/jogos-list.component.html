@@ -153,8 +153,9 @@
                   <div class="game-card__footer">
                     <!-- Action Buttons -->
                     <div class="game-card__actions">
+                      <!-- Botão para fazer palpite (apenas para jogos que ainda não iniciaram pela data/hora) -->
                       <app-button
-                        *ngIf="canMakePalpite(jogo)"
+                        *ngIf="canMakePalpite(jogo) && !jogoJaIniciou(jogo)"
                         label="Fazer Palpite"
                         icon="pi pi-plus"
                         variant="success"
@@ -162,8 +163,23 @@
                         [fullWidth]="true"
                         (onClick)="openPalpiteDialog(jogo)"></app-button>
 
+                      <!-- Mensagem para jogos que já iniciaram (baseado na data/hora) -->
                       <app-button
-                        *ngIf="!canMakePalpite(jogo) && !jogo.palpites"
+                        *ngIf="jogoJaIniciou(jogo) && (!jogo.palpites || jogo.palpites.length === 0)"
+                        label="Jogo Iniciado"
+                        icon="pi pi-play"
+                        variant="secondary"
+                        size="small"
+                        [fullWidth]="true"
+                        [disabled]="true"></app-button>
+
+                      <!-- Botão para jogos que não aceitam palpites (antes do horário mas por outros motivos) -->
+                      <app-button
+                        *ngIf="
+                          !canMakePalpite(jogo) &&
+                          !jogoJaIniciou(jogo) &&
+                          (!jogo.palpites || jogo.palpites.length === 0)
+                        "
                         label="Indisponível"
                         icon="pi pi-clock"
                         variant="secondary"
@@ -171,12 +187,9 @@
                         [fullWidth]="true"
                         [disabled]="true"></app-button>
 
+                      <!-- Botão para jogos onde o usuário já fez palpite -->
                       <app-button
-                        *ngIf="
-                          jogo.palpites &&
-                          jogo.palpites.length > 0 &&
-                          (jogo.status === 'aberto' || jogo.status === 'agendado')
-                        "
+                        *ngIf="jogo.palpites && jogo.palpites.length > 0"
                         label="Palpite Enviado"
                         icon="pi pi-check"
                         variant="info"

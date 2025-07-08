@@ -24,12 +24,12 @@
     z-index: 1000;
     background: var(--qfc-gradient-primary);
     color: var(--qfc-text-inverse);
-    padding: var(--qfc-spacing-lg);
+    // padding: var(--qfc-spacing-lg);
     box-shadow: var(--qfc-shadow-lg);
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--qfc-spacing-md);
+    // gap: var(--qfc-spacing-md);
 
     // 1. Dashboard Icon + Avatar (topo)
     .main-layout__header-top {
@@ -225,8 +225,8 @@
 @media (max-width: 768px) {
   .main-layout {
     &__header {
-      padding: var(--qfc-spacing-md);
-      gap: var(--qfc-spacing-sm);
+      // padding: var(--qfc-spacing-md);
+      // gap: var(--qfc-spacing-sm);
 
       .main-layout__dashboard-icon {
         font-size: 1.3rem;

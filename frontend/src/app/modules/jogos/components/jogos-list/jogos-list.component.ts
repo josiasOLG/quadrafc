@@ -260,6 +260,13 @@ export class JogosListComponent implements OnInit {
     );
   }
 
+  // Verifica se o jogo já iniciou baseado na data/hora
+  jogoJaIniciou(jogo: JogoComPalpite): boolean {
+    const agora = new Date();
+    const inicioJogo = new Date(jogo.data);
+    return agora >= inicioJogo;
+  }
+
   getJogoStatus(jogo: JogoComPalpite): {
     label: string;
     severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';

@@ -1,0 +1,97 @@
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory, Reflector } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
+import { AppModule } from '../src/app.module';
+import { GlobalExceptionFilter } from '../src/shared/filters/global-exception.filter';
+import { ResponseTransformInterceptor } from '../src/shared/interceptors/response-transform.interceptor';
+
+let cachedApp: any = null;
+
+async function createApp() {
+  if (cachedApp) {
+    return cachedApp;
+  }
+
+  const expressApp = express();
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp), {
+    logger: ['error', 'warn'],
+  });
+
+  const configService = app.get(ConfigService);
+  const reflector = app.get(Reflector);
+
+  // Cookie parser middleware
+  app.use(cookieParser());
+
+  // Global exception filter
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // Response transform interceptor
+  app.useGlobalInterceptors(new ResponseTransformInterceptor(reflector));
+
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      validationError: { target: false, value: false },
+    })
+  );
+
+  // CORS configuration
+  app.enableCors({
+    origin: [
+      'http://localhost:4200',
+      'http://localhost:2001',
+      'https://quadrafc-frontend.vercel.app',
+      'https://quadrafc-admin.vercel.app',
+      // Add your custom domains here
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
+  // Global prefix
+  app.setGlobalPrefix('api');
+
+  // Swagger documentation
+  const config = new DocumentBuilder()
+    .setTitle('QuadraFC API')
+    .setDescription('API para o app de palpites de futebol brasileiro')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  await app.init();
+  cachedApp = app;
+  return app;
+}
+
+// For Vercel serverless functions
+export default async function handler(req: any, res: any) {
+  const app = await createApp();
+  const expressApp = app.getHttpAdapter().getInstance();
+  return expressApp(req, res);
+}
+
+// For local development
+if (require.main === module) {
+  async function bootstrap() {
+    const app = await createApp();
+    const configService = app.get(ConfigService);
+    const port = configService.get('PORT', 3000);
+    await app.listen(port);
+    console.log(`🚀 QuadraFC Backend running on: http://localhost:${port}`);
+    console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
+  }
+  bootstrap();
+}
