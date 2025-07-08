@@ -6,15 +6,4 @@
       <p class="page-header__subtitle">{{ subtitle }}</p>
     </div>
   </div>
-
-  <div *ngIf="user && showUserStats" class="page-header__stats">
-    <div class="page-header__stat page-header__stat--points">
-      <i class="pi pi-star-fill"></i>
-      <span>{{ user.pontos || 0 | currencyFormat }}</span>
-    </div>
-    <div class="page-header__stat page-header__stat--coins">
-      <i class="pi pi-circle-fill"></i>
-      <span>{{ user.moedas || 0 | currencyFormat }}</span>
-    </div>
-  </div>
 </div>

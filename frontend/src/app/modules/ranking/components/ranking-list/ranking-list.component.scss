@@ -1,11 +1,12 @@
 .ranking {
-  // padding: 1rem;
   background: var(--surface-50);
   min-height: 100vh;
   padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+
   &__filters {
     padding: 1rem;
-    // margin-bottom: 1.5rem;
 
     .filter-dropdown ::ng-deep .p-dropdown {
       min-width: 150px;
@@ -23,6 +24,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    padding: 1rem;
 
     .loading-item {
       display: flex;
@@ -38,28 +40,34 @@
     }
   }
 
-  &__content .ranking-tabs ::ng-deep {
-    .p-tabview-nav {
-      background: var(--surface-50);
-      border-bottom: 1px solid var(--surface-200);
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
 
-      .p-tabview-nav-link {
-        color: var(--text-color);
-        font-weight: 500;
+    .ranking-tabs ::ng-deep {
+      .p-tabview-nav {
+        background: var(--surface-50);
+        border-bottom: 1px solid var(--surface-200);
 
-        &:hover {
-          background: var(--surface-100);
-        }
+        .p-tabview-nav-link {
+          color: var(--text-color);
+          font-weight: 500;
 
-        &.p-highlight {
-          background: var(--primary-color);
-          color: white;
+          &:hover {
+            background: var(--surface-100);
+          }
+
+          &.p-highlight {
+            background: var(--primary-color);
+            color: white;
+          }
         }
       }
-    }
 
-    .p-tabview-panels {
-      padding: 1.5rem 0;
+      .p-tabview-panels {
+        padding: 1.5rem 0;
+      }
     }
   }
 }
@@ -68,15 +76,38 @@
 // NOVO DESIGN HORIZONTAL DOS CARDS
 // ===================================
 
-// Lista principal
+// Lista principal com scroll
 .ranking-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-top: 1.5rem;
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-top: 0;
+  padding: 0 16px;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Scroll suave
+  scroll-behavior: smooth;
+
+  // Estilo da barra de scroll
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--surface-100);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-color-300);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--primary-color-400);
+    }
+  }
 }
 
 // ===================================
@@ -452,12 +483,38 @@
   }
 }
 
+// Pontuação dos bairros
+.bairro-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-width: 5rem;
+
+  .score-main {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--blue-600);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 0.625rem;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+// Estatísticas mini dos bairros
 .bairro-stats-mini {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 
-  .stat-mini {
+  .stat-item {
     display: flex;
     align-items: center;
     gap: 0.375rem;
@@ -468,20 +525,15 @@
     padding: 0.375rem 0.75rem;
     border-radius: 12px;
 
-    i {
-      font-size: 0.625rem;
-      color: var(--blue-500);
+    .stat-value {
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .stat-label {
+      color: var(--text-color-secondary);
     }
   }
-}
-
-.bairro-score {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  min-width: 5rem;
 }
 
 .bairro-actions {
@@ -610,7 +662,15 @@
 // ===================================
 @media (max-width: 768px) {
   .ranking {
-    // padding: 0.5rem;
+    &__content {
+      max-height: calc(100vh - 180px);
+    }
+  }
+
+  .ranking-list {
+    padding: 0 12px;
+    max-height: calc(100vh - 200px);
+    gap: 0.75rem;
   }
 
   // Layout horizontal no mobile
@@ -763,11 +823,94 @@
       }
     }
   }
+
+  // Modal responsivo
+  ::ng-deep .bairro-details-modal {
+    .p-dialog {
+      .p-dialog-header {
+        padding: 1rem;
+      }
+
+      .p-dialog-footer {
+        padding: 1rem;
+      }
+    }
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .bairro-details {
+    &__header {
+      padding: 1rem;
+      gap: 0.75rem;
+
+      .bairro-icon {
+        width: 3rem;
+        height: 3rem;
+
+        i {
+          font-size: 1.25rem;
+        }
+      }
+
+      .bairro-title {
+        h3 {
+          font-size: 1.125rem;
+        }
+
+        p {
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    &__stats {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+
+      .stat-card {
+        padding: 1rem;
+
+        .stat-icon {
+          width: 2.5rem;
+          height: 2.5rem;
+
+          i {
+            font-size: 1rem;
+          }
+        }
+
+        .stat-content {
+          .stat-value {
+            font-size: 1.125rem;
+          }
+        }
+      }
+    }
+
+    &__info {
+      padding: 1rem;
+
+      .info-item {
+        padding: 0.5rem 0;
+      }
+    }
+  }
 }
 
 @media (max-width: 480px) {
   .ranking {
-    // padding: 0.25rem;
+    &__content {
+      max-height: calc(100vh - 160px);
+    }
+  }
+
+  .ranking-list {
+    padding: 0 8px;
+    max-height: calc(100vh - 180px);
+    gap: 0.5rem;
   }
 
   .ranking-user-card,
@@ -815,6 +958,96 @@
       font-size: 0.75rem;
     }
   }
+
+  // Modal muito pequeno
+  ::ng-deep .bairro-details-modal {
+    .p-dialog {
+      .p-dialog-header {
+        padding: 0.75rem;
+      }
+
+      .p-dialog-footer {
+        padding: 0.75rem;
+      }
+    }
+  }
+
+  .modal-content {
+    padding: 0.75rem;
+  }
+
+  .bairro-details {
+    &__header {
+      padding: 0.75rem;
+      gap: 0.5rem;
+      flex-direction: column;
+      text-align: center;
+
+      .bairro-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+
+        i {
+          font-size: 1rem;
+        }
+      }
+
+      .bairro-title {
+        h3 {
+          font-size: 1rem;
+        }
+
+        p {
+          font-size: 0.75rem;
+        }
+      }
+    }
+
+    &__stats {
+      gap: 0.5rem;
+
+      .stat-card {
+        padding: 0.75rem;
+        gap: 0.75rem;
+
+        .stat-icon {
+          width: 2rem;
+          height: 2rem;
+
+          i {
+            font-size: 0.875rem;
+          }
+        }
+
+        .stat-content {
+          .stat-value {
+            font-size: 1rem;
+          }
+
+          .stat-label {
+            font-size: 0.625rem;
+          }
+        }
+      }
+    }
+
+    &__info {
+      padding: 0.75rem;
+
+      h4 {
+        font-size: 0.875rem;
+      }
+
+      .info-item {
+        padding: 0.375rem 0;
+
+        .info-label,
+        .info-value {
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
 }
 
 .empty-state {
@@ -841,25 +1074,242 @@
   }
 }
 
-// Estilos dos modais simples
-::ng-deep .p-dialog {
-  .p-dialog-header {
-    padding: 1rem;
+// ===================================
+// MODAL DE DETALHES DO BAIRRO
+// ===================================
+::ng-deep .bairro-details-modal {
+  .p-dialog {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--surface-200);
 
-    .p-dialog-header-close {
-      background: transparent !important;
-      border: none !important;
-      color: var(--text-color) !important;
+    .p-dialog-header {
+      background: var(--surface-0);
+      border-bottom: 1px solid var(--surface-200);
+      padding: 1.5rem;
 
-      &:hover {
-        background: var(--surface-100) !important;
+      .p-dialog-title {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      .p-dialog-header-close {
+        background: transparent;
+        border: none;
+        color: var(--text-color-secondary);
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--surface-100);
+          color: var(--text-color);
+        }
+
+        .p-button-icon {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    .p-dialog-content {
+      padding: 0;
+      background: var(--surface-0);
+    }
+
+    .p-dialog-footer {
+      background: var(--surface-0);
+      border-top: 1px solid var(--surface-200);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+  }
+}
+
+.modal-content {
+  padding: 1.5rem;
+}
+
+.bairro-details {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--surface-50);
+    border-radius: 12px;
+    border: 1px solid var(--surface-200);
+    margin-bottom: 1.5rem;
+
+    .bairro-icon {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-600) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+
+      i {
+        font-size: 1.5rem;
+        color: white;
+      }
+    }
+
+    .bairro-title {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-color);
+        line-height: 1.3;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-color-secondary);
+        font-weight: 500;
+      }
+    }
+
+    .bairro-position {
+      flex-shrink: 0;
+
+      ::ng-deep .p-badge {
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
       }
     }
   }
 
-  .p-dialog-content {
-    padding: 1rem;
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem;
+      background: var(--surface-0);
+      border: 1px solid var(--surface-200);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--surface-50);
+        border-color: var(--primary-color-200);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: var(--primary-color-50);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        i {
+          font-size: 1.25rem;
+          color: var(--primary-color);
+        }
+      }
+
+      .stat-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+
+        .stat-value {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--text-color);
+          line-height: 1.2;
+        }
+
+        .stat-label {
+          font-size: 0.75rem;
+          color: var(--text-color-secondary);
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+      }
+    }
   }
+
+  &__info {
+    padding: 1.25rem;
+    background: var(--surface-50);
+    border-radius: 12px;
+    border: 1px solid var(--surface-200);
+
+    h4 {
+      margin: 0 0 1rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &::before {
+        content: '';
+        width: 4px;
+        height: 1rem;
+        background: var(--primary-color);
+        border-radius: 2px;
+      }
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--surface-200);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        font-size: 0.875rem;
+        color: var(--text-color-secondary);
+        font-weight: 500;
+      }
+
+      .info-value {
+        font-size: 0.875rem;
+        color: var(--text-color);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 // ===================================

@@ -12,17 +12,23 @@ import { User } from '../../schemas/user.schema';
   template: `
     <!-- Header com Stats do Usuário -->
     <div class="user-header">
-      <!-- 1. Dashboard Icon + Avatar -->
+      <!-- 1. Dashboard Icon + Avatar + Pontos -->
       <div class="user-header__top">
         <i class="pi pi-th-large user-header__dashboard-icon"></i>
-        <p-avatar
-          [image]="user?.foto_perfil || user?.avatarUrl"
-          [label]="user?.nome?.charAt(0)"
-          size="large"
-          shape="circle"
-          styleClass="user-header__avatar"
-        >
-        </p-avatar>
+        <div class="user-header__avatar-points-container">
+          <p-avatar
+            [image]="user?.foto_perfil || user?.avatarUrl"
+            [label]="user?.nome?.charAt(0)"
+            size="large"
+            shape="circle"
+            styleClass="user-header__avatar"
+          >
+          </p-avatar>
+          <div class="user-header__points">
+            <div class="user-header__points-value">{{ getUserPoints() }}</div>
+            <div class="user-header__points-label">pontos</div>
+          </div>
+        </div>
       </div>
 
       <!-- 2. Nome em negrito -->
@@ -44,22 +50,6 @@ import { User } from '../../schemas/user.schema';
         </div>
         <p-progressBar [value]="getLevelProgress()" styleClass="user-header__progress-bar">
         </p-progressBar>
-      </div>
-
-      <!-- 5. Cards de Stats -->
-      <div class="user-header__stats">
-        <div class="user-header__stat-card">
-          <div class="user-header__stat-value">{{ getUserPoints() }}</div>
-          <div class="user-header__stat-label">Pontos</div>
-        </div>
-        <!-- <div class="user-header__stat-card">
-          <div class="user-header__stat-value">{{ getUserCoins() }}</div>
-          <div class="user-header__stat-label">Moedas</div>
-        </div>
-        <div class="user-header__stat-card">
-          <div class="user-header__stat-value">{{ getUserStreak() }}</div>
-          <div class="user-header__stat-label">Sequência</div>
-        </div> -->
       </div>
     </div>
   `,

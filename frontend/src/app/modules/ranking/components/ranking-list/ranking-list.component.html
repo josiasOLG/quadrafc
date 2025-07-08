@@ -105,9 +105,11 @@
     '1199px': '75vw',
     '575px': '95vw'
   }"
-  [style]="{ width: '450px' }"
-  *ngIf="selectedBairroDetails">
-  <div class="bairro-details">
+  [style]="{ width: '500px' }"
+  styleClass="bairro-details-modal"
+  *ngIf="selectedBairroDetails"
+  (onHide)="closeBairroDetailsModal()">
+  <div class="modal-content">
     <!-- Header do Bairro -->
     <div class="bairro-details__header">
       <div class="bairro-icon">
@@ -172,12 +174,13 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="modal-actions">
+    <div class="dialog-actions">
       <p-button
         label="Fechar"
         icon="pi pi-times"
-        styleClass="p-button-text"
-        (click)="closeBairroDetailsModal()"></p-button>
+        severity="secondary"
+        size="small"
+        (onClick)="closeBairroDetailsModal()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

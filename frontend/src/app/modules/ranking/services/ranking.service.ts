@@ -1,14 +1,25 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { PaginationParams, RankingItem } from '../../../shared/schemas';
+import { PaginationParams } from '../../../shared/schemas';
+import { BaseApiService } from '../../../shared/services/base-api.service';
 import { HttpService } from '../../../shared/services/http.service';
 
-export interface RankingUsuario extends RankingItem {
+export interface RankingUsuario {
+  _id: string;
+  nome: string;
+  pontos_totais: number;
   nivel: number;
   sequencia_atual: number;
   palpites_corretos: number;
   total_palpites: number;
   taxa_acerto: number;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  avatar?: string;
+  avatarUrl?: string;
+  posicao: number;
+  isCurrentUser?: boolean;
 }
 
 export interface RankingBairro {
@@ -17,22 +28,21 @@ export interface RankingBairro {
   estado: string;
   pontos_totais: number;
   usuarios_ativos: number;
-  media_pontos_usuario: number;
+  media_pontuacao: number;
   posicao: number;
 }
 
 @Injectable({
   providedIn: 'root',
 })
-export class RankingService {
-  constructor(private httpService: HttpService) {}
+export class RankingService extends BaseApiService<RankingUsuario, any> {
+  protected readonly endpoint = 'ranking';
 
-  // Ranking geral de usuários
-  getRankingUsuarios(
-    params?: PaginationParams
-  ): Observable<{ data: RankingUsuario[]; pagination: any }> {
-    return this.httpService.getPaginated<RankingUsuario>('users/ranking', params);
+  constructor(httpService: HttpService) {
+    super(httpService);
   }
+
+  // Métodos específicos do domínio de ranking
 
   // Ranking de usuários da cidade especificada
   getRankingUsuariosCidade(
@@ -45,25 +55,7 @@ export class RankingService {
       estado,
       ...params,
     };
-    return this.httpService.getPaginated<RankingUsuario>('ranking/usuarios-cidade', queryParams);
-  }
-
-  // Ranking de usuários por bairro
-  getRankingUsuariosPorBairro(
-    bairroId: string,
-    params?: PaginationParams
-  ): Observable<{ data: RankingUsuario[]; pagination: any }> {
-    return this.httpService.getPaginated<RankingUsuario>(
-      `ranking/usuarios/bairro/${bairroId}`,
-      params
-    );
-  }
-
-  // Ranking de bairros
-  getRankingBairros(
-    params?: PaginationParams
-  ): Observable<{ data: RankingBairro[]; pagination: any }> {
-    return this.httpService.getPaginated<RankingBairro>('bairros/ranking', params);
+    return this.getPaginated<RankingUsuario>('usuarios-cidade', queryParams);
   }
 
   // Ranking de bairros da cidade especificada
@@ -77,19 +69,19 @@ export class RankingService {
       estado,
       ...params,
     };
-    return this.httpService.getPaginated<RankingBairro>('ranking/bairros-cidade', queryParams);
+    return this.getPaginated<RankingBairro>('bairros-cidade', queryParams);
   }
 
   // Ranking de bairros nacional (premium)
   getRankingBairrosNacional(
     params?: PaginationParams
   ): Observable<{ data: RankingBairro[]; pagination: any }> {
-    return this.httpService.getPaginated<RankingBairro>('bairros/ranking/nacional', params);
+    return this.getPaginated<RankingBairro>('ranking/nacional', params);
   }
 
   // Verificar se usuário tem acesso premium para ranking nacional
   verificarAcessoPremium(): Observable<{ temAcesso: boolean; custoDesbloqueio?: number }> {
-    return this.httpService.get('ranking/verificar-premium');
+    return this.get('verificar-premium');
   }
 
   // Buscar filtros disponíveis baseado nos acessos do usuário
@@ -115,12 +107,12 @@ export class RankingService {
       assinaturaPremiumMensal: number;
     };
   }> {
-    return this.httpService.get('ranking/filtros-disponiveis');
+    return this.get('filtros-disponiveis');
   }
 
   // Desbloquear ranking nacional (custo em moedas)
   desbloquearRankingNacional(): Observable<{ sucesso: boolean; novoSaldoMoedas: number }> {
-    return this.httpService.post('ranking/desbloquear-nacional');
+    return this.post('desbloquear-nacional');
   }
 
   // Comprar acesso a uma cidade específica
@@ -128,17 +120,17 @@ export class RankingService {
     cidade: string,
     estado: string
   ): Observable<{ sucesso: boolean; novoSaldoMoedas: number }> {
-    return this.httpService.post('ranking/comprar-acesso-cidade', { cidade, estado });
+    return this.post('comprar-acesso-cidade', { cidade, estado });
   }
 
   // Comprar acesso a um estado específico
   comprarAcessoEstado(estado: string): Observable<{ sucesso: boolean; novoSaldoMoedas: number }> {
-    return this.httpService.post('ranking/comprar-acesso-estado', { estado });
+    return this.post('comprar-acesso-estado', { estado });
   }
 
   // Comprar acesso nacional
   comprarAcessoNacional(): Observable<{ sucesso: boolean; novoSaldoMoedas: number }> {
-    return this.httpService.post('ranking/comprar-acesso-nacional');
+    return this.post('comprar-acesso-nacional');
   }
 
   // Comprar assinatura premium vitalícia (R$ 30/mês = 500 moedas/mês)
@@ -147,14 +139,14 @@ export class RankingService {
     novoSaldoMoedas: number;
     dataVencimento: Date;
   }> {
-    return this.httpService.post('ranking/comprar-assinatura-premium', { meses });
+    return this.post('comprar-assinatura-premium', { meses });
   }
 
   // Ranking da rodada atual
   getRankingRodadaAtual(
     params?: PaginationParams
   ): Observable<{ data: RankingUsuario[]; pagination: any }> {
-    return this.httpService.getPaginated<RankingUsuario>('ranking/rodada-atual', params);
+    return this.getPaginated<RankingUsuario>('rodada-atual', params);
   }
 
   // Ranking por rodada específica
@@ -162,7 +154,7 @@ export class RankingService {
     rodadaId: string,
     params?: PaginationParams
   ): Observable<{ data: RankingUsuario[]; pagination: any }> {
-    return this.httpService.getPaginated<RankingUsuario>(`ranking/rodada/${rodadaId}`, params);
+    return this.getPaginated<RankingUsuario>(`rodada/${rodadaId}`, params);
   }
 
   // Minha posição no ranking geral
@@ -173,17 +165,17 @@ export class RankingService {
     pontos_totais: number;
     pontos_para_subir: number;
   }> {
-    return this.httpService.get('ranking/minha-posicao');
+    return this.get('minha-posicao');
   }
 
   // Top 10 usuários
   getTop10Usuarios(): Observable<RankingUsuario[]> {
-    return this.httpService.get<RankingUsuario[]>('ranking/top10-usuarios');
+    return this.get<RankingUsuario[]>('top10-usuarios');
   }
 
   // Top 10 bairros
   getTop10Bairros(): Observable<RankingBairro[]> {
-    return this.httpService.get<RankingBairro[]>('ranking/top10-bairros');
+    return this.get<RankingBairro[]>('top10-bairros');
   }
 
   // Histórico de ranking do usuário
@@ -194,7 +186,7 @@ export class RankingService {
       pontos: number;
     }[]
   > {
-    return this.httpService.get('ranking/meu-historico', { periodo });
+    return this.get('meu-historico', { periodo });
   }
 
   // Comparar com outros usuários
@@ -208,7 +200,7 @@ export class RankingService {
       taxa_acerto: number;
     }[]
   > {
-    return this.httpService.post('ranking/comparar', { usuarios: usuarioIds });
+    return this.post('comparar', { usuarios: usuarioIds });
   }
 
   // Estatísticas gerais do ranking
@@ -220,16 +212,11 @@ export class RankingService {
     total_bairros: number;
     usuarios_ativos_mes: number;
   }> {
-    return this.httpService.get('ranking/estatisticas');
-  }
-
-  // Admin: Recalcular rankings
-  recalcularRankings(): Observable<{ message: string; usuarios_atualizados: number }> {
-    return this.httpService.post('admin/ranking/recalcular');
+    return this.get('estatisticas');
   }
 
   // Teste de autenticação
   testeAuth(): Observable<{ userInfo: any; userId: string; message: string }> {
-    return this.httpService.get('ranking/teste-auth');
+    return this.get('teste-auth');
   }
 }

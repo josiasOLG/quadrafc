@@ -23,12 +23,13 @@
     }
   }
 
-  // 1. Dashboard Icon + Avatar (topo)
+  // 1. Dashboard Icon + Avatar + Pontos (topo)
   &__top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    gap: var(--qfc-spacing-md);
   }
 
   &__dashboard-icon {
@@ -43,12 +44,48 @@
     }
   }
 
+  &__avatar-points-container {
+    display: flex;
+    align-items: center;
+    gap: var(--qfc-spacing-md);
+  }
+
   &__avatar {
     background: white !important;
     color: var(--qfc-primary) !important;
     box-shadow: var(--qfc-shadow-md);
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-radius: 50% !important;
+  }
+
+  &__points {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--qfc-radius-lg);
+    padding: var(--qfc-spacing-sm) var(--qfc-spacing-md);
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.25);
+    }
+  }
+
+  &__points-value {
+    color: var(--qfc-text-inverse);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &__points-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
   }
 
   // 2. Nome em negrito
@@ -98,45 +135,6 @@
     .user-header__progress-text {
       opacity: 0.8;
     }
-  }
-
-  // 5. Cards de Stats
-  &__stats {
-    display: flex;
-    gap: var(--qfc-spacing-md);
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  &__stat-card {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--qfc-radius-lg);
-    padding: var(--qfc-spacing-md);
-    text-align: center;
-    flex: 1;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-
-    &:hover {
-      transform: translateY(-2px);
-      background: rgba(255, 255, 255, 0.25);
-    }
-  }
-
-  &__stat-value {
-    color: var(--qfc-text-inverse);
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  &__stat-label {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
   }
 
   ::ng-deep .user-header__progress-bar {
