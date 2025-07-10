@@ -42,16 +42,6 @@ interface RankingBairro {
   media_pontuacao: number;
 }
 
-// Interface para representar os dados retornados pelo endpoint de top usuários por bairro
-interface BairroComUsuarios {
-  bairro: string;
-  cidade: string;
-  estado: string;
-  pontos_totais: number;
-  total_usuarios: number;
-  usuarios: any[]; // Lista de usuários do bairro
-}
-
 @Component({
   selector: 'app-user-ranking',
   standalone: true,
@@ -73,12 +63,13 @@ export class UserRankingComponent implements OnInit {
 
   user: User | null = null;
   rankingUsuarios: RankingUsuario[] = [];
+  podioUsuarios: RankingUsuario[] = [];
+  outrosUsuarios: RankingUsuario[] = [];
   isLoading = false;
   showUserDetailsModal = false;
   selectedUserDetails: RankingUsuario | null = null;
 
-  // Propriedades para armazenar a resposta do endpoint de top usuários por bairro
-  topUsuariosPorBairro: any[] = [];
+  // Propriedades para componente
   bairroSelecionado: string | null = null;
 
   constructor(
@@ -172,153 +163,56 @@ export class UserRankingComponent implements OnInit {
   private processRankingResponse(response: any) {
     console.log('🏆 Resposta de top usuários por bairro:', response);
 
-    if (response?.data && Array.isArray(response.data)) {
-      // Armazenar a resposta completa
-      this.topUsuariosPorBairro = response.data;
+    if (response?.podio && response?.outros) {
+      // Nova estrutura de dados com podio e outros separados
+      this.podioUsuarios = this.convertUsuariosArray(response.podio);
+      this.outrosUsuarios = this.convertUsuariosArray(response.outros);
 
-      // Definir qual bairro mostrar
-      let bairroParaMostrar = this.bairroSelecionado;
+      // Manter compatibilidade com rankingUsuarios (todos juntos)
+      this.rankingUsuarios = [...this.podioUsuarios, ...this.outrosUsuarios];
 
-      // Se não temos um bairro selecionado mas temos o usuário, usar o bairro do usuário
-      if (!bairroParaMostrar && this.user?.bairro) {
-        bairroParaMostrar = this.user.bairro;
-      }
-
-      // Encontrar o bairro específico
-      const bairroData = response.data.find(
-        (item: BairroComUsuarios) => item.bairro === bairroParaMostrar
-      );
-
-      if (bairroData && bairroData.usuarios) {
-        // Converter os dados para o formato do componente
-        this.rankingUsuarios = bairroData.usuarios.map((usuario: any, index: number) => ({
-          posicao: index + 1,
-          user: {
-            id: usuario._id,
-            nome: usuario.nome,
-            email: usuario.email || '',
-            avatar: usuario.avatarUrl || usuario.avatar || '',
-          },
-          pontos_totais: usuario.totalPoints || usuario.pontos || 0,
-          palpites_corretos: usuario.palpites_corretos || 0,
-          palpites_totais: usuario.total_palpites || 0,
-          percentual_acerto: usuario.taxa_acerto || 0,
-        }));
-
-        console.log(
-          `👥 ${this.rankingUsuarios.length} usuários carregados para o bairro ${bairroParaMostrar}`
-        );
-      } else {
-        // Se não encontrou o bairro específico e temos dados, mostrar o primeiro bairro
-        if (response.data.length > 0 && response.data[0].usuarios) {
-          const primeiroBairro = response.data[0] as BairroComUsuarios;
-          this.bairroSelecionado = primeiroBairro.bairro;
-
-          this.rankingUsuarios = primeiroBairro.usuarios.map((usuario: any, index: number) => ({
-            posicao: index + 1,
-            user: {
-              id: usuario._id,
-              nome: usuario.nome,
-              email: usuario.email || '',
-              avatar: usuario.avatarUrl || usuario.avatar || '',
-            },
-            pontos_totais: usuario.totalPoints || usuario.pontos || 0,
-            palpites_corretos: usuario.palpites_corretos || 0,
-            palpites_totais: usuario.total_palpites || 0,
-            percentual_acerto: usuario.taxa_acerto || 0,
-          }));
-
-          console.log(`🔄 Usando primeiro bairro disponível: ${this.bairroSelecionado}`);
-        } else {
-          console.warn(`⚠️ Nenhum dado de usuário encontrado para bairros`);
-          this.rankingUsuarios = [];
-        }
-      }
+      console.log(`🏆 Pódio: ${this.podioUsuarios.length} usuários`);
+      console.log(`👥 Outros: ${this.outrosUsuarios.length} usuários`);
+      console.log(`📊 Total: ${this.rankingUsuarios.length} usuários`);
     } else {
       console.error('❌ Formato de resposta inválido:', response);
-      this.rankingUsuarios = [];
+      this.resetRankingData();
       this.toastService.error('Erro ao processar dados do ranking');
     }
 
     this.isLoading = false;
   }
 
+  // Método auxiliar para converter array de usuários para o formato do componente
+  private convertUsuariosArray(usuarios: any[]): RankingUsuario[] {
+    return usuarios.map((usuario: any, index: number) => ({
+      posicao: usuario.posicao || index + 1,
+      user: {
+        id: usuario._id,
+        nome: usuario.nome,
+        email: usuario.email || '',
+        avatar: usuario.avatarUrl || usuario.avatar || '',
+      },
+      pontos_totais: usuario.totalPoints || usuario.pontos || 0,
+      palpites_corretos: usuario.palpites_corretos || 0,
+      palpites_totais: usuario.total_palpites || 0,
+      percentual_acerto: usuario.taxa_acerto || 0,
+    }));
+  }
+
+  // Método auxiliar para resetar dados do ranking
+  private resetRankingData() {
+    this.rankingUsuarios = [];
+    this.podioUsuarios = [];
+    this.outrosUsuarios = [];
+  }
+
   // Método auxiliar para lidar com erros
   private handleRankingError(error: any) {
     console.error('❌ Erro ao carregar ranking de usuários:', error);
-    this.rankingUsuarios = [];
+    this.resetRankingData();
     this.isLoading = false;
     this.toastService.error('Erro ao carregar ranking de usuários');
-  }
-
-  private generateMockUserRanking(): RankingUsuario[] {
-    return [
-      {
-        posicao: 1,
-        user: {
-          id: '1',
-          nome: 'João Silva',
-          email: 'joao@email.com',
-          avatar: '',
-        },
-        pontos_totais: 1250,
-        palpites_corretos: 45,
-        palpites_totais: 60,
-        percentual_acerto: 75.0,
-      },
-      {
-        posicao: 2,
-        user: {
-          id: '2',
-          nome: 'Maria Santos',
-          email: 'maria@email.com',
-          avatar: '',
-        },
-        pontos_totais: 1180,
-        palpites_corretos: 42,
-        palpites_totais: 58,
-        percentual_acerto: 72.4,
-      },
-      {
-        posicao: 3,
-        user: {
-          id: '3',
-          nome: 'Pedro Costa',
-          email: 'pedro@email.com',
-          avatar: '',
-        },
-        pontos_totais: 1050,
-        palpites_corretos: 38,
-        palpites_totais: 55,
-        percentual_acerto: 69.1,
-      },
-      {
-        posicao: 4,
-        user: {
-          id: '4',
-          nome: 'Ana Lima',
-          email: 'ana@email.com',
-          avatar: '',
-        },
-        pontos_totais: 980,
-        palpites_corretos: 35,
-        palpites_totais: 52,
-        percentual_acerto: 67.3,
-      },
-      {
-        posicao: 5,
-        user: {
-          id: '5',
-          nome: 'Carlos Oliveira',
-          email: 'carlos@email.com',
-          avatar: '',
-        },
-        pontos_totais: 920,
-        palpites_corretos: 32,
-        palpites_totais: 50,
-        percentual_acerto: 64.0,
-      },
-    ];
   }
 
   openUserDetailsModal(user: RankingUsuario) {

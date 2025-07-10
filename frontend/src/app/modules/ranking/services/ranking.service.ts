@@ -182,12 +182,12 @@ export class RankingService extends BaseApiService<RankingUsuario, any> {
   getTopUsuariosPorBairro(
     cidade: string,
     estado: string
-  ): Observable<{ data: any[]; cidade: string; estado: string }> {
+  ): Observable<{ podio: any[]; outros: any[]; cidade: string; estado: string }> {
     const queryParams = {
       cidade,
       estado,
     };
-    return this.get<{ data: any[]; cidade: string; estado: string }>(
+    return this.get<{ podio: any[]; outros: any[]; cidade: string; estado: string }>(
       'top-usuarios-por-bairro',
       queryParams
     );
