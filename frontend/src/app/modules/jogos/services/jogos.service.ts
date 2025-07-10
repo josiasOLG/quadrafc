@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { CreateJogoDto, Jogo, PaginationParams } from '../../../shared/schemas';
 import { BaseApiService } from '../../../shared/services/base-api.service';
-import { Jogo, CreateJogoDto, PaginationParams } from '../../../shared/schemas';
 import { HttpService } from '../../../shared/services/http.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class JogosService extends BaseApiService<Jogo, CreateJogoDto> {
   protected readonly endpoint = 'jogos';
@@ -19,7 +19,9 @@ export class JogosService extends BaseApiService<Jogo, CreateJogoDto> {
     return this.get<Jogo[]>('rodada-atual');
   }
 
-  getJogosByStatus(status: 'agendado' | 'ao_vivo' | 'finalizado' | 'adiado' | 'cancelado'): Observable<Jogo[]> {
+  getJogosByStatus(
+    status: 'agendado' | 'ao_vivo' | 'finalizado' | 'adiado' | 'cancelado'
+  ): Observable<Jogo[]> {
     return this.get<Jogo[]>(`status/${status}`);
   }
 
@@ -32,11 +34,17 @@ export class JogosService extends BaseApiService<Jogo, CreateJogoDto> {
     return this.getPaginated<Jogo>('resultados', params);
   }
 
-  getJogosByTime(time: string, params?: PaginationParams): Observable<{ data: Jogo[]; pagination: any }> {
+  getJogosByTime(
+    time: string,
+    params?: PaginationParams
+  ): Observable<{ data: Jogo[]; pagination: any }> {
     return this.getPaginated<Jogo>(`time/${encodeURIComponent(time)}`, params);
   }
 
-  getJogosByCampeonato(campeonato: string, params?: PaginationParams): Observable<{ data: Jogo[]; pagination: any }> {
+  getJogosByCampeonato(
+    campeonato: string,
+    params?: PaginationParams
+  ): Observable<{ data: Jogo[]; pagination: any }> {
     return this.getPaginated<Jogo>(`campeonato/${encodeURIComponent(campeonato)}`, params);
   }
 
@@ -45,7 +53,10 @@ export class JogosService extends BaseApiService<Jogo, CreateJogoDto> {
     return this.get<Jogo[]>(`data/${dataStr}`);
   }
 
-  updateResultado(id: string, resultado: { gols_casa: number; gols_visitante: number }): Observable<Jogo> {
+  updateResultado(
+    id: string,
+    resultado: { gols_casa: number; gols_visitante: number }
+  ): Observable<Jogo> {
     return this.patch<Jogo>(`${id}/resultado`, resultado);
   }
 

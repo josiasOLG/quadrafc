@@ -18,13 +18,17 @@ import { authInterceptor } from './core/interceptors/auth.interceptor.functional
 import { errorInterceptor } from './core/interceptors/error.interceptor.functional';
 import { PremiumPermissionsService } from './core/services/premium-permissions.service';
 import { AuthService } from './modules/auth/services/auth.service';
+import { cacheInvalidationInterceptor } from './shared/interceptors/cache-invalidation.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideClientHydration(),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor]), withFetch()),
+    provideHttpClient(
+      withInterceptors([authInterceptor, errorInterceptor, cacheInvalidationInterceptor]),
+      withFetch()
+    ),
     importProvidersFrom(BrowserAnimationsModule),
     MessageService,
     CookieService,

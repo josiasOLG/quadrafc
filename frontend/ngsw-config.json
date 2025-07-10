@@ -40,20 +40,21 @@
   ],
   "dataGroups": [
     {
-      "name": "api-performance",
-      "urls": ["/api/**"],
+      "name": "api-no-cache",
+      "urls": ["/api/jogos/**", "/api/palpites/**", "/api/rodadas/**", "/api/ranking/**"],
       "cacheConfig": {
-        "strategy": "performance",
-        "maxSize": 100,
-        "maxAge": "3d"
+        "strategy": "freshness",
+        "maxSize": 0,
+        "maxAge": "0s",
+        "timeout": "5s"
       }
     },
     {
-      "name": "api-freshness",
-      "urls": ["/api/rodadas/**", "/api/jogos/**", "/api/palpites/**"],
+      "name": "api-static",
+      "urls": ["/api/users/profile", "/api/cidades/**", "/api/bairros/**"],
       "cacheConfig": {
-        "strategy": "freshness",
-        "maxSize": 50,
+        "strategy": "performance",
+        "maxSize": 20,
         "maxAge": "1h"
       }
     }
