@@ -28,10 +28,18 @@ export interface AuthResponse {
   data: {
     user: UserProfile;
     message: string;
+    access_token: string; // Token JWT
   };
   timestamp: string;
   path: string;
   statusCode: number;
+}
+
+// Interface alternativa para quando a resposta vem diretamente com user e access_token
+export interface DirectAuthResponse {
+  user: UserProfile;
+  message: string;
+  access_token: string;
 }
 
 // Interface legada para compatibilidade

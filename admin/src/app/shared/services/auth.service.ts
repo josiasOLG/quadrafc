@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, LoginData, RegisterData, UserProfile } from '../models/auth.model';
+import { JwtHelper } from '../utils/jwt-helper';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,7 @@ export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
   private currentUserSubject = new BehaviorSubject<UserProfile | null>(null);
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
+  private tokenSubject = new BehaviorSubject<string | null>(null);
 
   // Chaves para o localStorage
   private readonly USER_STORAGE_KEY = 'quadrafc_admin_user';
@@ -30,12 +32,20 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  get token$(): Observable<string | null> {
+    return this.tokenSubject.asObservable();
+  }
+
+  get token(): string | null {
+    return this.tokenSubject.value;
+  }
+
   get isLoading$(): Observable<boolean> {
     return this.isLoadingSubject.asObservable();
   }
 
   get isAuthenticated(): boolean {
-    return !!this.currentUser;
+    return !!this.currentUser && !!this.token;
   }
 
   get isAdmin(): boolean {
@@ -53,242 +63,257 @@ export class AuthService {
     console.log('AuthService: isAdmin resultado:', isAdmin);
     return isAdmin;
   }
-  login(credentials: LoginData): Observable<AuthResponse> {
+
+  hasStoredAuthData(): boolean {
+    return (
+      !!localStorage.getItem(this.USER_STORAGE_KEY) && !!localStorage.getItem(this.AUTH_STORAGE_KEY)
+    );
+  }
+
+  reloadAuthData(): void {
+    this.loadUserFromStorage();
+  }
+
+  login(credentials: LoginData): Observable<AuthResponse | any> {
     this.isLoadingSubject.next(true);
 
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/login`, credentials, {
-        withCredentials: true, // Importante para cookies httpOnly
-      })
-      .pipe(
-        tap((response) => {
-          console.log('AuthService: Resposta completa do login:', response);
+    return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
+      tap((response) => {
+        console.log('AuthService: Resposta completa do login:', response);
 
-          // A resposta real do backend tem o usuário em "data.user"
-          const user = response.data.user;
+        // Verificar se a resposta tem estrutura padrão com 'data' ou direta
+        let token: string | undefined;
+        let user: UserProfile | undefined;
+
+        if (response.data && response.data.access_token) {
+          // Formato padrão: { data: { user, access_token } }
+          token = response.data.access_token;
+          user = response.data.user;
+        } else if (response.access_token) {
+          // Formato direto: { user, access_token }
+          token = response.access_token;
+          user = response.user;
+        }
+
+        if (token) {
+          // Salvar o token no localStorage
+          localStorage.setItem(this.AUTH_STORAGE_KEY, token);
+          this.tokenSubject.next(token);
+          console.log('AuthService: Token JWT salvo com sucesso');
+        } else {
+          console.warn('AuthService: Token JWT não encontrado na resposta');
+        }
+
+        if (user) {
           console.log('AuthService: Dados do usuário extraídos:', user);
-
-          // Salvar dados no localStorage e cookies
+          // Salvar dados no localStorage
           this.saveUserToStorage(user);
-          this.saveUserToCookies(user);
-
           // Atualizar o estado
           this.currentUserSubject.next(user);
           console.log('AuthService: currentUser atualizado:', this.currentUser);
           console.log('AuthService: isAuthenticated agora é:', this.isAuthenticated);
+        }
 
-          this.isLoadingSubject.next(false);
-        }),
-        catchError((error) => {
-          this.isLoadingSubject.next(false);
-          throw error;
-        })
-      );
+        this.isLoadingSubject.next(false);
+      }),
+      catchError((error) => {
+        console.error('AuthService: Erro no login:', error);
+        this.isLoadingSubject.next(false);
+        throw error;
+      })
+    );
   }
   register(userData: RegisterData): Observable<AuthResponse> {
     this.isLoadingSubject.next(true);
 
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/register`, userData, {
-        withCredentials: true,
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, userData).pipe(
+      tap((response) => {
+        // Extrair o token JWT da resposta
+        const token = response.data.access_token;
+        if (token) {
+          localStorage.setItem(this.AUTH_STORAGE_KEY, token);
+          this.tokenSubject.next(token);
+        }
+
+        // A resposta real do backend tem o usuário em "data.user"
+        const user = response.data.user;
+        this.saveUserToStorage(user);
+        this.currentUserSubject.next(user);
+        this.isLoadingSubject.next(false);
+      }),
+      catchError((error) => {
+        console.error('AuthService: Erro no registro:', error);
+        this.isLoadingSubject.next(false);
+        throw error;
       })
-      .pipe(
-        tap((response) => {
-          // A resposta real do backend tem o usuário em "data.user"
-          const user = response.data.user;
-          this.saveUserToStorage(user);
-          this.saveUserToCookies(user);
-          this.currentUserSubject.next(user);
-          this.isLoadingSubject.next(false);
-        }),
-        catchError((error) => {
-          this.isLoadingSubject.next(false);
-          throw error;
-        })
-      );
+    );
   }
 
   logout(): Observable<any> {
-    return this.http
-      .post(
-        `${this.apiUrl}/logout`,
-        {},
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(
-        tap(() => {
-          this.clearUserDataAndRedirect();
-        }),
-        catchError(() => {
-          // Mesmo em caso de erro, limpar sessão local
-          this.clearUserDataAndRedirect();
-          return of(null);
-        })
-      );
-  }
+    // Tentar fazer logout no servidor (opcional)
+    return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
+      tap(() => {
+        console.log('AuthService: Logout realizado no servidor');
+      }),
+      catchError((error) => {
+        // Mesmo se der erro no servidor, continuar com logout local
+        console.warn(
+          'AuthService: Erro no logout do servidor, continuando com logout local:',
+          error
+        );
+        return of(null);
+      }),
+      tap(() => {
+        // Limpar dados da sessão
+        localStorage.removeItem(this.USER_STORAGE_KEY);
+        localStorage.removeItem(this.AUTH_STORAGE_KEY);
 
-  private clearUserDataAndRedirect(): void {
-    this.clearUserData();
-    this.router.navigate(['/login']);
+        // Atualizar estado
+        this.currentUserSubject.next(null);
+        this.tokenSubject.next(null);
+
+        console.log('AuthService: Dados locais limpos');
+      }),
+      tap(() => {
+        // Redirecionar para login
+        this.router.navigate(['/login'], { replaceUrl: true });
+      })
+    );
   }
 
   getProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.apiUrl}/profile`, {
-      withCredentials: true,
-    });
+    return this.http.get<UserProfile>(`${this.apiUrl}/profile`).pipe(
+      tap((user) => {
+        // Atualizar dados do usuário no localStorage e no estado
+        this.saveUserToStorage(user);
+        this.currentUserSubject.next(user);
+      }),
+      catchError((error) => {
+        console.error('AuthService: Erro ao buscar perfil:', error);
+        if (error.status === 401) {
+          this.logout(); // Logout se token expirado
+        }
+        throw error;
+      })
+    );
   }
 
   updateProfile(profileData: Partial<UserProfile>): Observable<UserProfile> {
-    return this.http
-      .put<UserProfile>(`${this.apiUrl}/profile`, profileData, {
-        withCredentials: true,
+    return this.http.put<UserProfile>(`${this.apiUrl}/profile`, profileData).pipe(
+      tap((updatedUser) => {
+        this.saveUserToStorage(updatedUser);
+        this.currentUserSubject.next(updatedUser);
+      }),
+      catchError((error) => {
+        console.error('AuthService: Erro ao atualizar perfil:', error);
+        throw error;
       })
-      .pipe(
-        tap((updatedUser) => {
-          this.currentUserSubject.next(updatedUser);
-        })
-      );
-  } // Métodos para gerenciar localStorage e cookies
-  private saveUserToStorage(user: UserProfile): void {
-    try {
-      // Salvar dados do usuário
-      const userJson = JSON.stringify(user);
-      localStorage.setItem(this.USER_STORAGE_KEY, userJson);
-      localStorage.setItem(this.AUTH_STORAGE_KEY, 'true');
+    );
+  }
 
-      console.log('AuthService: Dados salvos no localStorage');
-    } catch (error) {
-      console.error('Erro ao salvar dados no localStorage:', error);
+  /**
+   * Verifica se o token JWT está próximo de expirar e, se estiver,
+   * tenta renová-lo automaticamente
+   * @param minimumValidTime Tempo mínimo de validade em segundos (padrão: 5 minutos)
+   */
+  checkAndRenewTokenIfNeeded(minimumValidTime: number = 300): void {
+    const token = this.token;
+    if (!token) return;
+
+    const remainingTime = JwtHelper.getTokenRemainingTime(token);
+    console.log('AuthService: Tempo restante do token:', remainingTime, 'segundos');
+
+    // Se tiver menos de X segundos (5 minutos por padrão), tentar renovar
+    if (remainingTime > 0 && remainingTime < minimumValidTime) {
+      console.log('AuthService: Token próximo de expirar, tentando renovar...');
+      this.refreshToken().subscribe({
+        next: () => console.log('AuthService: Token renovado com sucesso'),
+        error: (err) => console.error('AuthService: Erro ao renovar token:', err),
+      });
     }
   }
 
-  private saveUserToCookies(user: UserProfile): void {
-    try {
-      // Salvar dados do usuário em cookies por 7 dias
-      const userJson = JSON.stringify(user);
-      const expires = new Date();
-      expires.setDate(expires.getDate() + 7);
-
-      // Remover 'secure' para desenvolvimento local
-      document.cookie = `${this.USER_STORAGE_KEY}=${encodeURIComponent(
-        userJson
-      )}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
-      document.cookie = `${
-        this.AUTH_STORAGE_KEY
-      }=true; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
-
-      console.log('AuthService: Dados salvos nos cookies');
-    } catch (error) {
-      console.error('Erro ao salvar dados nos cookies:', error);
-    }
+  /**
+   * Tenta renovar o token JWT atual
+   * @returns Observable com o resultado da renovação
+   */
+  refreshToken(): Observable<any> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, {}).pipe(
+      tap((response) => {
+        if (response.data.access_token) {
+          localStorage.setItem(this.AUTH_STORAGE_KEY, response.data.access_token);
+          this.tokenSubject.next(response.data.access_token);
+          console.log('AuthService: Token renovado com sucesso');
+        }
+      }),
+      catchError((error) => {
+        console.error('AuthService: Erro ao renovar token:', error);
+        // Se falhar com 401, faz logout
+        if (error.status === 401) {
+          this.logout();
+        }
+        throw error;
+      })
+    );
   }
 
+  // Métodos para gerenciar localStorage
   private loadUserFromStorage(): void {
     try {
-      console.log('AuthService: Tentando carregar dados do localStorage...');
-
-      // Tentar carregar do localStorage primeiro
-      let isAuthenticated = localStorage.getItem(this.AUTH_STORAGE_KEY) === 'true';
-      let userJson = localStorage.getItem(this.USER_STORAGE_KEY);
-
-      console.log('AuthService: localStorage auth:', isAuthenticated);
-      console.log('AuthService: localStorage user:', userJson ? 'dados encontrados' : 'vazio');
-
-      // Se não encontrar no localStorage, tentar nos cookies
-      if (!isAuthenticated || !userJson) {
-        console.log('AuthService: Tentando carregar dos cookies...');
-        isAuthenticated = this.getCookie(this.AUTH_STORAGE_KEY) === 'true';
-        userJson = this.getCookie(this.USER_STORAGE_KEY);
-
-        console.log('AuthService: cookies auth:', isAuthenticated);
-        console.log('AuthService: cookies user:', userJson ? 'dados encontrados' : 'vazio');
+      // Carregar usuário do localStorage
+      const storedUserJson = localStorage.getItem(this.USER_STORAGE_KEY);
+      if (storedUserJson) {
+        const storedUser = JSON.parse(storedUserJson);
+        this.currentUserSubject.next(storedUser);
       }
 
-      if (isAuthenticated && userJson) {
-        const user = JSON.parse(userJson) as UserProfile;
-        this.currentUserSubject.next(user);
-        console.log('AuthService: Usuário carregado com sucesso:', user);
-
-        // Sincronizar localStorage com cookies se necessário
-        if (!localStorage.getItem(this.USER_STORAGE_KEY)) {
-          console.log('AuthService: Sincronizando localStorage com cookies...');
-          this.saveUserToStorage(user);
-        }
-      } else {
-        console.log('AuthService: Nenhum usuário autenticado encontrado');
+      // Carregar token do localStorage
+      const storedToken = localStorage.getItem(this.AUTH_STORAGE_KEY);
+      if (storedToken) {
+        this.tokenSubject.next(storedToken);
       }
+
+      console.log('AuthService: Dados carregados do localStorage:', {
+        user: this.currentUser,
+        token: !!this.token,
+      });
     } catch (error) {
-      console.error('AuthService: Erro ao carregar dados:', error);
-      this.clearUserData();
+      console.error('AuthService: Erro ao carregar dados do localStorage:', error);
+      this.clearUserData(); // Limpar dados em caso de erro
     }
   }
 
-  private getCookie(name: string): string {
-    try {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) {
-        const cookie = parts.pop()?.split(';').shift();
-        return cookie ? decodeURIComponent(cookie) : '';
-      }
-      return '';
-    } catch (error) {
-      console.error('AuthService: Erro ao ler cookie:', name, error);
-      return '';
+  private saveUserToStorage(user: UserProfile): void {
+    if (user) {
+      localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(user));
     }
   }
 
-  // Método público para inicialização da aplicação
-  initializeAuth(): Promise<boolean> {
-    return new Promise((resolve) => {
-      console.log('AuthService: Inicializando autenticação...');
-      console.log('AuthService: Estado atual - isAuthenticated:', this.isAuthenticated);
-
-      // Se não há usuário carregado ainda, tentar carregar
-      if (!this.isAuthenticated) {
-        console.log('AuthService: Tentando carregar usuário do storage...');
-        this.loadUserFromStorage();
-      }
-
-      // Por enquanto, não validar com servidor na inicialização para evitar problemas
-      // A validação será feita quando necessário
-      console.log('AuthService: Inicialização concluída. Autenticado:', this.isAuthenticated);
-      resolve(true);
-    });
-  }
   private clearUserData(): void {
     // Limpar localStorage
     localStorage.removeItem(this.USER_STORAGE_KEY);
     localStorage.removeItem(this.AUTH_STORAGE_KEY);
 
-    // Limpar cookies
-    document.cookie = `${this.USER_STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    document.cookie = `${this.AUTH_STORAGE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-
     // Limpar estado
     this.currentUserSubject.next(null);
+    this.tokenSubject.next(null);
   }
 
-  private loadCurrentUser(): void {
-    this.isLoadingSubject.next(true);
+  // Verificar token JWT
+  checkTokenValidity(): boolean {
+    const token = this.token;
+    if (!token) return false;
 
-    this.getProfile().subscribe({
-      next: (user) => {
-        this.saveUserToStorage(user);
-        this.currentUserSubject.next(user);
-        this.isLoadingSubject.next(false);
-      },
-      error: () => {
-        this.clearUserData();
-        this.isLoadingSubject.next(false);
-      },
-    });
+    return !JwtHelper.isTokenExpired(token);
   }
 
   // Verificar se o usuário atual ainda é válido
   validateCurrentUser(): Observable<UserProfile | null> {
+    // Se não tiver token, nem tenta validar
+    if (!this.token) {
+      return of(null);
+    }
+
     return this.getProfile().pipe(
       tap((user) => {
         this.saveUserToStorage(user);
@@ -299,22 +324,5 @@ export class AuthService {
         return of(null);
       })
     );
-  }
-
-  // Método público para recarregar dados de autenticação
-  reloadAuthData(): void {
-    console.log('AuthService: Recarregando dados de autenticação...');
-    this.loadUserFromStorage();
-  }
-
-  // Verificar se há dados salvos
-  hasStoredAuthData(): boolean {
-    const hasLocalStorage =
-      localStorage.getItem(this.AUTH_STORAGE_KEY) === 'true' &&
-      !!localStorage.getItem(this.USER_STORAGE_KEY);
-    const hasCookies =
-      this.getCookie(this.AUTH_STORAGE_KEY) === 'true' && !!this.getCookie(this.USER_STORAGE_KEY);
-
-    return hasLocalStorage || hasCookies;
   }
 }

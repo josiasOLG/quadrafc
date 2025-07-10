@@ -77,6 +77,7 @@ export class LoginComponent implements OnInit {
           next: (response) => {
             console.log('Login response:', response);
             console.log('Auth service isAuthenticated:', this.authService.isAuthenticated);
+            console.log('Token JWT recebido:', !!response.data.access_token);
 
             this.loading = false;
             this.messageService.add({
