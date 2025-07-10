@@ -1,106 +1,145 @@
-<div class="register" [formGroup]="registerForm">
-  <div class="register__card">
-    <!-- Header -->
-    <div class="register__header">
-      <h1 class="register__title">Criar Conta</h1>
-      <p class="register__subtitle">
-        Junte-se à comunidade QuadraFC e comece a fazer seus palpites
+<!-- Main Container -->
+<div class="min-h-screen flex flex-column surface-ground">
+  <!-- Header with gradient -->
+  <div class="flex-1 flex flex-column align-items-center justify-content-center p-4 qfc-gradient-bg">
+    <!-- Logo Section -->
+    <div class="text-center mb-4">
+      <div
+        class="bg-white border-circle w-4rem h-4rem flex align-items-center justify-content-center mx-auto mb-2 shadow-4 fadein animation-duration-500">
+        <img src="assets/icon.png" alt="QuadraFC" class="w-2rem h-2rem" />
+      </div>
+      <h1 class="text-white text-2xl font-bold m-0 mb-1 fadein animation-duration-500 animation-delay-100">QuadraFC</h1>
+      <p class="text-white-alpha-90 text-xs m-0 fadein animation-duration-500 animation-delay-200">
+        Junte-se à comunidade!
       </p>
     </div>
 
-    <!-- Form -->
-    <form>
-      <!-- Nome -->
-      <div class="register__field">
-        <label for="nome" class="register__label">Nome completo</label>
-        <input
-          type="text"
-          id="nome"
-          pInputText
-          formControlName="nome"
-          placeholder="Seu nome completo"
-          class="register__input"
-          [class.ng-invalid]="registerForm.get('nome')?.invalid && registerForm.get('nome')?.touched"
-        />
-        <small class="register__error" *ngIf="getFieldError('nome')">
-          {{ getFieldError('nome') }}
-        </small>
-      </div>
+    <!-- Register Card -->
+    <div
+      class="bg-white border-round-3xl shadow-8 p-4 w-full max-w-20rem fadein animation-duration-500 animation-delay-300">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-3">
+        <!-- Welcome Text -->
+        <div class="text-center mb-2">
+          <h2 class="text-900 text-lg font-semibold m-0 mb-1">Criar Conta</h2>
+          <p class="text-600 text-xs m-0">Preencha os dados abaixo</p>
+        </div>
 
-      <!-- Email -->
-      <div class="register__field">
-        <label for="email" class="register__label">Email</label>
-        <input
-          type="email"
-          id="email"
-          pInputText
-          formControlName="email"
-          placeholder="seu@email.com"
-          class="register__input"
-          [class.ng-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-        />
-        <small class="register__error" *ngIf="getFieldError('email')">
-          {{ getFieldError('email') }}
-        </small>
-      </div>
+        <!-- Nome Field -->
+        <div class="flex flex-column gap-1">
+          <label for="nome" class="text-900 font-medium text-sm">Nome completo</label>
+          <span class="p-input-icon-left">
+            <i class="pi pi-user qfc-text-primary"></i>
+            <input
+              type="text"
+              id="nome"
+              pInputText
+              formControlName="nome"
+              placeholder="Seu nome completo"
+              class="w-full p-2 text-sm qfc-input"
+              [class.qfc-input-error]="registerForm.get('nome')?.invalid && registerForm.get('nome')?.touched" />
+          </span>
+          <small class="qfc-text-error text-xs" *ngIf="getFieldError('nome')">
+            {{ getFieldError('nome') }}
+          </small>
+        </div>
 
-      <!-- Senha -->
-      <div class="register__field">
-        <label for="password" class="register__label">Senha</label>
-        <p-password
-          id="password"
-          formControlName="password"
-          placeholder="Mínimo 6 caracteres"
-          [toggleMask]="true"
-          [feedback]="false"
-          styleClass="register__input"
-          [class.ng-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-        ></p-password>
-        <small class="register__error" *ngIf="getFieldError('password')">
-          {{ getFieldError('password') }}
-        </small>
-      </div>
+        <!-- Email Field -->
+        <div class="flex flex-column gap-1">
+          <label for="email" class="text-900 font-medium text-sm">Email</label>
+          <span class="p-input-icon-left">
+            <i class="pi pi-envelope qfc-text-primary"></i>
+            <input
+              type="email"
+              id="email"
+              pInputText
+              formControlName="email"
+              placeholder="seu@email.com"
+              class="w-full p-2 text-sm qfc-input"
+              [class.qfc-input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+          </span>
+          <small class="qfc-text-error text-xs" *ngIf="getFieldError('email')">
+            {{ getFieldError('email') }}
+          </small>
+        </div>
 
-      <!-- Confirmar Senha -->
-      <div class="register__field">
-        <label for="confirmPassword" class="register__label">Confirmar Senha</label>
-        <p-password
-          id="confirmPassword"
-          formControlName="confirmPassword"
-          placeholder="Confirme sua senha"
-          [toggleMask]="true"
-          [feedback]="false"
-          styleClass="register__input"
-          [class.ng-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
-        ></p-password>
-        <small class="register__error" *ngIf="getFieldError('confirmPassword')">
-          {{ getFieldError('confirmPassword') }}
-        </small>
-      </div>
+        <!-- Password Field -->
+        <div class="flex flex-column gap-1">
+          <label for="password" class="text-900 font-medium text-sm">Senha</label>
+          <span class="p-input-icon-left">
+            <i class="pi pi-lock qfc-text-primary"></i>
+            <p-password
+              id="password"
+              formControlName="password"
+              placeholder="Mínimo 6 caracteres"
+              [feedback]="false"
+              [toggleMask]="true"
+              styleClass="w-full"
+              inputStyleClass="w-full p-2 text-sm qfc-input"
+              [class.qfc-input-error]="
+                registerForm.get('password')?.invalid && registerForm.get('password')?.touched
+              "></p-password>
+          </span>
+          <small class="qfc-text-error text-xs" *ngIf="getFieldError('password')">
+            {{ getFieldError('password') }}
+          </small>
+        </div>
 
-      <!-- Actions -->
-      <div class="register__actions">
+        <!-- Confirm Password Field -->
+        <div class="flex flex-column gap-1">
+          <label for="confirmPassword" class="text-900 font-medium text-sm">Confirmar Senha</label>
+          <span class="p-input-icon-left">
+            <i class="pi pi-lock qfc-text-primary"></i>
+            <p-password
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              placeholder="Confirme sua senha"
+              [feedback]="false"
+              [toggleMask]="true"
+              styleClass="w-full"
+              inputStyleClass="w-full p-2 text-sm qfc-input"
+              [class.qfc-input-error]="
+                registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched
+              "></p-password>
+          </span>
+          <small class="qfc-text-error text-xs" *ngIf="getFieldError('confirmPassword')">
+            {{ getFieldError('confirmPassword') }}
+          </small>
+        </div>
+
+        <!-- Submit Button -->
         <p-button
-          (click)="onSubmit()"
           type="submit"
           label="Criar Conta"
+          icon="pi pi-user-plus"
           [loading]="isLoading"
           [disabled]="registerForm.invalid || isLoading"
-          styleClass="register__button w-full"
-        ></p-button>
-      </div>
+          styleClass="w-full p-2 border-round-xl text-white font-semibold shadow-3 hover:shadow-4 transition-all transition-duration-200 qfc-button-primary mt-3"></p-button>
 
-      <!-- Login Link -->
-      <div class="register__login-link">
-        <span class="register__login-text">Já tem uma conta?</span>
-        <button
-          type="button"
-          class="register__login-action"
-          (click)="navigateToLogin()"
-        >
-          Fazer Login
-        </button>
-      </div>
-    </form>
+        <!-- Divider -->
+        <div class="flex align-items-center gap-3 my-2">
+          <div class="flex-1 border-top-1 border-200"></div>
+          <span class="text-600 text-xs">ou</span>
+          <div class="flex-1 border-top-1 border-200"></div>
+        </div>
+
+        <!-- Login Link -->
+        <div class="text-center">
+          <p class="text-600 text-sm m-0">
+            Já tem uma conta?
+            <button
+              type="button"
+              (click)="navigateToLogin()"
+              class="qfc-text-primary font-semibold cursor-pointer p-0 border-none bg-transparent hover:text-primary-emphasis transition-colors transition-duration-200">
+              Fazer Login
+            </button>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center p-3 border-top-1 border-200">
+    <p class="text-600 text-xs m-0">© 2025 QuadraFC. Todos os direitos reservados.</p>
   </div>
 </div>

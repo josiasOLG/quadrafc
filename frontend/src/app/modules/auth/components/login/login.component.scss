@@ -1,110 +1,80 @@
-
-
-.login {
-  min-height: 100vh;
-  background: var(--qfc-gradient-primary);
-
-  &__card {
-    // Usa PrimeFlex: border-round-lg shadow-3 bg-white
-    max-width: 400px;
-    animation: qfc-fade-in 0.3s ease-out;
+// Login Component Styles - usando variáveis do QuadraFC
+::ng-deep {
+  // Gradient background
+  .qfc-gradient-bg {
+    background: var(--qfc-gradient-primary) !important;
   }
 
-  &__title {
-    color: var(--qfc-primary);
-    font-weight: 700;
-  }
-
-  &__subtitle {
-    color: var(--qfc-text-secondary);
-  }
-
-  &__input-wrapper {
-    // Custom styling for form controls
-    .p-inputtext,
-    .p-password input {
-      border: 2px solid var(--qfc-border-primary);
-      border-radius: 8px;
-      transition: all 0.2s ease;
-
-      &:focus {
-        border-color: var(--qfc-primary);
-        box-shadow: 0 0 0 3px rgba(255, 106, 61, 0.1);
-      }
-    }
-
-    .p-password {
-      width: 100%;
-
-      .p-inputtext {
-        width: 100%;
-      }
-    }
-  }
-
-  &__error {
-    color: var(--qfc-error);
-    font-size: 0.875rem;
-  }
-
-  &__button {
-    background: var(--qfc-primary) !important;
+  // Button primary
+  .qfc-button-primary {
+    background: var(--qfc-gradient-primary) !important;
     border: none !important;
-    border-radius: 8px !important;
-    font-weight: 500;
-    transition: all 0.2s ease;
 
-    &:enabled:hover {
-      background: var(--qfc-primary-hover) !important;
-      transform: translateY(-1px);
+    &:hover:enabled {
+      background: var(--qfc-gradient-secondary) !important;
+      transform: translateY(-2px);
     }
 
-    &:disabled {
-      background: var(--qfc-text-tertiary) !important;
-      cursor: not-allowed;
-      transform: none;
+    &:active:enabled {
+      transform: translateY(0);
     }
   }
 
-  &__link {
-    color: var(--qfc-primary);
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
+  // Input styling
+  .qfc-input {
+    border-radius: var(--qfc-radius-xl) !important;
+    border: 2px solid var(--qfc-border-primary) !important;
+    transition: all 0.2s ease !important;
 
     &:hover {
-      color: var(--qfc-primary-hover);
-      text-decoration: underline;
+      border-color: var(--qfc-primary) !important;
+    }
+
+    &:focus {
+      border-color: var(--qfc-primary) !important;
+      box-shadow: var(--qfc-shadow-sm) !important;
     }
   }
-}
 
-// ===================================
-// FORM VALIDATION STYLES
-// ===================================
-::ng-deep {
-  .login__input-wrapper {
-    .ng-invalid.ng-touched {
-      .p-inputtext,
-      .p-password input {
-        border-color: var(--qfc-error) !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  // Error states
+  .qfc-input-error {
+    border-color: var(--qfc-error) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  }
+
+  // Text colors
+  .qfc-text-primary {
+    color: var(--qfc-primary) !important;
+  }
+
+  .qfc-text-error {
+    color: var(--qfc-error) !important;
+  }
+
+  // Password field styling
+  .p-password {
+    .p-password-input {
+      border-radius: var(--qfc-radius-xl) !important;
+      border: 2px solid var(--qfc-border-primary) !important;
+      transition: all 0.2s ease !important;
+
+      &:hover {
+        border-color: var(--qfc-primary) !important;
+      }
+
+      &:focus {
+        border-color: var(--qfc-primary) !important;
+        box-shadow: var(--qfc-shadow-sm) !important;
       }
     }
   }
-}
 
-// ===================================
-// ANIMATIONS
-// ===================================
-@keyframes qfc-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+  // Compact layout for mobile
+  .p-input-icon-left > .p-inputtext {
+    padding-left: 2.5rem !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .p-input-icon-left > i {
+    left: 0.75rem !important;
   }
 }
