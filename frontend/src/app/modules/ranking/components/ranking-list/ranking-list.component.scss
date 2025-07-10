@@ -1,88 +1,351 @@
-// LISTA DE BAIRROS
-.ranking-list {
-  max-height: calc(100vh - 250px);
-  overflow-y: auto;
+@import '../../../../shared/styles/mixins';
+
+// Página de Ranking
+.ranking-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-ground);
+  padding-bottom: 80px;
 }
 
-// CARD DO BAIRRO - usando PrimeFlex
-.ranking-bairro-card {
-  transition: all 0.3s ease;
+// Efeitos de UI reutilizáveis - minimalistas
+.glass-card {
+  background: transparent;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.neumorphic-card {
+  background: var(--surface-a);
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.05), -5px -5px 10px rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
+    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.07), -8px -8px 16px rgba(255, 255, 255, 0.8);
   }
 
-  &--podium {
-    background: linear-gradient(135deg, #fff8e1 0%, #fffbf0 100%);
-  }
-
-  &--lower-rank {
-    background: var(--qfc-secondary);
+  &:active {
+    transform: translateY(0);
   }
 }
 
-// BADGE DE POSIÇÃO
-.ranking-badge {
-  min-width: 4rem;
-  height: 4rem;
+// Posições do pódio
+.podium-position-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-weight: 700;
+  font-size: 0.8rem;
+  z-index: 1;
 
   &--gold {
-    background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+    background: linear-gradient(135deg, #ffd700, #ffa500);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
   }
   &--silver {
-    background: linear-gradient(135deg, #c0c0c0 0%, #a0a0a0 100%);
+    background: linear-gradient(135deg, #c0c0c0, #808080);
+    box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
   }
   &--bronze {
-    background: linear-gradient(135deg, #cd7f32 0%, #b8860b 100%);
-  }
-  &--default {
-    background: var(--primary-color);
-  }
-  &--top10 {
-    background: var(--qfc-secondary);
-  }
-  &--first {
-    background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
+    background: linear-gradient(135deg, #cd7f32, #8b4513);
+    box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
   }
 }
 
-// AVATAR DO BAIRRO
-.bairro-avatar-icon {
-  width: 4rem;
-  height: 4rem;
-  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-600) 100%);
-}
+// Componentes de podium
+.compact-podium {
+  .podium-title {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 1.2rem;
 
-// PONTUAÇÃO - usando classes do PrimeFlex
-.bairro-score {
-  min-width: 5rem;
-}
-
-// MODAL DE DETALHES - usando estilos do PrimeNG
-.bairro-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-600) 100%);
-}
-
-// RESPONSIVIDADE BÁSICA
-@media (max-width: 480px) {
-  .ranking-list {
-    max-height: calc(100vh - 180px);
+    i {
+      color: var(--yellow-500);
+    }
   }
 
-  .ranking-badge {
-    min-width: 3rem;
-    height: 3rem;
+  .podium-list {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
   }
 
-  .bairro-avatar-icon {
-    width: 3rem;
-    height: 3rem;
+  .podium-item-compact {
+    min-width: 180px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    .podium-bairro-avatar {
+      margin-bottom: 0.5rem;
+
+      .bairro-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--surface-a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        i {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .podium-bairro-info {
+      width: 100%;
+
+      .bairro-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem 0;
+        color: var(--text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bairro-points {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+      }
+
+      .bairro-users {
+        font-size: 0.8rem;
+        color: var(--text-color-secondary);
+      }
+    }
+  }
+}
+
+// Remoção da barra de rolagem e comportamento de rolagem suave
+.podium-scroll-container {
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Sistema de tabs
+.tabs-container {
+  .tabs-nav {
+    display: flex;
+    gap: 0.5rem;
   }
 
-  .bairro-icon {
-    width: 3rem;
-    height: 3rem;
+  .tab-button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+
+    &.active {
+      background: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+
+    &:not(:disabled):hover {
+      background: rgba(var(--primary-color-rgb), 0.1);
+      color: var(--primary-color);
+    }
+  }
+}
+
+// Lista de Ranking
+.ranking-list {
+  .ranking-list-header {
+    display: flex;
+    align-items: center;
+
+    .ranking-list-title {
+      display: flex;
+      align-items: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-color);
+
+      .indicator-line {
+        display: inline-block;
+        width: 3px;
+        height: 1.2rem;
+        background: var(--primary-color);
+        margin-right: 0.5rem;
+        border-radius: 2px;
+      }
+    }
+  }
+
+  // Cards dos bairros
+  .ranking-bairro-card {
+    cursor: pointer;
+
+    .position-badge {
+      min-width: 2.5rem;
+      height: 2.5rem;
+      background: var(--surface-ground);
+      border-radius: 50%;
+      color: var(--text-color);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .bairro-card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .bairro-card-location {
+      font-size: 0.8rem;
+      color: var(--text-color-secondary);
+
+      .location-icon {
+        font-size: 0.8rem;
+        margin-right: 0.25rem;
+        color: var(--primary-color);
+      }
+    }
+
+    .bairro-card-score {
+      text-align: center;
+
+      .score-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      .score-label {
+        font-size: 0.75rem;
+        color: var(--text-color-secondary);
+      }
+    }
+
+    .view-users-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--primary-dark-color);
+        transform: scale(1.05);
+      }
+    }
+
+    .bairro-status-indicators {
+      .status-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        color: var(--text-color-secondary);
+        background: var(--surface-ground);
+
+        .status-icon {
+          font-size: 0.7rem;
+          color: var(--primary-color);
+        }
+      }
+
+      .avg-score-chip {
+        background: rgba(var(--primary-color-rgb), 0.1);
+      }
+    }
+  }
+}
+
+// Loading state
+.ranking-loading {
+  .podium-skeleton,
+  .list-skeleton {
+    animation: pulse 1.5s infinite alternate;
+  }
+}
+
+// Empty state
+.empty-state {
+  .empty-icon {
+    i {
+      color: var(--text-color-secondary);
+    }
+  }
+}
+
+// User Ranking Info
+.user-ranking-info {
+  i.pi-info-circle {
+    color: var(--primary-color);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
   }
 }

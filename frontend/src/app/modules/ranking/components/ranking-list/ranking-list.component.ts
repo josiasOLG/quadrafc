@@ -4,23 +4,25 @@ import { Component, OnInit } from '@angular/core';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { DialogModule } from 'primeng/dialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { UserMiniHeaderComponent } from '../../../../shared/components/user-mini-header/user-mini-header.component';
 import { User } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { RankingService } from '../../services/ranking.service';
+import { UserRankingComponent } from '../user-ranking/user-ranking.component';
 
 interface RankingBairro {
   posicao: number;
   bairro: {
+    id?: string;
     nome: string;
     cidade: string;
     estado: string;
+    cep?: string;
   };
   pontos_totais: number;
   usuarios_ativos: number;
@@ -37,9 +39,9 @@ interface RankingBairro {
     ButtonModule,
     SkeletonModule,
     TagModule,
-    DialogModule,
     TooltipModule,
-    PageHeaderComponent,
+    UserMiniHeaderComponent,
+    UserRankingComponent,
   ],
   templateUrl: './ranking-list.component.html',
   styleUrls: ['./ranking-list.component.scss'],
@@ -49,9 +51,9 @@ export class RankingListComponent implements OnInit {
   rankingBairros: RankingBairro[] = [];
   isLoading = true;
 
-  // Modal properties
-  showBairroDetailsModal = false;
-  selectedBairroDetails: RankingBairro | null = null;
+  // Tab system
+  activeTab: 'bairros' | 'usuarios' = 'bairros';
+  selectedBairroForUserRanking: RankingBairro | null = null;
 
   // Cookie key para usuário
   private readonly USER_COOKIE_KEY = 'quadrafc_user';
@@ -205,19 +207,28 @@ export class RankingListComponent implements OnInit {
   }
 
   /**
-   * Abre modal com detalhes do bairro
+   * Abre o ranking de usuários de um bairro
    */
-  openBairroDetailsModal(bairro: RankingBairro): void {
-    this.selectedBairroDetails = bairro;
-    this.showBairroDetailsModal = true;
+  openUserRankingForBairro(bairro: RankingBairro): void {
+    this.selectedBairroForUserRanking = bairro;
+    this.activeTab = 'usuarios';
   }
 
   /**
-   * Fecha modal de detalhes do bairro
+   * Define a tab ativa
    */
-  closeBairroDetailsModal(): void {
-    this.showBairroDetailsModal = false;
-    this.selectedBairroDetails = null;
+  setActiveTab(tab: 'bairros' | 'usuarios'): void {
+    this.activeTab = tab;
+
+    // Se a tab de usuários for selecionada e não há bairro selecionado,
+    // seleciona automaticamente o primeiro bairro do ranking
+    if (
+      tab === 'usuarios' &&
+      !this.selectedBairroForUserRanking &&
+      this.rankingBairros.length > 0
+    ) {
+      this.selectedBairroForUserRanking = this.rankingBairros[0];
+    }
   }
 
   /**
@@ -250,7 +261,10 @@ export class RankingListComponent implements OnInit {
   /**
    * Formata número com separadores de milhares
    */
-  formatNumber(num: number): string {
+  formatNumber(num: number | undefined): string {
+    if (num === undefined || num === null) {
+      return '0';
+    }
     return new Intl.NumberFormat('pt-BR').format(num);
   }
 

@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { AvatarModule } from 'primeng/avatar';
+import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
 import { ProgressBarModule } from 'primeng/progressbar';
 
 import { User } from '../../schemas/user.schema';
@@ -8,47 +10,34 @@ import { User } from '../../schemas/user.schema';
 @Component({
   selector: 'app-user-header',
   standalone: true,
-  imports: [CommonModule, AvatarModule, ProgressBarModule],
+  imports: [CommonModule, AvatarModule, ProgressBarModule, CardModule, ChipModule],
   template: `
-    <!-- Header com Stats do Usuário -->
+    <!-- User Header Profissional -->
     <div class="user-header">
-      <!-- 1. Dashboard Icon + Avatar + Pontos -->
-      <div class="user-header__top">
-        <p-avatar
-          [image]="user?.foto_perfil || user?.avatarUrl"
-          [label]="user?.nome?.charAt(0)"
-          size="large"
-          shape="circle"
-          styleClass="user-header__avatar"
-        >
-        </p-avatar>
-        <div class="user-header__avatar-points-container">
-          <div class="user-header__points">
-            <div class="user-header__points-value">{{ getUserPoints() }}</div>
-            <div class="user-header__points-label">pontos</div>
+      <!-- Avatar e Info Principal -->
+      <div class="user-header__main">
+        <div class="user-header__avatar-section">
+          <p-avatar
+            [image]="user?.foto_perfil || user?.avatarUrl"
+            [label]="user?.nome?.charAt(0)"
+            size="large"
+            shape="circle"
+            styleClass="user-header__avatar"
+          />
+        </div>
+        <div class="user-header__info">
+          <h2 class="user-header__name">{{ user?.nome || 'Usuário' }}</h2>
+          <p class="user-header__location">
+            <i class="pi pi-map-marker"></i>
+            {{ getBairroInfo() }}
+          </p>
+        </div>
+        <div class="user-header__stats">
+          <div class="user-header__stat-item">
+            <span class="user-header__stat-value">{{ getUserPoints() }}</span>
+            <span class="user-header__stat-label">Pontos</span>
           </div>
         </div>
-      </div>
-
-      <!-- 2. Nome em negrito -->
-      <div class="user-header__user-name">
-        {{ user?.nome || 'Usuário' }}
-      </div>
-
-      <!-- 3. Localização -->
-      <div class="user-header__user-location">
-        <i class="pi pi-map-marker"></i>
-        {{ getBairroInfo() }}
-      </div>
-
-      <!-- 4. Barra de Progresso -->
-      <div class="user-header__level-progress">
-        <div class="user-header__level-info">
-          <span class="user-header__level-text">Nível {{ getUserLevel() }}</span>
-          <span class="user-header__progress-text">{{ getLevelProgress() }}%</span>
-        </div>
-        <p-progressBar [value]="getLevelProgress()" styleClass="user-header__progress-bar">
-        </p-progressBar>
       </div>
     </div>
   `,

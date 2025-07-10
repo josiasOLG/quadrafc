@@ -1,18 +1,18 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 // PrimeNG
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { InputSwitchModule } from 'primeng/inputswitch';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputTextModule } from 'primeng/inputtext';
 import { AvatarModule } from 'primeng/avatar';
-import { DividerModule } from 'primeng/divider';
-import { TooltipModule } from 'primeng/tooltip';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
+import { DividerModule } from 'primeng/divider';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
+import { TooltipModule } from 'primeng/tooltip';
 
 // Routing
 import { ConfiguracoesRoutingModule } from './configuracoes-routing.module';
@@ -22,11 +22,10 @@ import { ConfiguracoesComponent } from './components/configuracoes/configuracoes
 
 // Shared
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { UserMiniHeaderComponent } from '../../shared/components/user-mini-header/user-mini-header.component';
 
 @NgModule({
-  declarations: [
-    ConfiguracoesComponent
-  ],
+  declarations: [ConfiguracoesComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -45,7 +44,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     PasswordModule,
 
     // Shared
-    PageHeaderComponent
-  ]
+    PageHeaderComponent,
+    UserMiniHeaderComponent,
+  ],
 })
-export class ConfiguracoesModule { }
+export class ConfiguracoesModule {}

@@ -20,6 +20,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { AppModalComponent } from '../../../../shared/components/app-modal/app-modal.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { UserMiniHeaderComponent } from '../../../../shared/components/user-mini-header/user-mini-header.component';
 
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { Palpite } from '../../../../shared/schemas/palpite.schema';
@@ -93,6 +94,7 @@ interface CampeonatoOrganizado {
     AppModalComponent,
     AppButtonComponent,
     PageHeaderComponent,
+    UserMiniHeaderComponent,
     CurrencyFormatPipe,
   ],
   templateUrl: './jogos-list.component.html',

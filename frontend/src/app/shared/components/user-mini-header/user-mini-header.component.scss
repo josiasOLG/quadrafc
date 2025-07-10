@@ -1,0 +1,152 @@
+// ===================================
+// USER MINI HEADER PROFISSIONAL
+// ===================================
+// Design clean e minimalista para tela de jogos
+
+.user-mini-header {
+  background: var(--qfc-bg-primary);
+  border-bottom: 1px solid var(--qfc-border-primary);
+  padding: 30px 20px 30px 10px;
+
+  // Sombra sutil
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.user-mini-header__content {
+  display: flex;
+  align-items: center;
+  gap: var(--qfc-spacing-sm);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+// ===================================
+// AVATAR
+// ===================================
+.user-mini-header__avatar {
+  flex-shrink: 0;
+}
+
+.user-mini-header__avatar-img {
+  border: 2px solid var(--qfc-border-primary) !important;
+  background: var(--qfc-bg-secondary) !important;
+  color: var(--qfc-text-primary) !important;
+  font-weight: var(--qfc-font-weight-semibold) !important;
+}
+
+// ===================================
+// INFORMAÇÕES
+// ===================================
+.user-mini-header__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-mini-header__name {
+  font-size: var(--qfc-font-size-sm);
+  font-weight: var(--qfc-font-weight-semibold);
+  color: var(--qfc-text-primary);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-mini-header__location {
+  font-size: var(--qfc-font-size-xs);
+  color: var(--qfc-text-secondary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ===================================
+// PONTUAÇÃO
+// ===================================
+.user-mini-header__points {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  background: var(--qfc-bg-tertiary);
+  padding: 4px 8px;
+  border-radius: var(--qfc-radius-full);
+  border: 1px solid var(--qfc-border-secondary);
+}
+
+.user-mini-header__points-value {
+  font-size: var(--qfc-font-size-sm);
+  font-weight: var(--qfc-font-weight-bold);
+  color: var(--qfc-primary);
+  line-height: 1;
+}
+
+.user-mini-header__points-label {
+  font-size: var(--qfc-font-size-xs);
+  color: var(--qfc-text-secondary);
+  font-weight: var(--qfc-font-weight-medium);
+  line-height: 1;
+}
+
+// ===================================
+// RESPONSIVIDADE
+// ===================================
+@media screen and (max-width: 375px) {
+  .user-mini-header {
+    padding: var(--qfc-spacing-sm) var(--qfc-spacing-md);
+  }
+
+  .user-mini-header__content {
+    gap: var(--qfc-spacing-xs);
+  }
+
+  .user-mini-header__name {
+    font-size: var(--qfc-font-size-xs);
+  }
+
+  .user-mini-header__location {
+    font-size: 10px;
+  }
+
+  .user-mini-header__points {
+    padding: 3px 6px;
+  }
+
+  .user-mini-header__points-value {
+    font-size: var(--qfc-font-size-xs);
+  }
+
+  .user-mini-header__points-label {
+    font-size: 10px;
+  }
+}
+
+// ===================================
+// TEMA ESCURO
+// ===================================
+[data-theme='dark'] {
+  .user-mini-header {
+    background: var(--qfc-bg-primary);
+    border-bottom-color: var(--qfc-border-primary);
+  }
+
+  .user-mini-header__points {
+    background: var(--qfc-bg-tertiary);
+    border-color: var(--qfc-border-secondary);
+  }
+}
+
+// ===================================
+// OVERRIDES PRIMENG
+// ===================================
+::ng-deep {
+  .user-mini-header__avatar-img {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+  }
+}

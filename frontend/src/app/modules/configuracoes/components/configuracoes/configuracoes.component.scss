@@ -1,350 +1,231 @@
 .configuracoes {
-  padding: 1rem;
-  background: var(--surface-50);
   min-height: 100vh;
-
-  // ===================================
-  // CARD DE PERFIL DO USUÁRIO
-  // ===================================
-  &__profile-card {
-    margin-bottom: 2rem;
-
-    .profile-card ::ng-deep .p-card {
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      border: 2px solid var(--primary-color-200);
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-      .p-card-body {
-        padding: 1.5rem;
-      }
-    }
-
-    .profile-content {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-    }
-
-    .profile-avatar {
-      flex-shrink: 0;
-
-      .user-avatar ::ng-deep .p-avatar {
-        width: 4rem;
-        height: 4rem;
-        font-size: 1.75rem;
-        background: var(--primary-color);
-        color: white;
-        border: 3px solid white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        font-weight: 700;
-      }
-    }
-
-    .profile-info {
-      flex: 1;
-      min-width: 0;
-
-      .profile-name {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-color);
-        margin: 0 0 0.25rem 0;
-        line-height: 1.3;
-      }
-
-      .profile-email {
-        font-size: 0.875rem;
-        color: var(--text-color-secondary);
-        margin: 0 0 0.5rem 0;
-        font-weight: 500;
-      }
-
-      .profile-location {
-        display: flex;
-        align-items: center;
-        gap: 0.375rem;
-        font-size: 0.875rem;
-        color: var(--text-color-secondary);
-        margin: 0;
-        font-weight: 500;
-
-        i {
-          color: var(--primary-color);
-          font-size: 0.75rem;
-        }
-      }
-    }
-
-    .profile-stats {
-      display: flex;
-      gap: 1.5rem;
-      flex-shrink: 0;
-
-      .stat-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-
-        .stat-value {
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: var(--primary-color);
-          line-height: 1;
-        }
-
-        .stat-label {
-          font-size: 0.75rem;
-          color: var(--text-color-secondary);
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-top: 0.25rem;
-        }
-      }
-    }
+  background: var(--qfc-bg-secondary);
+  color: var(--qfc-text-primary);
+  
+  // Título da página
+  &__title-container {
+    padding: 1.5rem var(--qfc-spacing-lg);
+    position: relative;
+    z-index: 1;
   }
-
-  // ===================================
-  // CATEGORIAS E CONFIGURAÇÕES
-  // ===================================
-  &__content {
+  
+  &__title {
+    font-size: var(--qfc-font-size-xl);
+    font-weight: var(--qfc-font-weight-bold);
+    margin: 0 0 0.5rem 0;
     display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+    align-items: center;
+    gap: 0.75rem;
+    
+    i {
+      font-size: 1.25rem;
+      color: var(--qfc-primary);
+    }
   }
-
+  
+  &__subtitle {
+    font-size: var(--qfc-font-size-sm);
+    color: var(--qfc-text-secondary);
+    margin: 0;
+  }
+  
+  // Conteúdo principal
+  &__content {
+    padding: 0 var(--qfc-spacing-lg) var(--qfc-spacing-lg);
+  }
+  
   &__category {
-    .category-title {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: var(--text-color);
-      margin: 0 0 1.5rem 0;
-      padding: 0;
-      text-align: left;
-    }
-
-    .settings-card ::ng-deep .p-card {
-      background: var(--surface-0);
-      border: 1px solid var(--surface-200);
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-
-      .p-card-body {
-        padding: 1.5rem;
-      }
+    margin-bottom: var(--qfc-spacing-md);
+    
+    &:last-child {
+      margin-bottom: 0;
     }
   }
-
-  // ===================================
-  // ITENS DE CONFIGURAÇÃO
-  // ===================================
+  
+  // Cards de configurações
+  .settings-card {
+    background: var(--qfc-bg-primary);
+    border-radius: var(--qfc-radius-xl);
+    padding: var(--qfc-spacing-lg);
+    box-shadow: var(--qfc-shadow-sm);
+  }
+  
+  .category-title {
+    font-size: var(--qfc-font-size-lg);
+    font-weight: var(--qfc-font-weight-bold);
+    color: var(--qfc-text-primary);
+    margin: 0 0 var(--qfc-spacing-md) 0;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -0.5rem;
+      height: 3px;
+      width: 2.5rem;
+      background: var(--qfc-primary);
+      border-radius: var(--qfc-radius-full);
+    }
+  }
+  
+  // Lista de itens de configuração
   .settings-list {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--surface-200);
-    margin-top: 1rem;
   }
-
+  
   .setting-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--surface-200);
-    transition: background-color 0.2s ease;
-
+    padding: var(--qfc-spacing-md) 0;
+    border-bottom: 1px solid var(--qfc-border);
+    transition: all 0.2s ease;
+    
     &:last-child {
       border-bottom: none;
     }
-
+    
     &:hover {
-      background: var(--surface-50);
-      /* Removido margin/padding/scale para não dar efeito de scale/crescimento */
-      border-radius: 8px;
+      transform: translateX(4px);
     }
-
+    
     &--button {
       cursor: pointer;
-
+      
       &:hover {
-        background: var(--primary-color-50);
+        color: var(--qfc-primary);
       }
     }
+  }
+  
+  // Informações do item
+  .setting-info {
+    display: flex;
+    align-items: center;
+    gap: var(--qfc-spacing-md);
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .setting-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--qfc-bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    
+    i {
+      font-size: 1rem;
+      color: var(--qfc-primary);
+    }
+  }
+  
+  .setting-item:hover .setting-icon {
+    background: var(--qfc-primary);
+    
+    i {
+      color: white;
+    }
+  }
+  
+  .setting-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .setting-title {
+    font-size: var(--qfc-font-size-base);
+    font-weight: var(--qfc-font-weight-semibold);
+    color: var(--qfc-text-primary);
+    margin: 0 0 0.25rem 0;
+  }
+  
+  .setting-description {
+    font-size: var(--qfc-font-size-sm);
+    color: var(--qfc-text-secondary);
+    margin: 0;
+  }
+  
+  // Controles
+  .setting-control {
+    flex-shrink: 0;
+    margin-left: var(--qfc-spacing-md);
+  }
+}
 
+// Responsividade
+@media (max-width: 768px) {
+  .configuracoes {
+    &__title-container {
+      padding: var(--qfc-spacing-md) var(--qfc-spacing-md);
+    }
+    
+    &__content {
+      padding: 0 var(--qfc-spacing-md) var(--qfc-spacing-md);
+    }
+    
+    .settings-card {
+      padding: var(--qfc-spacing-md);
+    }
+    
     .setting-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .setting-icon {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 50%;
-      background: var(--primary-color-50);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-
-      i {
-        font-size: 1rem;
-        color: var(--primary-color);
-      }
-    }
-
-    .setting-content {
-      flex: 1;
-      min-width: 0;
-
-      .setting-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-color);
-        margin: 0 0 0.25rem 0;
-        line-height: 1.3;
-      }
-
-      .setting-description {
-        font-size: 0.875rem;
-        color: var(--text-color-secondary);
-        margin: 0;
-        line-height: 1.4;
-      }
-    }
-
-    .setting-control {
-      flex-shrink: 0;
-      margin-left: 1rem;
-
-      .setting-dropdown ::ng-deep .p-dropdown {
-        min-width: 140px;
-        border-radius: 8px;
-        border: 1px solid var(--surface-300);
-
-        &:hover {
-          border-color: var(--primary-color-300);
-        }
-
-        &.p-focus {
-          border-color: var(--primary-color);
-          box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
-        }
-      }
-
-      .setting-button ::ng-deep .p-button {
-        background: transparent;
-        border: none;
-        color: var(--text-color-secondary);
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 50%;
-
-        &:hover {
-          background: var(--primary-color-50);
-          color: var(--primary-color);
-        }
-
-        .p-button-icon {
-          font-size: 1rem;
-        }
-      }
+      gap: var(--qfc-spacing-sm);
     }
   }
 }
 
-// ===================================
-// MODAIS
-// ===================================
+// Estilos para os modais
 ::ng-deep .configuracoes-modal {
   .p-dialog-header {
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
-    background: var(--surface-0);
-    border-bottom: 1px solid var(--surface-200);
-    border-radius: 12px 12px 0 0;
-
+    padding: var(--qfc-spacing-lg);
+    background: var(--qfc-bg-primary);
+    border-bottom: 1px solid var(--qfc-border);
+    border-radius: var(--qfc-radius-lg) var(--qfc-radius-lg) 0 0;
+    
     .p-dialog-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-
-    .p-dialog-header-close {
-      background: transparent;
-      border: none;
-      color: var(--text-color-secondary);
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: var(--surface-100);
-        color: var(--text-color);
-      }
-
-      .p-button-icon {
-        font-size: 1rem;
-      }
+      font-size: var(--qfc-font-size-lg);
+      font-weight: var(--qfc-font-weight-bold);
     }
   }
-
+  
   .p-dialog-content {
-    padding: 0 1.5rem 1.5rem 1.5rem;
-    background: var(--surface-0);
-    border-radius: 0 0 12px 12px;
-  }
-
-  .p-dialog-mask {
-    background: rgba(0, 0, 0, 0.5);
+    padding: var(--qfc-spacing-lg);
+    background: var(--qfc-bg-primary);
+    border-radius: 0 0 var(--qfc-radius-lg) var(--qfc-radius-lg);
   }
 }
 
+// Formulários nos modais
 .modal-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--qfc-spacing-lg);
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-
+  gap: var(--qfc-spacing-md);
+  
   .form-field {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-
+    
     &.full-width {
       grid-column: 1 / -1;
     }
-
+    
     label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-
-    input,
-    ::ng-deep .p-password,
-    ::ng-deep .p-dropdown {
-      border-radius: 8px;
-      border: 1px solid var(--surface-300);
-
-      &:hover {
-        border-color: var(--primary-color-300);
-      }
-
-      &:focus,
-      &.p-focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
-      }
+      font-size: var(--qfc-font-size-sm);
+      font-weight: var(--qfc-font-weight-medium);
     }
   }
 }
@@ -352,125 +233,7 @@
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--surface-200);
-}
-
-// ===================================
-// RESPONSIVIDADE
-// ===================================
-@media (max-width: 768px) {
-  .configuracoes {
-    padding: 0rem;
-
-    &__profile-card {
-      .profile-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-      }
-
-      .profile-stats {
-        justify-content: center;
-        gap: 2rem;
-      }
-    }
-
-    .setting-item {
-      padding: 1rem;
-
-      .setting-info {
-        gap: 0.75rem;
-      }
-
-      .setting-icon {
-        width: 2rem;
-        height: 2rem;
-
-        i {
-          font-size: 0.875rem;
-        }
-      }
-
-      .setting-control {
-        margin-left: 0.5rem;
-
-        .setting-dropdown ::ng-deep .p-dropdown {
-          min-width: 120px;
-        }
-      }
-    }
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-
-    .form-field {
-      &.full-width {
-        grid-column: 1;
-      }
-    }
-  }
-
-  .modal-actions {
-    flex-direction: column-reverse;
-    gap: 0.75rem;
-
-    ::ng-deep .p-button {
-      width: 100%;
-      justify-content: center;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .configuracoes {
-    padding: 0;
-
-    &__profile-card {
-      .profile-avatar .user-avatar ::ng-deep .p-avatar {
-        width: 3rem;
-        height: 3rem;
-        font-size: 1.25rem;
-      }
-
-      .profile-info {
-        .profile-name {
-          font-size: 1.125rem;
-        }
-
-        .profile-email,
-        .profile-location {
-          font-size: 0.75rem;
-        }
-      }
-
-      .profile-stats {
-        .stat-item {
-          .stat-value {
-            font-size: 1.25rem;
-          }
-
-          .stat-label {
-            font-size: 0.625rem;
-          }
-        }
-      }
-    }
-
-    .setting-item {
-      padding: 0.75rem;
-
-      .setting-content {
-        .setting-title {
-          font-size: 0.875rem;
-        }
-
-        .setting-description {
-          font-size: 0.75rem;
-        }
-      }
-    }
-  }
+  gap: var(--qfc-spacing-md);
+  padding-top: var(--qfc-spacing-md);
+  border-top: 1px solid var(--qfc-border);
 }

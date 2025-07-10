@@ -1,0 +1,153 @@
+<div class="user-ranking-page">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="user-ranking-loading p-3">
+    <div *ngFor="let item of [1, 2, 3, 4, 5]" class="glass-card p-3 mb-3 border-round-xl">
+      <div class="flex align-items-center gap-3">
+        <p-skeleton shape="circle" size="3rem"></p-skeleton>
+        <div class="flex-1">
+          <p-skeleton width="70%" height="1.2rem" styleClass="mb-2"></p-skeleton>
+          <p-skeleton width="40%" height="0.8rem"></p-skeleton>
+        </div>
+        <p-skeleton width="4rem" height="2rem"></p-skeleton>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conteúdo Principal -->
+  <div *ngIf="!isLoading" class="user-ranking-content pb-8">
+    <!-- Estado Vazio -->
+    <div *ngIf="rankingUsuarios.length === 0" class="empty-state glass-card mx-3 my-1 p-6 text-center border-round-xl">
+      <div class="empty-icon mb-3">
+        <i class="pi pi-users text-6xl" style="opacity: 0.6"></i>
+      </div>
+      <h3 class="m-0 mb-2">Nenhum usuário no ranking</h3>
+      <p class="text-color-secondary m-0">Não há usuários cadastrados neste bairro ainda.</p>
+    </div>
+
+    <!-- Conteúdo com Dados -->
+    <ng-container *ngIf="rankingUsuarios.length > 0">
+      <!-- Pódio Compacto (Top 3) -->
+      <div class="compact-podium glass-card mx-3 my-1 p-4 border-round-xl">
+        <h3 class="text-center m-0 mb-3 podium-title">
+          <i class="pi pi-trophy mr-2"></i>
+          Top 3 Usuários
+        </h3>
+
+        <div class="podium-list">
+          <div
+            *ngFor="let user of rankingUsuarios.slice(0, 3); let i = index"
+            class="podium-item-compact"
+            [ngClass]="'podium-item-compact--' + (i + 1)"
+            (click)="openUserDetailsModal(user)"
+            (keyup.enter)="openUserDetailsModal(user)"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="'Ver detalhes do usuário ' + user.user.nome">
+            <!-- Badge de Posição -->
+            <div
+              class="podium-position-badge"
+              [ngClass]="{
+                'podium-position-badge--gold': i === 0,
+                'podium-position-badge--silver': i === 1,
+                'podium-position-badge--bronze': i === 2
+              }">
+              {{ i + 1 }}
+            </div>
+
+            <!-- Avatar do Usuário -->
+            <div class="podium-user-avatar">
+              <img
+                *ngIf="getUserAvatar(user)"
+                [src]="getUserAvatar(user)"
+                [alt]="user.user.nome"
+                class="avatar-image" />
+              <div *ngIf="!getUserAvatar(user)" class="avatar-placeholder">
+                {{ getUserInitials(user.user.nome) }}
+              </div>
+            </div>
+
+            <!-- Informações do Usuário -->
+            <div class="podium-user-info">
+              <h4 class="user-name">{{ user.user.nome }}</h4>
+              <div class="user-points">{{ formatNumber(user.pontos_totais) }} pts</div>
+              <div class="user-accuracy">{{ formatPercentage(user.percentual_acerto) }} acerto</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Usuários (4º lugar em diante) -->
+      <div class="user-ranking-list mx-3">
+        <div class="ranking-list-header py-3 px-2" *ngIf="rankingUsuarios.length > 3">
+          <h3 class="m-0 ranking-list-title">
+            <span class="indicator-line"></span>
+            <span>Outros Usuários</span>
+          </h3>
+        </div>
+
+        <div
+          *ngFor="let user of rankingUsuarios.slice(3); trackBy: trackByUser; let i = index"
+          class="ranking-user-card neumorphic-card mb-3 p-3 border-round-xl"
+          (click)="openUserDetailsModal(user)"
+          (keyup.enter)="openUserDetailsModal(user)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'Ver detalhes do usuário ' + user.user.nome + ', posição ' + user.posicao">
+          <div class="flex align-items-center gap-3">
+            <!-- Posição Badge -->
+            <div class="position-badge flex align-items-center justify-content-center">
+              <span>#{{ user.posicao }}</span>
+            </div>
+
+            <!-- Avatar do Usuário -->
+            <div class="user-avatar">
+              <img
+                *ngIf="getUserAvatar(user)"
+                [src]="getUserAvatar(user)"
+                [alt]="user.user.nome"
+                class="avatar-image" />
+              <div *ngIf="!getUserAvatar(user)" class="avatar-placeholder">
+                {{ getUserInitials(user.user.nome) }}
+              </div>
+            </div>
+
+            <!-- Detalhes do Usuário -->
+            <div class="flex-1">
+              <h4 class="user-card-name m-0 mb-1">{{ user.user.nome }}</h4>
+              <div class="user-card-stats">
+                <span class="stat-item">
+                  <i class="pi pi-trophy stat-icon"></i>
+                  {{ formatNumber(user.pontos_totais) }} pts
+                </span>
+                <span class="stat-item">
+                  <i class="pi pi-check-circle stat-icon"></i>
+                  {{ formatPercentage(user.percentual_acerto) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Indicador de Progresso -->
+            <div class="user-progress">
+              <div class="progress-circle">
+                <svg class="progress-svg" viewBox="0 0 36 36">
+                  <path
+                    class="progress-bg"
+                    d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path
+                    class="progress-fill"
+                    [attr.stroke-dasharray]="user.percentual_acerto + ', 100'"
+                    d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <div class="progress-text">{{ formatPercentage(user.percentual_acerto) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

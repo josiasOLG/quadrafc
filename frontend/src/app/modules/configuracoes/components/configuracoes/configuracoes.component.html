@@ -1,15 +1,20 @@
 <div class="configuracoes">
-  <!-- Header -->
-  <app-page-header
-    title="Configurações"
-    subtitle="Personalize sua experiência no app"
-    icon="pi pi-cog"
-    [user]="user"
-    customClass="page-header--configuracoes"></app-page-header>
+  <!-- Header usando o UserHeaderComponent -->
+  <app-user-mini-header [user]="user"></app-user-mini-header>
+
+  <!-- Título da Página -->
+  <div class="configuracoes__title-container">
+    <h1 class="configuracoes__title">
+      <i class="pi pi-cog"></i>
+      Configurações
+    </h1>
+    <p class="configuracoes__subtitle">Personalize sua experiência no app</p>
+  </div>
+
   <!-- Lista de Configurações por Categoria -->
   <div class="configuracoes__content">
     <div *ngFor="let categoria of getCategorias()" class="configuracoes__category">
-      <p-card styleClass="settings-card">
+      <div class="settings-card">
         <h3 class="category-title">{{ categoria }}</h3>
         <div class="settings-list">
           <div
@@ -55,7 +60,7 @@
             </div>
           </div>
         </div>
-      </p-card>
+      </div>
     </div>
   </div>
 </div>

@@ -1,156 +1,233 @@
 // ===================================
-// USER HEADER COMPONENT
+// USER HEADER PROFISSIONAL
 // ===================================
+// Design elegante com aurora boreal sutil
 
-// Importar o efeito de aurora boreal
 @import '../../styles/aurora-boreal';
-body.ios-pwa {
-  .user-header {
-    padding-top: 40px;
+
+.user-header {
+  position: relative;
+  padding: var(--qfc-spacing-lg);
+  background: var(--qfc-gradient-primary);
+  border-radius: 0 0 var(--qfc-radius-xl) var(--qfc-radius-xl);
+  color: var(--qfc-text-inverse);
+  overflow: hidden;
+
+  // Aurora boreal sutil
+  @include aurora-boreal-effect(-1);
+
+  // Gradiente overlay para melhor legibilidade
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.8) 0%, rgba(59, 130, 246, 0.6) 100%);
+    z-index: 1;
+  }
+
+  // Conteúdo acima do fundo
+  & > * {
+    position: relative;
+    z-index: 2;
   }
 }
-.user-header {
-  background: var(--qfc-gradient-primary);
-  color: var(--qfc-text-inverse);
+
+// ===================================
+// SEÇÃO PRINCIPAL
+// ===================================
+.user-header__main {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  width: 100%;
-  padding: var(--qfc-spacing-md);
-  // Aplicar o efeito de aurora boreal completo
-  @include aurora-complete($z-index: 1, $include-particles: true);
+  align-items: center;
+  gap: var(--qfc-spacing-md);
+  margin-bottom: var(--qfc-spacing-md);
+}
 
-  ::ng-deep {
-    .p-avatar {
-      background-color: white;
-      color: #333;
-    }
+.user-header__avatar-section {
+  flex-shrink: 0;
+}
+
+.user-header__avatar {
+  border: 3px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  background: var(--qfc-bg-primary) !important;
+  color: var(--qfc-primary) !important;
+  font-weight: var(--qfc-font-weight-bold) !important;
+}
+
+.user-header__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-header__name {
+  font-size: var(--qfc-font-size-xl);
+  font-weight: var(--qfc-font-weight-bold);
+  color: var(--qfc-text-inverse);
+  margin: 0 0 var(--qfc-spacing-xs) 0;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.user-header__location {
+  display: flex;
+  align-items: center;
+  gap: var(--qfc-spacing-xs);
+  font-size: var(--qfc-font-size-sm);
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 var(--qfc-spacing-xs) 0;
+
+  i {
+    font-size: var(--qfc-font-size-sm);
   }
+}
 
-  // 1. Dashboard Icon + Avatar + Pontos (topo)
-  &__top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: var(--qfc-spacing-md);
+.user-header__level {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--qfc-spacing-xs);
+}
+
+.user-header__level-text,
+.user-header__progress-text {
+  font-size: var(--qfc-font-size-sm);
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: var(--qfc-font-weight-medium);
+}
+
+.user-header__progress-text {
+  opacity: 0.8;
+}
+
+// ===================================
+// BARRA DE PROGRESSO
+// ===================================
+.user-header__progress {
+  margin-bottom: var(--qfc-spacing-md);
+}
+
+.user-header__progress-bar {
+  height: 6px !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: var(--qfc-radius-full) !important;
+  overflow: hidden !important;
+
+  .p-progressbar-value {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%) !important;
+    border-radius: var(--qfc-radius-full) !important;
+    transition: width 0.4s ease !important;
   }
+}
 
-  &__dashboard-icon {
-    font-size: 1rem;
-    color: var(--qfc-text-inverse);
-    cursor: pointer;
-    transition: all 0.3s ease;
+// ===================================
+// ESTATÍSTICAS
+// ===================================
+.user-header__stats {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--qfc-spacing-sm);
+}
 
-    &:hover {
-      transform: scale(1.1);
-      opacity: 0.8;
-    }
-  }
+.user-header__stat-item {
+  text-align: center;
+  padding: var(--qfc-spacing-sm);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--qfc-radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
 
-  &__avatar-points-container {
-    display: flex;
-    align-items: center;
-    gap: var(--qfc-spacing-md);
-  }
-
-  &__avatar {
-    background: white !important;
-    color: var(--qfc-primary) !important;
-    box-shadow: var(--qfc-shadow-md);
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50% !important;
-  }
-
-  &__points {
+  &:hover {
     background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--qfc-radius-lg);
-    padding: var(--qfc-spacing-sm) var(--qfc-spacing-md);
-    text-align: center;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    transform: translateY(-1px);
+  }
+}
 
-    &:hover {
-      transform: translateY(-2px);
-      background: rgba(255, 255, 255, 0.25);
+.user-header__stat-value {
+  display: block;
+  font-size: var(--qfc-font-size-lg);
+  font-weight: var(--qfc-font-weight-bold);
+  color: var(--qfc-text-inverse);
+  line-height: 1.2;
+}
+
+.user-header__stat-label {
+  display: block;
+  font-size: var(--qfc-font-size-xs);
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--qfc-spacing-xs);
+  font-weight: var(--qfc-font-weight-medium);
+}
+
+// ===================================
+// RESPONSIVIDADE
+// ===================================
+@media screen and (max-width: 375px) {
+  .user-header {
+    padding: var(--qfc-spacing-md);
+  }
+
+  .user-header__main {
+    gap: var(--qfc-spacing-sm);
+  }
+
+  .user-header__name {
+    font-size: var(--qfc-font-size-lg);
+  }
+
+  .user-header__stats {
+    gap: var(--qfc-spacing-xs);
+  }
+
+  .user-header__stat-item {
+    padding: var(--qfc-spacing-xs);
+  }
+
+  .user-header__stat-value {
+    font-size: var(--qfc-font-size-base);
+  }
+
+  .user-header__stat-label {
+    font-size: 10px;
+  }
+}
+
+// ===================================
+// TEMA ESCURO
+// ===================================
+[data-theme='dark'] {
+  .user-header {
+    background: linear-gradient(135deg, var(--qfc-bg-primary) 0%, var(--qfc-bg-secondary) 100%);
+
+    &::before {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
     }
   }
+}
 
-  &__points-value {
-    color: var(--qfc-text-inverse);
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  &__points-label {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-  }
-
-  // 2. Nome em negrito
-  &__user-name {
-    color: var(--qfc-text-inverse);
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-align: left;
-    width: 100%;
-    margin: 0;
-  }
-
-  // 3. Cidade e Estado
-  &__user-location {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    text-align: left;
-    width: 100%;
-    display: flex;
-    gap: 6px;
-    margin: 0;
-
-    .pi-map-marker {
-      font-size: 1rem;
-    }
-  }
-
-  // 4. Barra de Progresso
-  &__level-progress {
-    width: 100%;
-
-    .user-header__level-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      width: 100%;
+// ===================================
+// OVERRIDES PRIMENG
+// ===================================
+::ng-deep {
+  .user-header {
+    .p-avatar {
+      background: var(--qfc-bg-primary) !important;
+      color: var(--qfc-primary) !important;
     }
 
-    .user-header__level-text,
-    .user-header__progress-text {
-      color: var(--qfc-text-inverse);
-      font-weight: 600;
-      font-size: 0.875rem;
-    }
-
-    .user-header__progress-text {
-      opacity: 0.8;
-    }
-  }
-
-  ::ng-deep .user-header__progress-bar {
     .p-progressbar {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: var(--qfc-radius-full);
-      height: 8px;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border-radius: var(--qfc-radius-full) !important;
+    }
 
-      .p-progressbar-value {
-        background: var(--qfc-text-inverse);
-        border-radius: var(--qfc-radius-full);
-      }
+    .p-progressbar-value {
+      background: rgba(255, 255, 255, 0.9) !important;
+      border-radius: var(--qfc-radius-full) !important;
     }
   }
 }
