@@ -57,6 +57,50 @@ export class RankingController {
     });
   }
 
+  @Get('top-usuarios-por-bairro')
+  @Public()
+  @ResponseMessage('Top usuários por bairro recuperados')
+  @ApiOperation({ summary: 'Buscar os 5 melhores usuários de cada bairro em uma cidade' })
+  @ApiQuery({ name: 'cidade', required: true, description: 'Nome da cidade' })
+  @ApiQuery({ name: 'estado', required: true, description: 'Sigla do estado (ex: SP, RJ)' })
+  async getTopUsuariosPorBairro(@Query('cidade') cidade: string, @Query('estado') estado: string) {
+    if (!cidade || !estado) {
+      throw new BadRequestException('Cidade e estado são obrigatórios');
+    }
+
+    return this.rankingService.getRankingTopUsuariosPorBairro(cidade, estado);
+  }
+
+  /**
+   * Exemplo de como usar o endpoint de top usuários por bairro:
+   *
+   * Endpoint: GET /ranking/top-usuarios-por-bairro?cidade=Petrópolis&estado=RJ
+   *
+   * Resposta:
+   * {
+   *   "data": [
+   *     {
+   *       "bairro": "Centro",
+   *       "cidade": "Petrópolis",
+   *       "estado": "RJ",
+   *       "pontos_totais": 450,
+   *       "total_usuarios": 8,
+   *       "usuarios": [
+   *         { "_id": "...", "nome": "João Silva", "totalPoints": 100, ... },
+   *         { "_id": "...", "nome": "Maria Souza", "totalPoints": 95, ... },
+   *         ...
+   *       ]
+   *     },
+   *     {
+   *       "bairro": "Quitandinha",
+   *       ...
+   *     }
+   *   ],
+   *   "cidade": "Petrópolis",
+   *   "estado": "RJ"
+   * }
+   */
+
   @Get('filtros-disponiveis')
   @Public()
   @ResponseMessage('Filtros disponíveis recuperados')

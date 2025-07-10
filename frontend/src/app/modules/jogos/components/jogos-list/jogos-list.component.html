@@ -28,10 +28,16 @@
 
       <!-- Tabs de Campeonatos -->
       <div *ngIf="campeonatos.length > 0" class="championships-container">
+        <h2 class="sr-only">Selecione um campeonato para ver os jogos disponíveis</h2>
+        <div class="tabs-hint">
+          Selecione um campeonato para ver os jogos
+          <i class="pi pi-arrow-right"></i>
+        </div>
         <p-tabView [(activeIndex)]="activeTabIndex" styleClass="modern-tabs">
           <p-tabPanel
             *ngFor="let campeonato of campeonatos; trackBy: trackByCampeonato"
             [header]="campeonato.nome"
+            [headerStyleClass]="'tab-header-custom'"
             styleClass="championship-tab">
             <!-- Championship Header -->
             <div class="championship-header">

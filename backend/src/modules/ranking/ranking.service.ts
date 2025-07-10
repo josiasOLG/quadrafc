@@ -356,4 +356,103 @@ export class RankingService {
       estado: estado,
     };
   }
+
+  async getRankingTopUsuariosPorBairro(cidade: string, estado: string) {
+    console.log('🔍 Iniciando getRankingTopUsuariosPorBairro:', { cidade, estado });
+
+    // Verificar se cidade e estado são válidos
+    if (!cidade || !estado) {
+      throw new Error('Cidade e estado são obrigatórios');
+    }
+
+    console.log('🔍 Buscando bairros da cidade:', { cidade, estado });
+
+    // Primeiro, obter todos os bairros distintos para a cidade/estado
+    const bairrosDistintos = await this.userModel.distinct('bairro', {
+      cidade: cidade,
+      estado: estado,
+      bairro: { $exists: true, $ne: null, $nin: [''] },
+    });
+
+    console.log(
+      `📊 Encontrados ${bairrosDistintos.length} bairros distintos em ${cidade}/${estado}`
+    );
+
+    if (bairrosDistintos.length === 0) {
+      return {
+        data: [],
+        cidade: cidade,
+        estado: estado,
+      };
+    }
+
+    // Para cada bairro, obter os 5 melhores usuários
+    const resultado = [];
+
+    for (const bairro of bairrosDistintos) {
+      // Buscar os 5 melhores usuários do bairro
+      const topUsuariosBairro = await this.userModel
+        .find({
+          cidade: cidade,
+          estado: estado,
+          bairro: bairro,
+        })
+        .sort({ totalPoints: -1 })
+        .limit(5)
+        .exec();
+
+      // Calcular a pontuação total do bairro
+      const pontosTotaisBairro = topUsuariosBairro.reduce(
+        (total, user) => total + (user.totalPoints || 0),
+        0
+      );
+
+      // Contar total de usuários do bairro
+      const totalUsuariosBairro = await this.userModel.countDocuments({
+        cidade: cidade,
+        estado: estado,
+        bairro: bairro,
+      });
+
+      // Formatar usuários para o ranking
+      const usuariosFormatados: RankingUsuario[] = topUsuariosBairro.map((user, index) => {
+        return {
+          _id: user._id.toString(),
+          nome: user.nome,
+          avatar: user.avatarUrl || '',
+          avatarUrl: user.avatarUrl || '',
+          bairro: user.bairro || '',
+          cidade: user.cidade || '',
+          estado: user.estado || '',
+          totalPoints: user.totalPoints || 0,
+          pontos: user.totalPoints || 0,
+          palpites_corretos: 0, // Valor padrão
+          total_palpites: 0, // Valor padrão
+          taxa_acerto: 0, // Valor padrão
+          sequencia_atual: 0, // Valor padrão
+          posicao: index + 1,
+          isCurrentUser: false,
+        };
+      });
+
+      // Adicionar ao resultado
+      resultado.push({
+        bairro: bairro,
+        cidade: cidade,
+        estado: estado,
+        pontos_totais: pontosTotaisBairro,
+        total_usuarios: totalUsuariosBairro,
+        usuarios: usuariosFormatados,
+      });
+    }
+
+    // Ordenar os bairros por pontuação total (decrescente)
+    resultado.sort((a, b) => b.pontos_totais - a.pontos_totais);
+
+    return {
+      data: resultado,
+      cidade: cidade,
+      estado: estado,
+    };
+  }
 }

@@ -10,7 +10,9 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { User } from '../../../../shared/schemas/user.schema';
+import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { RankingService } from '../../services/ranking.service';
 
 interface RankingUsuario {
   posicao: number;
@@ -40,6 +42,16 @@ interface RankingBairro {
   media_pontuacao: number;
 }
 
+// Interface para representar os dados retornados pelo endpoint de top usuários por bairro
+interface BairroComUsuarios {
+  bairro: string;
+  cidade: string;
+  estado: string;
+  pontos_totais: number;
+  total_usuarios: number;
+  usuarios: any[]; // Lista de usuários do bairro
+}
+
 @Component({
   selector: 'app-user-ranking',
   standalone: true,
@@ -65,12 +77,27 @@ export class UserRankingComponent implements OnInit {
   showUserDetailsModal = false;
   selectedUserDetails: RankingUsuario | null = null;
 
-  constructor(private authService: AuthService) {}
+  // Propriedades para armazenar a resposta do endpoint de top usuários por bairro
+  topUsuariosPorBairro: any[] = [];
+  bairroSelecionado: string | null = null;
+
+  constructor(
+    private authService: AuthService,
+    private rankingService: RankingService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
+    console.log('🔄 Inicializando componente user-ranking');
+    // Primeiro, carregar o usuário atual
     this.loadCurrentUser();
+
+    // Se já temos um bairro selecionado, carregar ranking imediatamente
     if (this.selectedBairro) {
+      console.log('🏠 Bairro já selecionado:', this.selectedBairro.bairro.nome);
       this.loadUserRanking();
+    } else {
+      console.log('⏳ Aguardando dados do usuário para carregar ranking...');
     }
   }
 
@@ -78,6 +105,16 @@ export class UserRankingComponent implements OnInit {
     this.authService.currentUser$.subscribe({
       next: (user: User | null) => {
         this.user = user;
+        // Após carregar o usuário, verificamos se devemos iniciar o carregamento do ranking
+        if (user && (!this.selectedBairro || !this.rankingUsuarios.length)) {
+          console.log('👤 Usuário carregado, carregando ranking com dados do usuário:', {
+            cidade: user.cidade,
+            estado: user.estado,
+            bairro: user.bairro,
+          });
+          // Carregar ranking com os dados do usuário logado
+          this.loadUserRankingFromUserData();
+        }
       },
       error: (error: any) => {
         console.error('Erro ao carregar usuário:', error);
@@ -85,15 +122,133 @@ export class UserRankingComponent implements OnInit {
     });
   }
 
-  loadUserRanking() {
-    if (!this.selectedBairro) return;
+  // Novo método para carregar o ranking a partir dos dados do usuário logado
+  private loadUserRankingFromUserData() {
+    if (!this.user || !this.user.cidade || !this.user.estado) {
+      console.warn('⚠️ Dados do usuário incompletos para carregar ranking');
+      return;
+    }
 
     this.isLoading = true;
-    // Simular dados por enquanto, até ter o endpoint real
-    setTimeout(() => {
-      this.rankingUsuarios = this.generateMockUserRanking();
-      this.isLoading = false;
-    }, 1000);
+    this.bairroSelecionado = this.user.bairro || null;
+
+    // Usando o endpoint com os dados do usuário logado
+    this.rankingService.getTopUsuariosPorBairro(this.user.cidade, this.user.estado).subscribe({
+      next: (response) => {
+        this.processRankingResponse(response);
+      },
+      error: (error) => {
+        this.handleRankingError(error);
+      },
+    });
+  }
+
+  loadUserRanking() {
+    if (!this.selectedBairro) {
+      // Se não há bairro selecionado e temos um usuário, usar dados do usuário
+      if (this.user) {
+        this.loadUserRankingFromUserData();
+      }
+      return;
+    }
+
+    this.isLoading = true;
+    this.bairroSelecionado = this.selectedBairro.bairro.nome;
+
+    // Usando o novo endpoint para obter os top 5 usuários por bairro
+    this.rankingService
+      .getTopUsuariosPorBairro(this.selectedBairro.bairro.cidade, this.selectedBairro.bairro.estado)
+      .subscribe({
+        next: (response) => {
+          this.processRankingResponse(response);
+        },
+        error: (error) => {
+          this.handleRankingError(error);
+        },
+      });
+  }
+
+  // Método auxiliar para processar a resposta do ranking
+  private processRankingResponse(response: any) {
+    console.log('🏆 Resposta de top usuários por bairro:', response);
+
+    if (response?.data && Array.isArray(response.data)) {
+      // Armazenar a resposta completa
+      this.topUsuariosPorBairro = response.data;
+
+      // Definir qual bairro mostrar
+      let bairroParaMostrar = this.bairroSelecionado;
+
+      // Se não temos um bairro selecionado mas temos o usuário, usar o bairro do usuário
+      if (!bairroParaMostrar && this.user?.bairro) {
+        bairroParaMostrar = this.user.bairro;
+      }
+
+      // Encontrar o bairro específico
+      const bairroData = response.data.find(
+        (item: BairroComUsuarios) => item.bairro === bairroParaMostrar
+      );
+
+      if (bairroData && bairroData.usuarios) {
+        // Converter os dados para o formato do componente
+        this.rankingUsuarios = bairroData.usuarios.map((usuario: any, index: number) => ({
+          posicao: index + 1,
+          user: {
+            id: usuario._id,
+            nome: usuario.nome,
+            email: usuario.email || '',
+            avatar: usuario.avatarUrl || usuario.avatar || '',
+          },
+          pontos_totais: usuario.totalPoints || usuario.pontos || 0,
+          palpites_corretos: usuario.palpites_corretos || 0,
+          palpites_totais: usuario.total_palpites || 0,
+          percentual_acerto: usuario.taxa_acerto || 0,
+        }));
+
+        console.log(
+          `👥 ${this.rankingUsuarios.length} usuários carregados para o bairro ${bairroParaMostrar}`
+        );
+      } else {
+        // Se não encontrou o bairro específico e temos dados, mostrar o primeiro bairro
+        if (response.data.length > 0 && response.data[0].usuarios) {
+          const primeiroBairro = response.data[0] as BairroComUsuarios;
+          this.bairroSelecionado = primeiroBairro.bairro;
+
+          this.rankingUsuarios = primeiroBairro.usuarios.map((usuario: any, index: number) => ({
+            posicao: index + 1,
+            user: {
+              id: usuario._id,
+              nome: usuario.nome,
+              email: usuario.email || '',
+              avatar: usuario.avatarUrl || usuario.avatar || '',
+            },
+            pontos_totais: usuario.totalPoints || usuario.pontos || 0,
+            palpites_corretos: usuario.palpites_corretos || 0,
+            palpites_totais: usuario.total_palpites || 0,
+            percentual_acerto: usuario.taxa_acerto || 0,
+          }));
+
+          console.log(`🔄 Usando primeiro bairro disponível: ${this.bairroSelecionado}`);
+        } else {
+          console.warn(`⚠️ Nenhum dado de usuário encontrado para bairros`);
+          this.rankingUsuarios = [];
+        }
+      }
+    } else {
+      console.error('❌ Formato de resposta inválido:', response);
+      this.rankingUsuarios = [];
+      this.toastService.error('Erro ao processar dados do ranking');
+    }
+
+    this.isLoading = false;
+  }
+
+  // Método auxiliar para lidar com erros
+  private handleRankingError(error: any) {
+    console.error('❌ Erro ao carregar ranking de usuários:', error);
+    this.rankingUsuarios = [];
+    this.isLoading = false;
+    this.toastService.error('Erro ao carregar ranking de usuários');
   }
 
   private generateMockUserRanking(): RankingUsuario[] {

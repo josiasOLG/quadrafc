@@ -39,11 +39,10 @@ export class SeedService implements OnModuleInit {
       }
 
       this.logger.log(
-        '🌱 Iniciando seed ÚNICA VEZ para região serrana do RJ (Petrópolis e Paty do Alferes)...'
+        '🌱 Iniciando seed para criar APENAS usuários fake com pontos entre 0 e 100...'
       );
       await this.seedAllData();
-      this.logger.log('✅ QuadraFC da região serrana está pronto! 🏔️⚽');
-      this.logger.log('🎯 Competição por bairros ativa em Petrópolis e Paty do Alferes!');
+      this.logger.log('✅ Seed com usuários fake finalizado!');
       this.logger.log('🔒 Seed finalizado - não executará novamente automaticamente');
     } else {
       this.logger.log('⏸️ Seed desabilitado - NODE_ENV não é development');
@@ -68,10 +67,11 @@ export class SeedService implements OnModuleInit {
         return;
       }
 
-      // 1. Criar usuários
+      // 1. Criar usuários - ÚNICO PASSO NECESSÁRIO
       this.logger.log('👥 Executando seed de usuários...');
       await this.seedUsers();
 
+      /* COMENTADO - NÃO NECESSÁRIO
       // 2. Criar rodadas históricas
       await this.seedRodadas();
 
@@ -88,6 +88,7 @@ export class SeedService implements OnModuleInit {
 
       // 5. Criar transações de moedas
       await this.seedTransacoes();
+      */
     } catch (error) {
       this.logger.error('❌ Erro durante o seed:', error);
     }
@@ -95,7 +96,7 @@ export class SeedService implements OnModuleInit {
 
   private async seedUsers() {
     try {
-      this.logger.log('👥 Criando usuários realistas de Petrópolis e Paty do Alferes...');
+      this.logger.log('👥 Criando usuários fake com pontos entre 0 e 100...');
 
       // Verificar quantos usuários já existem para evitar duplicatas
       const usersExistentes = await this.usersService.getRankingIndividual();
@@ -196,58 +197,6 @@ export class SeedService implements OnModuleInit {
         'Valentina dos Santos Duarte',
         'Arthur Henrique Melo',
         'Giovanna Beatriz Farias',
-
-        // Mais nomes para ter uma base robusta
-        'Roberto Carlos da Silva',
-        'Patrícia Fernanda Almeida',
-        'José Eduardo Rodrigues',
-        'Luciana Aparecida Costa',
-        'Marcos Antonio Pereira',
-        'Vanessa Cristina Souza',
-        'Alexandre dos Santos Lima',
-        'Débora Maria Oliveira',
-        'Fernando Luiz Barbosa',
-        'Adriana Beatriz Martins',
-        'Maurício Henrique Gomes',
-        'Tatiana Fernanda Ribeiro',
-        'Fábio Eduardo Castro',
-        'Simone Aparecida Dias',
-        'Paulo Roberto Araújo',
-        'Márcia Cristina Mendes',
-        'Sérgio Augusto Moreira',
-        'Cristiane dos Santos Azevedo',
-        'Antônio Carlos Reis',
-        'Rosângela Maria Correia',
-        'Eduardo Henrique Teixeira',
-        'Silvia Aparecida Nunes',
-        'Luiz Fernando Freitas',
-        'Denise Cristina Carvalho',
-        'Wagner dos Santos Ramos',
-        'Cláudia Maria Monteiro',
-        'Rogério Augusto Torres',
-        'Vera Lúcia Pinto',
-        'Edson Eduardo Cruz',
-        'Solange Aparecida Fernandes',
-        'Júlio César Campos',
-        'Teresa Cristina Vieira',
-        'Gilberto dos Santos Rodrigues',
-        'Conceição Maria Miranda',
-        'Nelson Henrique Santana',
-        'Rosa Maria Nascimento',
-        'Osvaldo Augusto Sales',
-        'Irani Aparecida Caldeira',
-        'Milton Eduardo Moraes',
-        'Neusa dos Santos Silva',
-        'Francisco Carlos Machado',
-        'Ivone Cristina Lopes',
-        'Sebastião Luis Cunha',
-        'Marlene Aparecida Borges',
-        'Benedito Henrique Duarte',
-        'Zilda Maria Melo',
-        'Geraldo dos Santos Farias',
-        'Neuza Cristina Almeida',
-        'Waldir Augusto Rodrigues',
-        'Dirce Aparecida Costa',
       ];
 
       for (let i = 0; i < nomesBrasileiros.length; i++) {
@@ -265,21 +214,15 @@ export class SeedService implements OnModuleInit {
 
         const bairro = bairrosDisponiveis[Math.floor(Math.random() * bairrosDisponiveis.length)];
 
-        // Pontos variados para criar um ranking interessante
-        // Usuários de Petrópolis tendem a ter mais pontos (cidade maior)
-        const basePontos = bairro.cidade === 'Petrópolis' ? 300 : 150;
-        const totalPoints = Math.floor(Math.random() * 2500) + basePontos;
-        const moedas = Math.floor(totalPoints * 0.12) + Math.floor(Math.random() * 800);
+        // MODIFICADO: Pontos limitados entre 0 e 100
+        const totalPoints = Math.floor(Math.random() * 101); // 0 a 100
+        const moedas = Math.floor(totalPoints * 0.5) + Math.floor(Math.random() * 20); // Reduzido
 
-        // Algumas medalhas aleatórias baseadas na performance
+        // Remover medalhas complexas
         const medalhas = [];
-        if (totalPoints > 400) medalhas.push('Primeira Vitória');
-        if (totalPoints > 800) medalhas.push('Especialista');
-        if (totalPoints > 1200) medalhas.push('Veterano da Serra');
-        if (totalPoints > 1800) medalhas.push('Mestre dos Palpites');
-        if (totalPoints > 2200) medalhas.push('Lenda Imperial');
-        if (Math.random() > 0.8) medalhas.push('Sequência de Ouro');
-        if (Math.random() > 0.9) medalhas.push('Acertou na Mosca');
+        if (totalPoints > 50) medalhas.push('Iniciante');
+        if (totalPoints > 75) medalhas.push('Participante');
+        if (totalPoints > 90) medalhas.push('Entusiasta');
 
         this.logger.debug(
           `👤 Criando usuário ${i + 1}/${nomesBrasileiros.length}: ${nome} (${bairro.nome}, ${bairro.cidade}) - ${totalPoints} pontos`
@@ -325,72 +268,18 @@ export class SeedService implements OnModuleInit {
         }
       }
 
-      this.logger.log(`✅ ${nomesBrasileiros.length} usuários criados com rankings realistas!`);
-
-      // EXIBIR ESTATÍSTICAS DOS USUÁRIOS CRIADOS POR BAIRRO
-      this.logger.log('� Exibindo estatísticas dos usuários criados por bairro...');
-
-      const todosUsuarios = await this.usersService.getRankingIndividual();
-
-      // Agrupar usuários por bairro/cidade para estatísticas
-      const estatisticasPorBairro = new Map();
-
-      for (const user of todosUsuarios.data) {
-        const chave = `${user.bairro}-${user.cidade}`;
-        if (!estatisticasPorBairro.has(chave)) {
-          estatisticasPorBairro.set(chave, {
-            bairro: user.bairro,
-            cidade: user.cidade,
-            estado: user.estado,
-            usuarios: [],
-            totalPontos: 0,
-          });
-        }
-
-        const stats = estatisticasPorBairro.get(chave);
-        stats.usuarios.push(user);
-        stats.totalPontos += user.totalPoints || 0;
-      }
-
-      // Converter para array e ordenar por total de pontos
-      const bairrosStats = Array.from(estatisticasPorBairro.values()).sort(
-        (a, b) => b.totalPontos - a.totalPontos
-      );
-
-      const bairrosPetropolis = bairrosStats.filter((b) => b.cidade === 'Petrópolis');
-      const bairrosPatyAlferes = bairrosStats.filter((b) => b.cidade === 'Paty do Alferes');
-
-      this.logger.log(`📊 Estatísticas finais dos usuários por bairro:`);
-      this.logger.log(`   • ${bairrosPetropolis.length} bairros representados em Petrópolis`);
-      this.logger.log(`   • ${bairrosPatyAlferes.length} bairros representados em Paty do Alferes`);
       this.logger.log(
-        `   • Total de pontos em Petrópolis: ${bairrosPetropolis.reduce((sum, b) => sum + b.totalPontos, 0)}`
-      );
-      this.logger.log(
-        `   • Total de pontos em Paty do Alferes: ${bairrosPatyAlferes.reduce((sum, b) => sum + b.totalPontos, 0)}`
-      );
-
-      // Mostrar os top 5 bairros para confirmar ranking
-      const topBairros = bairrosStats.slice(0, 5);
-
-      this.logger.log(`🏆 Top 5 bairros no ranking por total de pontos dos usuários:`);
-      topBairros.forEach((bairro, index) => {
-        this.logger.log(
-          `   ${index + 1}º ${bairro.bairro} (${bairro.cidade}) - ${bairro.usuarios.length} usuários, ${bairro.totalPontos} pontos`
-        );
-      });
-
-      // Mostrar distribuição de usuários por bairro
-      const usuariosFinais = await this.usersService.getRankingIndividual();
-      this.logger.log(`👥 ${usuariosFinais.data.length} usuários total distribuídos pelos bairros`);
-      this.logger.log(
-        `🎯 Sistema de competição por bairros está ativo e funcional usando campos string!`
+        `✅ ${nomesBrasileiros.length} usuários fake criados com pontos entre 0 e 100!`
       );
     } catch (error) {
       this.logger.error('Erro ao criar usuários:', error);
     }
   }
 
+  /**
+   * COMENTADO - Não necessário para a criação apenas de usuários fake
+   */
+  /*
   private async seedRodadas() {
     try {
       this.logger.log('🗓️ Criando rodadas históricas...');

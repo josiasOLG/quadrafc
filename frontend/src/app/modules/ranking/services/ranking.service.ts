@@ -178,6 +178,21 @@ export class RankingService extends BaseApiService<RankingUsuario, any> {
     return this.get<RankingBairro[]>('top10-bairros');
   }
 
+  // Top 5 usuários por bairro
+  getTopUsuariosPorBairro(
+    cidade: string,
+    estado: string
+  ): Observable<{ data: any[]; cidade: string; estado: string }> {
+    const queryParams = {
+      cidade,
+      estado,
+    };
+    return this.get<{ data: any[]; cidade: string; estado: string }>(
+      'top-usuarios-por-bairro',
+      queryParams
+    );
+  }
+
   // Histórico de ranking do usuário
   getHistoricoRanking(periodo?: 'semana' | 'mes' | 'ano'): Observable<
     {

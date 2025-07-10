@@ -153,6 +153,7 @@
         -ms-overflow-style: none; // IE & Edge
         border-bottom: 1px solid var(--qfc-border-primary);
         margin-bottom: var(--qfc-spacing-md);
+        padding-bottom: 4px;
 
         &::-webkit-scrollbar {
           display: none; // Chrome, Safari, Opera
@@ -160,25 +161,71 @@
 
         li {
           margin-right: var(--qfc-spacing-sm);
+          position: relative;
+          transition: all 0.25s ease;
+
+          &:after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--qfc-primary);
+            transition: width 0.3s ease;
+            border-radius: 3px 3px 0 0;
+          }
+
+          &.p-highlight:after {
+            width: 100%;
+          }
+
+          &:hover:after {
+            width: 100%;
+            background: rgba(30, 58, 138, 0.5);
+          }
 
           .p-tabview-nav-link {
-            padding: var(--qfc-spacing-sm) var(--qfc-spacing-md);
-            font-weight: var(--qfc-font-weight-medium);
-            color: var(--qfc-text-secondary);
-            border-radius: var(--qfc-radius-md) var(--qfc-radius-md) 0 0;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
+            background: rgba(30, 58, 138, 0.05) !important;
+            border: 1px solid var(--qfc-border-primary) !important;
+            border-radius: var(--qfc-radius-md) !important;
+            color: var(--qfc-text-primary) !important;
+            padding: 10px 16px !important;
+            font-weight: var(--qfc-font-weight-medium) !important;
+            transition: all 0.25s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
 
-            &:hover {
+            &:before {
+              content: '\e922'; /* PrimeIcons: pi-chart-line */
+              font-family: 'primeicons';
+              font-size: 14px;
               color: var(--qfc-primary);
-              background: rgba(30, 58, 138, 0.05);
             }
 
-            &.p-highlight {
+            &:hover {
+              background: rgba(30, 58, 138, 0.1) !important;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+
+          &.p-highlight .p-tabview-nav-link {
+            background: var(--qfc-primary-light) !important;
+            border-color: var(--qfc-primary) !important;
+            color: var(--qfc-primary) !important;
+            font-weight: var(--qfc-font-weight-semibold) !important;
+            box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2) !important;
+
+            &:before {
+              content: '\e922'; /* PrimeIcons: pi-chart-line */
               color: var(--qfc-primary);
-              border-bottom: 2px solid var(--qfc-primary);
-              background: rgba(30, 58, 138, 0.05);
-              font-weight: var(--qfc-font-weight-semibold);
             }
           }
         }
@@ -705,5 +752,121 @@
   .championship-title,
   .championship-count {
     color: white !important;
+  }
+}
+
+// ===================================
+// A11Y STYLES
+// ===================================
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// Estilos adicionais para destacar visualmente as tabs
+::ng-deep {
+  .tab-header-custom {
+    position: relative;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--qfc-primary);
+      opacity: 0.8;
+      transition: all 0.3s ease;
+    }
+
+    &:hover:after {
+      transform: translateY(-50%) scale(1.5);
+      opacity: 1;
+    }
+  }
+
+  // Tooltip de dica para primeira visita
+  .p-tabview-nav li:first-child .p-tabview-nav-link {
+    position: relative;
+
+    &:before {
+      content: '\e924'; /* PrimeIcons: pi-bookmark */
+    }
+
+    &:hover:before {
+      animation: pulse 1s infinite;
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// ===================================
+// DICA DE USO DAS TABS
+// ===================================
+.tabs-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--qfc-spacing-xs);
+  margin-bottom: var(--qfc-spacing-sm);
+  font-size: var(--qfc-font-size-sm);
+  color: var(--qfc-text-secondary);
+  padding: 8px 12px;
+  background-color: rgba(30, 58, 138, 0.05);
+  border-radius: var(--qfc-radius-md);
+  border-left: 3px solid var(--qfc-primary);
+  animation: fadeOut 5s forwards;
+  animation-delay: 3s;
+
+  i {
+    animation: moveRight 1.5s infinite;
+    color: var(--qfc-primary);
+  }
+}
+
+@keyframes moveRight {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    max-height: 40px;
+    margin-bottom: var(--qfc-spacing-sm);
+    padding: 8px 12px;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    overflow: hidden;
   }
 }
