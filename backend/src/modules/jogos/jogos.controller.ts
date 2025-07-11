@@ -1,4 +1,13 @@
-import { BadRequestException, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Post,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
@@ -136,7 +145,6 @@ export class JogosController {
   }
 
   @Get('campeonatos/:dataInicial/:dias')
-  @Public()
   @ResponseMessage('Jogos por campeonatos recuperados com sucesso')
   @ApiOperation({
     summary:
@@ -144,7 +152,8 @@ export class JogosController {
   })
   async findJogosPorCampeonatos(
     @Param('dataInicial') dataInicial: string,
-    @Param('dias') dias: string
+    @Param('dias') dias: string,
+    @Request() req: any
   ) {
     const diasNumber = parseInt(dias, 10);
 
@@ -154,7 +163,13 @@ export class JogosController {
     }
 
     // Busca diretamente do MongoDB todos os jogos organizados por campeonatos
-    const resultado = await this.jogosService.findByDataComCampeonatos(dataInicial, diasNumber);
+    // Passa o userId para filtrar apenas os palpites do usuário logado
+    const userId = req.user?.id || req.user?.sub;
+    const resultado = await this.jogosService.findByDataComCampeonatos(
+      dataInicial,
+      diasNumber,
+      userId
+    );
 
     // Se não encontrou jogos suficientes no MongoDB, retorna o que tem
     // (não força sincronização automática para evitar demora na resposta)

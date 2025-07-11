@@ -7,6 +7,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   EMPTY,
+  firstValueFrom,
   Subject,
   switchMap,
   takeUntil,
@@ -98,7 +99,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Se já tem informações completas, redireciona para ranking
-    const user = this.authService.currentUser;
+    const user = this.authService.currentUser();
     if (user && user.bairro && user.cidade && user.estado) {
       this.router.navigate(['/ranking']);
       return;
@@ -315,7 +316,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
         console.log('Enviando dados do onboarding:', updateData);
 
-        await this.authService.updateProfile(updateData).toPromise();
+        await firstValueFrom(this.authService.updateProfile(updateData));
 
         this.toastService.show({
           detail: 'Bem-vindo ao QuadraFC!',

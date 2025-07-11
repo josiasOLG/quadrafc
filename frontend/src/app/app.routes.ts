@@ -1,31 +1,35 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
-import { initialGuard } from './core/guards/initial.guard';
-import { noAuthGuard } from './core/guards/no-auth.guard';
+import {
+  authCanMatchGuard,
+  noAuthCanMatchGuard,
+  onboardingCanMatchGuard,
+} from './core/guards/modern.guards';
 import { MainLayoutComponent } from './shared/components/main-layout.component';
 
 export const routes: Routes = [
   {
-    path: '',
-    canActivate: [initialGuard],
-    children: [],
-  },
-  {
     path: 'auth',
+    canMatch: [noAuthCanMatchGuard],
     loadChildren: () => import('./modules/auth/auth.module').then((m) => m.AuthModule),
-    canActivate: [noAuthGuard],
+    data: { preload: false }, // Não precarregar no SSR
   },
   {
     path: 'onboarding',
+    canMatch: [onboardingCanMatchGuard],
     loadChildren: () =>
       import('./modules/onboarding/onboarding.module').then((m) => m.OnboardingModule),
-    canActivate: [authGuard],
+    data: { preload: false }, // Não precarregar no SSR
   },
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [authGuard],
+    canMatch: [authCanMatchGuard],
     children: [
+      {
+        path: '',
+        redirectTo: 'jogos',
+        pathMatch: 'full',
+      },
       {
         path: 'jogos',
         loadChildren: () => import('./modules/jogos/jogos.module').then((m) => m.JogosModule),
@@ -52,8 +56,9 @@ export const routes: Routes = [
       },
     ],
   },
+
   {
     path: '**',
-    redirectTo: '/jogos',
+    redirectTo: '',
   },
 ];

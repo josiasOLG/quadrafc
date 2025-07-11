@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -8,8 +8,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
 
-import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
-import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { LoginDto, LoginSchema } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../services/auth.service';
@@ -25,19 +23,17 @@ import { AuthService } from '../../services/auth.service';
     PasswordModule,
     CardModule,
     ToastModule,
-    AppButtonComponent,
-    AppInputComponent,
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   loginForm: FormGroup;
   isLoading = false;
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
+    public authService: AuthService,
     private toastService: ToastService,
     private router: Router
   ) {
@@ -45,13 +41,6 @@ export class LoginComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
-  }
-
-  ngOnInit(): void {
-    // Redirect if already logged in
-    if (this.authService.isLoggedIn) {
-      this.router.navigate(['/jogos']);
-    }
   }
 
   onSubmit(): void {
@@ -80,8 +69,7 @@ export class LoginComponent implements OnInit {
 
           this.isLoading = false;
         },
-        error: (error: any) => {
-          console.error('Erro no login:', error);
+        error: () => {
           this.toastService.error('Erro ao fazer login. Verifique suas credenciais.');
           this.isLoading = false;
         },

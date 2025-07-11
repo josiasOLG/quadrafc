@@ -311,14 +311,7 @@
         "command": "bash",
         "args": [
           "-c",
-          "echo 'Limpando Frontend...' && cd frontend && rm -rf node_modules dist .angular && echo 'Limpando Backend...' && cd ../backend && rm -rf node_modules dist && echo 'Limpeza concluída!'"
-        ]
-      },
-      "osx": {
-        "command": "bash",
-        "args": [
-          "-c",
-          "echo 'Limpando Frontend...' && cd frontend && rm -rf node_modules dist .angular && echo 'Limpando Backend...' && cd ../backend && rm -rf node_modules dist && echo 'Limpeza concluída!'"
+          "echo 'Removendo console.log do projeto completo...' && for dir in frontend/src backend/src admin/src; do if [ -d \"$dir\" ]; then find \"$dir\" -name '*.ts' -o -name '*.js' | xargs sed -i '' '/console\\.(log\\|warn\\|error\\|info\\|debug)/d'; fi; done && echo 'Limpeza concluída!'"
         ]
       },
       "group": "build",
@@ -327,6 +320,111 @@
         "reveal": "always",
         "focus": false,
         "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Remove Console.log - Arquivo Atual",
+      "type": "shell",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "$file = '${file}'; if (Test-Path $file) { $content = Get-Content $file; $newContent = $content | Where-Object { $_ -notmatch 'console\\.' }; if ($content.Count -ne $newContent.Count) { Set-Content $file $newContent; Write-Host 'Console.log removidos de:' $file -ForegroundColor Green } else { Write-Host 'Nenhum console.log encontrado em:' $file -ForegroundColor Yellow } } else { Write-Host 'Arquivo não encontrado:' $file -ForegroundColor Red }"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "file='${file}'; if [ -f \"$file\" ]; then sed -i '/console\\.(log\\|warn\\|error\\|info\\|debug)/d' \"$file\" && echo \"Console.log removidos de: $file\"; else echo \"Arquivo não encontrado: $file\"; fi"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "file='${file}'; if [ -f \"$file\" ]; then sed -i '' '/console\\.(log\\|warn\\|error\\|info\\|debug)/d' \"$file\" && echo \"Console.log removidos de: $file\"; else echo \"Arquivo não encontrado: $file\"; fi"
+        ]
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Remove Console.log - Frontend Completo",
+      "type": "shell",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Write-Host 'Removendo console.log do Frontend...' -ForegroundColor Green; Get-ChildItem -Path 'frontend/src' -Recurse -Include '*.ts','*.js' | ForEach-Object { $content = Get-Content $_.FullName; $newContent = $content | Where-Object { $_ -notmatch 'console\\.' }; if ($content.Count -ne $newContent.Count) { Set-Content $_.FullName $newContent; Write-Host 'Processado:' $_.Name -ForegroundColor Gray } }; Write-Host 'Limpeza concluída!' -ForegroundColor Green"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Removendo console.log do Frontend...' && find frontend/src -name '*.ts' -o -name '*.js' | xargs sed -i '/console\\.(log\\|warn\\|error\\|info\\|debug)/d' && echo 'Limpeza concluída!'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Removendo console.log do Frontend...' && find frontend/src -name '*.ts' -o -name '*.js' | xargs sed -i '' '/console\\.(log\\|warn\\|error\\|info\\|debug)/d' && echo 'Limpeza concluída!'"
+        ]
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Remove Console.log - Projeto Completo",
+      "type": "shell",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Write-Host 'Removendo console.log do projeto completo...' -ForegroundColor Green; Get-ChildItem -Path @('frontend/src', 'backend/src', 'admin/src') -Recurse -Include '*.ts','*.js' -ErrorAction SilentlyContinue | ForEach-Object { $content = Get-Content $_.FullName; $newContent = $content | Where-Object { $_ -notmatch 'console\\.' }; if ($content.Count -ne $newContent.Count) { Set-Content $_.FullName $newContent; Write-Host 'Processado:' $_.Name -ForegroundColor Gray } }; Write-Host 'Limpeza concluída!' -ForegroundColor Green"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Removendo console.log do projeto completo...' && for dir in frontend/src backend/src admin/src; do if [ -d \"$dir\" ]; then find \"$dir\" -name '*.ts' -o -name '*.js' | xargs sed -i '/console\\.(log\\|warn\\|error\\|info\\|debug)/d'; fi; done && echo 'Limpeza concluída!'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo 'Removendo console.log do projeto completo...' && for dir in frontend/src backend/src admin/src; do if [ -d \"$dir\" ]; then find \"$dir\" -name '*.ts' -o -name '*.js' | xargs sed -i '' '/console\\.(log\\|warn\\|error\\|info\\|debug)/d'; fi; done && echo 'Limpeza concluída!'"
+        ]
       },
       "problemMatcher": []
     }

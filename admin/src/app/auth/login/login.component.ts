@@ -48,7 +48,6 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     // Verificar se já está logado
     if (this.authService.isAuthenticated) {
-      console.log('Usuário já autenticado, navegando para dashboard');
       this.router.navigate(['/dashboard'], { replaceUrl: true });
       return;
     }
@@ -75,10 +74,6 @@ export class LoginComponent implements OnInit {
 
         this.authService.login(validatedData).subscribe({
           next: (response) => {
-            console.log('Login response:', response);
-            console.log('Auth service isAuthenticated:', this.authService.isAuthenticated);
-            console.log('Token JWT recebido:', !!response.data.access_token);
-
             this.loading = false;
             this.messageService.add({
               severity: 'success',

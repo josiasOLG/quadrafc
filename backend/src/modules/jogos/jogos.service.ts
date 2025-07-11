@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Jogo, JogoDocument } from '../../shared/schemas/jogo.schema';
 import { Sincronizacao, SincronizacaoDocument } from '../../shared/schemas/sincronizacao.schema';
 import { FootballApiService } from '../football-api/football-api.service';
@@ -352,18 +352,28 @@ export class JogosService {
     );
     return true;
   }
-  async findByDataComCampeonatos(dataInicial: string, diasNoFuturo: number = 7): Promise<any> {
+  async findByDataComCampeonatos(
+    dataInicial: string,
+    diasNoFuturo: number = 7,
+    userId?: string
+  ): Promise<any> {
     try {
       this.logger.log(`🔍 Buscando jogos a partir de: ${dataInicial} por ${diasNoFuturo} dias`);
 
       // Busca TODOS os jogos do MongoDB primeiro (sem filtro de data)
+      const populateOptions = {
+        path: 'palpites',
+        model: 'Palpite',
+        // Se userId foi fornecido, filtra apenas os palpites do usuário
+        ...(userId && {
+          match: { userId: new Types.ObjectId(userId) },
+        }),
+      };
+
       const todosJogos = await this.jogoModel
         .find({})
         .populate('rodadaId')
-        .populate({
-          path: 'palpites',
-          model: 'Palpite',
-        })
+        .populate(populateOptions)
         .exec();
 
       // Organiza os jogos por campeonato

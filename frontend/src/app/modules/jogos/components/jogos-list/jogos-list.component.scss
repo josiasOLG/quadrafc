@@ -177,12 +177,12 @@
           }
 
           &.p-highlight:after {
-            width: 100%;
+            // width: 100%;
           }
 
           &:hover:after {
-            width: 100%;
-            background: rgba(30, 58, 138, 0.5);
+            // width: 100%;
+            // background: rgba(30, 58, 138, 0.5);
           }
 
           .p-tabview-nav-link {
@@ -836,8 +836,8 @@
   background-color: rgba(30, 58, 138, 0.05);
   border-radius: var(--qfc-radius-md);
   border-left: 3px solid var(--qfc-primary);
-  animation: fadeOut 5s forwards;
-  animation-delay: 3s;
+  // animation: fadeOut 5s forwards;
+  // animation-delay: 3s;
 
   i {
     animation: moveRight 1.5s infinite;

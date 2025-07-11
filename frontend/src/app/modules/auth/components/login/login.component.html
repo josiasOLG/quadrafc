@@ -1,102 +1,111 @@
 <!-- Main Container -->
-<div class="min-h-screen flex flex-column surface-ground">
-  <!-- Header with gradient -->
-  <div class="flex-1 flex flex-column align-items-center justify-content-center p-4 qfc-gradient-bg">
-    <!-- Logo Section -->
-    <div class="text-center mb-6">
-      <div
-        class="bg-white border-circle w-5rem h-5rem flex align-items-center justify-content-center mx-auto mb-3 shadow-4 fadein animation-duration-500">
-        <img src="assets/icon.png" alt="QuadraFC" class="w-3rem h-3rem" />
+<ng-container *ngIf="authService.authState() === 'UNAUTHENTICATED'; else loadingOrRedirect">
+  <div class="min-h-screen flex flex-column surface-ground">
+    <!-- Header with gradient -->
+    <div class="flex-1 flex flex-column align-items-center justify-content-center p-4 qfc-gradient-bg">
+      <!-- Logo Section -->
+      <div class="text-center mb-6">
+        <div
+          class="bg-white border-circle w-5rem h-5rem flex align-items-center justify-content-center mx-auto mb-3 shadow-4 fadein animation-duration-500">
+          <img src="assets/icon.png" alt="QuadraFC" class="w-3rem h-3rem" />
+        </div>
+        <h1 class="text-white text-3xl font-bold m-0 mb-2 fadein animation-duration-500 animation-delay-100">
+          QuadraFC
+        </h1>
+        <p class="text-white-alpha-90 text-sm m-0 fadein animation-duration-500 animation-delay-200">
+          Faça seus palpites e ganhe!
+        </p>
       </div>
-      <h1 class="text-white text-3xl font-bold m-0 mb-2 fadein animation-duration-500 animation-delay-100">QuadraFC</h1>
-      <p class="text-white-alpha-90 text-sm m-0 fadein animation-duration-500 animation-delay-200">
-        Faça seus palpites e ganhe!
-      </p>
+
+      <!-- Login Card -->
+      <div
+        class="bg-white border-round-3xl shadow-8 p-5 w-full max-w-20rem fadein animation-duration-500 animation-delay-300">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+          <!-- Welcome Text -->
+          <div class="text-center mb-2">
+            <h2 class="text-900 text-xl font-semibold m-0 mb-1">Bem-vindo!</h2>
+            <p class="text-600 text-sm m-0">Entre com sua conta</p>
+          </div>
+
+          <!-- Email Field -->
+          <div class="flex flex-column gap-2">
+            <label for="email" class="text-900 font-medium text-sm">Email</label>
+            <span class="p-input-icon-left">
+              <i class="pi pi-envelope qfc-text-primary"></i>
+              <input
+                type="email"
+                id="email"
+                pInputText
+                formControlName="email"
+                placeholder="seu@email.com"
+                class="w-full p-3 qfc-input"
+                [class.qfc-input-error]="email?.invalid && email?.touched" />
+            </span>
+            <small class="qfc-text-error text-xs" *ngIf="getFieldError('email')">
+              {{ getFieldError('email') }}
+            </small>
+          </div>
+
+          <!-- Password Field -->
+          <div class="flex flex-column gap-2">
+            <label for="password" class="text-900 font-medium text-sm">Senha</label>
+            <span class="p-input-icon-left">
+              <i class="pi pi-lock qfc-text-primary"></i>
+              <p-password
+                id="password"
+                formControlName="password"
+                placeholder="Sua senha"
+                [feedback]="false"
+                [toggleMask]="true"
+                styleClass="w-full"
+                inputStyleClass="w-full p-3 qfc-input"
+                [class.qfc-input-error]="password?.invalid && password?.touched"></p-password>
+            </span>
+            <small class="qfc-text-error text-xs" *ngIf="getFieldError('password')">
+              {{ getFieldError('password') }}
+            </small>
+          </div>
+
+          <!-- Submit Button -->
+          <p-button
+            type="submit"
+            label="Entrar"
+            icon="pi pi-sign-in"
+            [loading]="isLoading"
+            [disabled]="loginForm.invalid"
+            styleClass="w-full p-3 border-round-xl text-white font-semibold shadow-3 hover:shadow-4 transition-all transition-duration-200 qfc-button-primary"></p-button>
+
+          <!-- Divider -->
+          <div class="flex align-items-center gap-3 my-2">
+            <div class="flex-1 border-top-1 border-200"></div>
+            <span class="text-600 text-xs">ou</span>
+            <div class="flex-1 border-top-1 border-200"></div>
+          </div>
+
+          <!-- Register Link -->
+          <div class="text-center">
+            <p class="text-600 text-sm m-0">
+              Ainda não tem conta?
+              <button
+                type="button"
+                (click)="navigateToRegister()"
+                class="qfc-text-primary font-semibold cursor-pointer p-0 border-none bg-transparent hover:text-primary-emphasis transition-colors transition-duration-200">
+                Cadastre-se
+              </button>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
 
-    <!-- Login Card -->
-    <div
-      class="bg-white border-round-3xl shadow-8 p-5 w-full max-w-20rem fadein animation-duration-500 animation-delay-300">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
-        <!-- Welcome Text -->
-        <div class="text-center mb-2">
-          <h2 class="text-900 text-xl font-semibold m-0 mb-1">Bem-vindo!</h2>
-          <p class="text-600 text-sm m-0">Entre com sua conta</p>
-        </div>
-
-        <!-- Email Field -->
-        <div class="flex flex-column gap-2">
-          <label for="email" class="text-900 font-medium text-sm">Email</label>
-          <span class="p-input-icon-left">
-            <i class="pi pi-envelope qfc-text-primary"></i>
-            <input
-              type="email"
-              id="email"
-              pInputText
-              formControlName="email"
-              placeholder="seu@email.com"
-              class="w-full p-3 qfc-input"
-              [class.qfc-input-error]="email?.invalid && email?.touched" />
-          </span>
-          <small class="qfc-text-error text-xs" *ngIf="getFieldError('email')">
-            {{ getFieldError('email') }}
-          </small>
-        </div>
-
-        <!-- Password Field -->
-        <div class="flex flex-column gap-2">
-          <label for="password" class="text-900 font-medium text-sm">Senha</label>
-          <span class="p-input-icon-left">
-            <i class="pi pi-lock qfc-text-primary"></i>
-            <p-password
-              id="password"
-              formControlName="password"
-              placeholder="Sua senha"
-              [feedback]="false"
-              [toggleMask]="true"
-              styleClass="w-full"
-              inputStyleClass="w-full p-3 qfc-input"
-              [class.qfc-input-error]="password?.invalid && password?.touched"></p-password>
-          </span>
-          <small class="qfc-text-error text-xs" *ngIf="getFieldError('password')">
-            {{ getFieldError('password') }}
-          </small>
-        </div>
-
-        <!-- Submit Button -->
-        <p-button
-          type="submit"
-          label="Entrar"
-          icon="pi pi-sign-in"
-          [loading]="isLoading"
-          [disabled]="loginForm.invalid"
-          styleClass="w-full p-3 border-round-xl text-white font-semibold shadow-3 hover:shadow-4 transition-all transition-duration-200 qfc-button-primary"></p-button>
-
-        <!-- Divider -->
-        <div class="flex align-items-center gap-3 my-2">
-          <div class="flex-1 border-top-1 border-200"></div>
-          <span class="text-600 text-xs">ou</span>
-          <div class="flex-1 border-top-1 border-200"></div>
-        </div>
-
-        <!-- Register Link -->
-        <div class="text-center">
-          <p class="text-600 text-sm m-0">
-            Ainda não tem conta?
-            <button
-              type="button"
-              (click)="navigateToRegister()"
-              class="qfc-text-primary font-semibold cursor-pointer p-0 border-none bg-transparent hover:text-primary-emphasis transition-colors transition-duration-200">
-              Cadastre-se
-            </button>
-          </p>
-        </div>
-      </form>
+    <!-- Footer -->
+    <div class="text-center p-3 border-top-1 border-200">
+      <p class="text-600 text-xs m-0">© 2025 QuadraFC. Todos os direitos reservados.</p>
     </div>
   </div>
-
-  <!-- Footer -->
-  <div class="text-center p-3 border-top-1 border-200">
-    <p class="text-600 text-xs m-0">© 2025 QuadraFC. Todos os direitos reservados.</p>
+</ng-container>
+<ng-template #loadingOrRedirect>
+  <div class="min-h-screen flex flex-column surface-ground align-items-center justify-content-center">
+    <p class="text-600 text-lg">Carregando...</p>
   </div>
-</div>
+</ng-template>

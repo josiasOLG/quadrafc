@@ -113,14 +113,12 @@ export class RankingListComponent implements OnInit {
    * Carrega dados do usuário logado
    */
   private loadUser(): void {
-    const currentUser = this.authService.currentUser;
+    const currentUser = this.authService.currentUser();
     if (currentUser) {
       const wasUserNull = this.user === null;
       this.user = currentUser;
-      console.log('👤 Usuário carregado:', currentUser);
 
       if (wasUserNull && currentUser && this.rankingBairros.length === 0) {
-        console.log('🔄 Carregando rankings após obter dados do usuário...');
         this.loadRankings();
       }
     } else {
