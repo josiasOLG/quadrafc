@@ -23,7 +23,7 @@ import { User } from '../../schemas/user.schema';
         </div>
 
         <div class="user-mini-header__info">
-          <span class="user-mini-header__name">{{ user?.nome || 'Usuário' }}</span>
+          <span class="user-mini-header__name">Bem vindo, {{ user?.nome || 'Usuário' }}!</span>
           <span class="user-mini-header__location">{{ getBairroInfo() }}</span>
         </div>
 

@@ -179,3 +179,12 @@
     </div>
   </div>
 </p-dialog>
+
+<!-- Modal de Confirmação de Logout -->
+<app-confirm-dialog
+  [visible]="showLogoutConfirm"
+  [data]="logoutConfirmData"
+  [loading]="logoutLoading"
+  (confirm)="onLogoutConfirm()"
+  (cancelled)="onLogoutCancel()"
+  (hide)="onLogoutCancel()"></app-confirm-dialog>

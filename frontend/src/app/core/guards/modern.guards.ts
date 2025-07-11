@@ -8,25 +8,34 @@ import { AuthService } from '../../modules/auth/services/auth.service';
  */
 async function waitForAuthServiceReady(
   authService: AuthService,
-  timeoutMs = 5000
+  timeoutMs = 3000 // Reduzido para 3 segundos
 ): Promise<boolean> {
   try {
     // Criar uma Promise de timeout
     const timeoutPromise = new Promise<boolean>((resolve) => {
       setTimeout(() => {
+        console.warn('AuthService timeout reached, assuming ready');
         resolve(true); // Em caso de timeout, assumir que está pronto
       }, timeoutMs);
     });
 
     // Aguardar a Promise interna do AuthService OU o timeout
-    const readyPromise = authService.waitUntilReady().then(() => true);
+    const readyPromise = authService.waitUntilReady().then(() => {
+      console.log('AuthService ready promise resolved');
+      return true;
+    });
 
     await Promise.race([readyPromise, timeoutPromise]);
 
     // Verificação adicional para garantir que o estado não é transitório
     const authState = authService.authState();
-    return authState !== 'INITIAL' && authState !== 'LOADING';
-  } catch {
+    const isInitialized = authService.isInitialized();
+
+    console.log('AuthService state check:', { authState, isInitialized });
+
+    return isInitialized && authState !== 'INITIAL' && authState !== 'LOADING';
+  } catch (error) {
+    console.error('Error in waitForAuthServiceReady:', error);
     return true; // Em caso de erro, permitir que continue (fail-safe)
   }
 }
@@ -40,6 +49,7 @@ export const authCanMatchGuard: CanMatchFn = async () => {
   const router = inject(Router);
 
   const isReady = await waitForAuthServiceReady(authService);
+  console.log('AuthService is ready:', isReady);
 
   if (!isReady) {
     router.navigate(['/auth/login']);
@@ -47,15 +57,27 @@ export const authCanMatchGuard: CanMatchFn = async () => {
   }
 
   const authState = authService.authState();
+  console.log('authState:', authState);
 
-  if (authState === 'AUTHENTICATED' || authState === 'NEEDS_ONBOARDING') {
+  // Se usuário está autenticado, permitir acesso
+  if (authState === 'AUTHENTICATED') {
     return true;
   }
 
-  // Só redireciona para login se explicitamente UNAUTHENTICATED
+  // Se usuário precisa de onboarding, redirecionar para onboarding
+  if (authState === 'NEEDS_ONBOARDING') {
+    router.navigate(['/onboarding']);
+    return false;
+  }
+
+  // Se não autenticado, redirecionar para login
   if (authState === 'UNAUTHENTICATED') {
     router.navigate(['/auth/login']);
+    return false;
   }
+
+  // Estado desconhecido, redirecionar para login por segurança
+  router.navigate(['/auth/login']);
   return false;
 };
 
@@ -80,13 +102,20 @@ export const noAuthCanMatchGuard: CanMatchFn = async () => {
     return true;
   }
 
-  // Se usuário está autenticado, redirecionar baseado no estado
+  // Se usuário precisa de onboarding, redirecionar para onboarding
   if (authState === 'NEEDS_ONBOARDING') {
     router.navigate(['/onboarding']);
-  } else {
-    router.navigate(['/jogos']);
+    return false;
   }
-  return false;
+
+  // Se usuário está autenticado, redirecionar para jogos
+  if (authState === 'AUTHENTICATED') {
+    router.navigate(['/jogos']);
+    return false;
+  }
+
+  // Estado desconhecido, permitir acesso à tela de login por segurança
+  return true;
 };
 
 /**

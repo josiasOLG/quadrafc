@@ -245,7 +245,7 @@ export class AuthService {
    * Updates user profile data
    */
   updateProfile(userData: Partial<User>): Observable<User> {
-    return this.httpService.patch<User>('users/profile', userData).pipe(
+    return this.httpService.put<User>('auth/profile', userData).pipe(
       tap((updatedUser) => {
         this._currentUser.set(updatedUser);
         this.updateUserInCookie(updatedUser);

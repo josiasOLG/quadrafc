@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { User } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -32,6 +33,20 @@ export class ConfiguracoesComponent implements OnInit {
   showEditProfileModal = false;
   showChangePasswordModal = false;
   showNotificationModal = false;
+  showLogoutConfirm = false;
+  logoutLoading = false;
+
+  // Dados do modal de confirmação de logout
+  logoutConfirmData: ConfirmDialogData = {
+    title: 'Confirmar Logout',
+    message:
+      'Tem certeza que deseja sair da sua conta?<br><small class="text-600">Você precisará fazer login novamente para acessar o app.</small>',
+    confirmText: 'Sair',
+    cancelText: 'Cancelar',
+    confirmIcon: 'pi pi-sign-out',
+    cancelIcon: 'pi pi-times',
+    severity: 'warn',
+  };
 
   // Forms
   editProfileForm = {
@@ -207,7 +222,7 @@ export class ConfiguracoesComponent implements OnInit {
         this.downloadDados();
         break;
       case 'logout':
-        this.logout();
+        this.confirmLogout();
         break;
       case 'premium-store':
         this.router.navigate(['/premium-store']);
@@ -231,7 +246,9 @@ export class ConfiguracoesComponent implements OnInit {
     });
   }
 
-  private salvarConfiguracao(id: string, valor: string | boolean | number): void {}
+  private salvarConfiguracao(_id: string, _valor: string | boolean | number): void {
+    // TODO: Implementar salvamento de configurações
+  }
 
   private downloadDados(): void {
     // Implementar download dos dados
@@ -241,19 +258,86 @@ export class ConfiguracoesComponent implements OnInit {
     });
   }
 
+  private confirmLogout(): void {
+    this.showLogoutConfirm = true;
+  }
+
+  onLogoutConfirm(): void {
+    this.logoutLoading = true;
+    this.logout();
+  }
+
+  onLogoutCancel(): void {
+    this.showLogoutConfirm = false;
+  }
+
   private logout(): void {
+    // Mostrar loading/confirmação se necessário
+    this.toastService.show({
+      detail: 'Fazendo logout...',
+      severity: 'info',
+    });
+
     this.authService.logout().subscribe({
       next: () => {
+        this.clearLocalData();
+
+        // Fechar modal e parar loading
+        this.showLogoutConfirm = false;
+        this.logoutLoading = false;
+
+        // Mostrar mensagem de sucesso
+        this.toastService.show({
+          detail: 'Logout realizado com sucesso',
+          severity: 'success',
+        });
+
+        // Navegar para login e recarregar a página para limpar completamente o estado
         this.router.navigate(['/auth/login'], { replaceUrl: true }).then(() => {
           window.location.reload();
         });
       },
-      error: () => {
+      error: (error) => {
+        console.error('Erro no logout:', error);
+
+        // Mesmo com erro, limpar estado local e redirecionar
+        this.clearLocalData();
+
+        // Fechar modal e parar loading
+        this.showLogoutConfirm = false;
+        this.logoutLoading = false;
+
+        this.toastService.show({
+          detail: 'Sessão encerrada',
+          severity: 'warn',
+        });
+
+        // Forçar navegação mesmo com erro
         this.router.navigate(['/auth/login'], { replaceUrl: true }).then(() => {
           window.location.reload();
         });
       },
     });
+  }
+
+  private clearLocalData(): void {
+    // Limpar dados do componente
+    this.user = null;
+    this.editProfileForm = {
+      nome: '',
+      email: '',
+      cidade: '',
+      estado: '',
+      bairro: '',
+    };
+
+    // Limpar dados do localStorage como backup (o AuthService já faz isso, mas garantindo)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('quadrafc_logged_in');
+      localStorage.removeItem('quadrafc_user_data');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('current_user');
+    }
   }
 
   // Métodos dos modais

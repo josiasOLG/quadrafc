@@ -53,6 +53,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-transform: capitalize;
 }
 
 .user-mini-header__location {
@@ -147,6 +148,8 @@
   .user-mini-header__avatar-img {
     width: 32px !important;
     height: 32px !important;
-    font-size: 14px !important;
+    font-size: 1.2rem !important;
+    border: 1px solid var(--qfc-primary);
+    text-transform: uppercase;
   }
 }

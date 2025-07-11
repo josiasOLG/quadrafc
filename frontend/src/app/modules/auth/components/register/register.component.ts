@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
+import { firstValueFrom } from 'rxjs';
 
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../services/auth.service';
@@ -46,10 +47,15 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Verifica se já está logado
+    // Verifica se já está logado usando signals
     this.authService.currentUser$.subscribe((user) => {
-      if (user) {
-        this.router.navigate(['/jogos']);
+      if (user && this.authService.isAuthenticated()) {
+        // Se usuário está autenticado, redireciona baseado no status de onboarding
+        if (this.authService.needsOnboarding()) {
+          this.router.navigate(['/onboarding']);
+        } else {
+          this.router.navigate(['/jogos']);
+        }
       }
     });
   }
@@ -66,7 +72,11 @@ export class RegisterComponent implements OnInit {
       const formData = { ...this.registerForm.value };
       delete formData.confirmPassword; // Remove confirmPassword antes de enviar
 
+      // Chama o método register do AuthService
+      await firstValueFrom(this.authService.register(formData));
+
       this.toastService.success('Cadastro realizado com sucesso!', 'Vamos configurar seu perfil');
+
       this.router.navigate(['/onboarding']);
     } catch (error: any) {
       console.error('Erro no cadastro:', error);

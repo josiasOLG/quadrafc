@@ -152,48 +152,28 @@
           <div *ngIf="cepData" class="field">
             <label for="bairro" class="block text-900 font-medium mb-2">Bairro *</label>
 
-            <!-- Se tem bairro direto do CEP - campo readonly -->
-            <div *ngIf="cepData.bairro && cepData.bairro.trim() && !showBairroSelect && !showBairroInput">
-              <input
-                pInputText
-                id="bairro"
-                formControlName="bairro"
-                readonly
-                styleClass="w-full"
-                [value]="cepData.bairro" />
+            <!-- Se tem bairro direto do CEP - campo desabilitado -->
+            <div *ngIf="hasBairroFromCep()">
+              <div class="p-inputgroup">
+                <input
+                  pInputText
+                  id="bairro"
+                  formControlName="bairro"
+                  readonly
+                  styleClass="w-full bg-gray-50"
+                  [class.p-disabled]="true" />
+                <span class="p-inputgroup-addon">
+                  <i class="pi pi-lock text-primary"></i>
+                </span>
+              </div>
               <small class="p-info block mt-1">
                 <i class="pi pi-check text-green-500 mr-1"></i>
-                Bairro encontrado automaticamente
+                Bairro encontrado automaticamente pelo CEP
               </small>
             </div>
 
-            <!-- Se precisa mostrar select de bairros disponíveis -->
-            <div *ngIf="shouldShowBairroSelect()">
-              <p-dropdown
-                id="bairro"
-                formControlName="bairro"
-                [options]="bairrosDisponiveis"
-                optionLabel="nome"
-                optionValue="nome"
-                placeholder="Selecione seu bairro"
-                styleClass="w-full"
-                [class.ng-invalid]="
-                  onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched
-                "></p-dropdown>
-
-              <div class="mt-2 text-center">
-                <small class="text-600">Não encontrou seu bairro?</small>
-                <button
-                  type="button"
-                  class="p-button-link p-button-sm p-button-plain"
-                  (click)="toggleBairroInputMode()">
-                  Digite o nome do seu bairro
-                </button>
-              </div>
-            </div>
-
-            <!-- Se precisa mostrar input para digitar bairro -->
-            <div *ngIf="shouldShowBairroInput()">
+            <!-- Se NÃO tem bairro no CEP - input habilitado para digitação -->
+            <div *ngIf="!hasBairroFromCep()">
               <div class="p-inputgroup">
                 <input
                   pInputText
@@ -206,25 +186,25 @@
                 <span class="p-inputgroup-addon" *ngIf="isValidatingBairro">
                   <i class="pi pi-spin pi-spinner"></i>
                 </span>
+                <span class="p-inputgroup-addon" *ngIf="!isValidatingBairro">
+                  <i class="pi pi-edit text-primary"></i>
+                </span>
               </div>
+
+              <small class="p-info block mt-1">
+                <i class="pi pi-info-circle text-blue-500 mr-1"></i>
+                Bairro não encontrado no CEP. Digite o nome do seu bairro.
+              </small>
 
               <!-- Mensagem de validação de bairro -->
               <small *ngIf="bairroError" class="p-warn block mt-1" [innerHTML]="bairroError"></small>
-
-              <!-- Botão para voltar ao select se houver bairros disponíveis -->
-              <div *ngIf="bairrosDisponiveis.length > 0" class="mt-2 text-center">
-                <button type="button" class="p-button-link p-button-sm p-button-plain" (click)="backToBairroSelect()">
-                  ← Voltar à lista de bairros
-                </button>
-              </div>
             </div>
 
             <!-- Mensagens de erro -->
             <small
               *ngIf="onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched && !bairroError"
               class="p-error block mt-1">
-              <span *ngIf="showBairroSelect">Selecione seu bairro da lista</span>
-              <span *ngIf="showBairroInput">Digite o nome do seu bairro (mínimo 2 caracteres)</span>
+              Digite o nome do seu bairro (mínimo 2 caracteres)
             </small>
           </div>
         </form>

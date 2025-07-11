@@ -21,6 +21,7 @@ import { ConfiguracoesRoutingModule } from './configuracoes-routing.module';
 import { ConfiguracoesComponent } from './components/configuracoes/configuracoes.component';
 
 // Shared
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { UserMiniHeaderComponent } from '../../shared/components/user-mini-header/user-mini-header.component';
 
@@ -44,6 +45,7 @@ import { UserMiniHeaderComponent } from '../../shared/components/user-mini-heade
     PasswordModule,
 
     // Shared
+    ConfirmDialogComponent,
     PageHeaderComponent,
     UserMiniHeaderComponent,
   ],

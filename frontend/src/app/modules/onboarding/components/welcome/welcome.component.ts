@@ -152,8 +152,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   private resetCepState(): void {
     this.cepData = null;
-    this.showBairroSelect = false;
-    this.showBairroInput = false;
     this.bairrosSugeridos = [];
     this.bairrosDisponiveis = [];
     this.cepError = '';
@@ -165,23 +163,21 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.cepData = response;
     this.isLoadingCep = false; // Resetar loading no sucesso
 
-    // Se o CEP tem bairro, usar diretamente e permitir avanço automático
+    // Se o CEP tem bairro, preencher automaticamente e tornar readonly
     if (response.bairro && response.bairro.trim()) {
       this.onboardingForm.patchValue({
         bairro: response.bairro.trim(),
       });
-      this.showBairroSelect = false;
-      this.showBairroInput = false;
+
       this.toastService.show({
         detail: `Endereço encontrado: ${response.bairro}, ${response.localidade}/${response.uf}`,
         severity: 'success',
       });
     }
-    // Se não tem bairro, mostrar input para digitar
+    // Se não tem bairro no CEP, habilitar input para digitação
     else {
-      this.showBairroSelect = false;
-      this.showBairroInput = true;
       this.onboardingForm.patchValue({ bairro: '' }); // Limpar o campo
+
       this.toastService.show({
         detail: `Endereço encontrado em ${response.localidade}/${response.uf}. Digite o nome do seu bairro.`,
         severity: 'info',
@@ -191,7 +187,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   private handleCepError(error: any): void {
     this.isLoadingCep = false;
-    console.error('Erro ao buscar CEP:', error);
 
     if (error.status === 404) {
       this.cepError = 'CEP não encontrado';
@@ -265,31 +260,17 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         }
 
         // Se tem bairro direto do CEP, está tudo ok
-        if (this.cepData?.bairro && this.cepData.bairro.trim()) {
+        if (this.hasBairroFromCep()) {
           return true;
         }
 
-        // Se não tem bairro direto do CEP, precisa ter selecionado ou digitado um
-        if (!this.cepData?.bairro) {
-          // Se está mostrando select e não selecionou
-          if (this.showBairroSelect && (!bairroControl?.value || !bairroControl.valid)) {
-            this.toastService.show({
-              detail: 'Por favor, selecione seu bairro da lista ou digite um novo',
-              severity: 'warn',
-            });
-            return false;
-          }
-          // Se está mostrando input e não digitou
-          if (
-            this.showBairroInput &&
-            (!bairroControl?.value || bairroControl.value.trim().length < 2)
-          ) {
-            this.toastService.show({
-              detail: 'Por favor, digite o nome do seu bairro (mínimo 2 caracteres)',
-              severity: 'warn',
-            });
-            return false;
-          }
+        // Se não tem bairro direto do CEP, precisa ter digitado um válido
+        if (!bairroControl?.value || bairroControl.value.trim().length < 2) {
+          this.toastService.show({
+            detail: 'Por favor, digite o nome do seu bairro (mínimo 2 caracteres)',
+            severity: 'warn',
+          });
+          return false;
         }
         break;
     }
@@ -299,10 +280,11 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   async completeOnboarding(): Promise<void> {
     if (this.onboardingForm.valid && this.cepData) {
       this.isLoading = true;
+
       try {
         const formData = this.onboardingForm.value;
 
-        // Preparar dados para envio - agora só salvamos o nome do bairro como string
+        // Preparar dados para envio - usar sempre o valor do formulário
         const updateData: any = {
           data_nascimento: formData.data_nascimento,
           telefone: formData.telefone,
@@ -310,7 +292,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           cidade: this.cepData.localidade,
           estado: this.cepData.uf,
           pais: 'Brasil',
-          bairro: formData.bairro.trim(), // Sempre salva o nome do bairro como string
+          bairro: formData.bairro?.trim(), // Usar o valor do formulário
         };
 
         await firstValueFrom(this.authService.updateProfile(updateData));
@@ -319,9 +301,12 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           detail: 'Bem-vindo ao QuadraFC!',
           severity: 'success',
         });
+
+        // Aguardar um pouco para garantir que o estado foi atualizado
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         this.router.navigate(['/jogos']);
-      } catch (error) {
-        console.error('Erro ao completar onboarding:', error);
+      } catch {
         this.toastService.show({
           detail: 'Erro ao completar cadastro',
           severity: 'error',
@@ -370,31 +355,15 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           return false;
         }
 
-        // Se tem bairro direto do CEP (modo readonly)
-        if (
-          this.cepData?.bairro &&
-          this.cepData.bairro.trim() &&
-          !this.showBairroSelect &&
-          !this.showBairroInput
-        ) {
-          return true;
+        // Se tem bairro direto do CEP (campo desabilitado)
+        if (this.hasBairroFromCep()) {
+          return true; // Sempre válido quando vem do CEP
         }
 
-        // Se está no modo select
-        if (this.showBairroSelect) {
-          return (
-            bairroControl?.valid && bairroControl?.value && bairroControl.value.trim().length > 0
-          );
-        }
-
-        // Se está no modo input
-        if (this.showBairroInput) {
-          return (
-            bairroControl?.valid && bairroControl?.value && bairroControl.value.trim().length >= 2
-          );
-        }
-
-        return false;
+        // Se não tem bairro do CEP, precisa ter digitado um válido
+        return (
+          bairroControl?.valid && bairroControl?.value && bairroControl.value.trim().length >= 2
+        );
       case 3:
         return this.onboardingForm.valid && this.cepData !== null;
       default:
@@ -448,36 +417,22 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     return this.bairrosSugeridos.length;
   }
 
-  // Método para verificar se deve mostrar input de bairro
-  shouldShowBairroInput(): boolean {
-    return this.showBairroInput && this.cepData !== null;
+  // Método para verificar se o bairro vem do endpoint do CEP
+  hasBairroFromCep(): boolean {
+    return !!(this.cepData?.bairro && this.cepData.bairro.trim());
   }
 
-  // Método para verificar se deve mostrar select de bairros
-  shouldShowBairroSelect(): boolean {
-    return this.showBairroSelect && this.bairrosDisponiveis.length > 0;
-  }
-
-  // Método para alternar entre select e input
-  toggleBairroInputMode(): void {
-    if (this.showBairroSelect) {
-      this.showBairroSelect = false;
-      this.showBairroInput = true;
-      this.onboardingForm.patchValue({ bairro: '' });
-      this.toastService.show({
-        detail: 'Digite o nome do seu bairro',
-        severity: 'info',
-      });
-    }
-  }
-
-  // Método para voltar ao select (se houver bairros disponíveis)
-  backToBairroSelect(): void {
-    if (this.bairrosDisponiveis.length > 0) {
-      this.showBairroSelect = true;
-      this.showBairroInput = false;
-      this.onboardingForm.patchValue({ bairro: '' });
-      this.bairroError = '';
+  // Listener para mudanças no input do bairro
+  onBairroInputChange(): void {
+    const bairroControl = this.onboardingForm.get('bairro');
+    if (bairroControl?.value && !this.hasBairroFromCep()) {
+      // Debounce para não validar a cada tecla
+      setTimeout(() => {
+        if (bairroControl.value === bairroControl.value) {
+          // Verifica se não mudou
+          this.validateBairroInput(bairroControl.value);
+        }
+      }, 1000);
     }
   }
 
@@ -492,9 +447,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.bairroError = '';
 
     try {
-      const validation = await this.cepService
-        .validarNovoBairro(nomeBairro.trim(), this.cepData.localidade, this.cepData.uf)
-        .toPromise();
+      const validation = await firstValueFrom(
+        this.cepService.validarNovoBairro(
+          nomeBairro.trim(),
+          this.cepData.localidade,
+          this.cepData.uf
+        )
+      );
 
       if (!validation?.valido && validation?.sugestoes && validation.sugestoes.length > 0) {
         this.bairroError = `Bairros similares encontrados: ${validation.sugestoes.join(
@@ -507,25 +466,10 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           severity: 'warn',
         });
       }
-    } catch (error) {
-      console.error('Erro ao validar bairro:', error);
+    } catch {
       // Não bloquear se der erro na validação
     } finally {
       this.isValidatingBairro = false;
-    }
-  }
-
-  // Listener para mudanças no input do bairro
-  onBairroInputChange(): void {
-    const bairroControl = this.onboardingForm.get('bairro');
-    if (bairroControl?.value && this.showBairroInput) {
-      // Debounce para não validar a cada tecla
-      setTimeout(() => {
-        if (bairroControl.value === bairroControl.value) {
-          // Verifica se não mudou
-          this.validateBairroInput(bairroControl.value);
-        }
-      }, 1000);
     }
   }
 }

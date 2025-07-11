@@ -31,22 +31,24 @@ export class SeedService implements OnModuleInit {
 
       this.logger.log(`📊 Estado atual: ${usersExistentes.data.length} usuários`);
 
-      if (usersExistentes.data.length > 10) {
-        this.logger.log('✅ Seed já foi executado anteriormente - pulando execução');
-        this.logger.log('💡 Para executar novamente, limpe o banco de dados primeiro');
-        this.logger.log(`📊 Encontrados: ${usersExistentes.data.length} usuários`);
-        return;
-      }
+      // if (usersExistentes.data.length > 10) {
+      //   this.logger.log('✅ Seed já foi executado anteriormente - pulando execução');
+      //   this.logger.log('💡 Para executar novamente, limpe o banco de dados primeiro');
+      //   this.logger.log(`📊 Encontrados: ${usersExistentes.data.length} usuários`);
+      //   return;
+      // }
 
       this.logger.log(
         '🌱 Iniciando seed para criar APENAS usuários fake com pontos entre 0 e 100...'
       );
-      await this.seedAllData();
+
       this.logger.log('✅ Seed com usuários fake finalizado!');
       this.logger.log('🔒 Seed finalizado - não executará novamente automaticamente');
     } else {
       this.logger.log('⏸️ Seed desabilitado - NODE_ENV não é development');
     }
+
+    await this.seedAllData();
   }
 
   private async seedAllData() {
@@ -54,7 +56,7 @@ export class SeedService implements OnModuleInit {
       // Verificar estado atual dos dados
       const usersExistentes = await this.usersService.getRankingIndividual();
 
-      const hasUsers = usersExistentes.data.length > 0;
+      // const hasUsers = usersExistentes.data.length > 0;
 
       this.logger.log(
         '🏔️ Verificando dados para a região serrana - Petrópolis e Paty do Alferes...'
@@ -62,10 +64,10 @@ export class SeedService implements OnModuleInit {
       this.logger.log(`    Usuários: ${usersExistentes.data.length} existentes`);
 
       // Se já tem usuários, pular
-      if (hasUsers) {
-        this.logger.log('✅ Dados completos já existem, pulando seed...');
-        return;
-      }
+      // if (hasUsers) {
+      //   this.logger.log('✅ Dados completos já existem, pulando seed...');
+      //   return;
+      // }
 
       // 1. Criar usuários - ÚNICO PASSO NECESSÁRIO
       this.logger.log('👥 Executando seed de usuários...');
@@ -99,37 +101,47 @@ export class SeedService implements OnModuleInit {
       this.logger.log('👥 Criando usuários fake com pontos entre 0 e 100...');
 
       // Verificar quantos usuários já existem para evitar duplicatas
-      const usersExistentes = await this.usersService.getRankingIndividual();
-      if (usersExistentes.data.length > 0) {
-        this.logger.log(
-          `⚠️ ${usersExistentes.data.length} usuários já existem, pulando criação de usuários para evitar duplicatas`
-        );
-        return;
-      }
+      // const usersExistentes = await this.usersService.getRankingIndividual();
+      // if (usersExistentes.data.length > 0) {
+      //   this.logger.log(
+      //     `⚠️ ${usersExistentes.data.length} usuários já existem, pulando criação de usuários para evitar duplicatas`
+      //   );
+      //   return;
+      // }
 
-      // Lista de bairros disponíveis (agora como strings simples)
+      // Lista de bairros disponíveis - Novos bairros de Petrópolis
       const bairrosDisponiveis = [
-        // Petrópolis - RJ
-        { nome: 'Centro', cidade: 'Petrópolis', estado: 'RJ' },
+        // Petrópolis - RJ - Novos bairros
+        { nome: 'Alcobacinha', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Bela Vista', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Provisória', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Alto Independência', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Castelânea', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Chácara Flora', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Estrada da Saudade', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Fazenda Alpina', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Granja Guarani', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Herval', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Itamarati', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Jardim Salvador', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Moinho Preto', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Nova Cascatinha', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Parque São Vicente', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Quitandinha', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Retiro', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Roseiral', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'São Pedro', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Secretário', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Sumidouro', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Valparaíso', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Vila Cristina', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Vila Imperial', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Vila Real', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Washington Luís', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Zona Industrial', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Corrêas', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Itaipava', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Cascatinha', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Alto da Serra', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Bingen', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Coronel Veiga', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Mosela', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Pedro do Rio', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Posse', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Corrêas', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Araras', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Nogueira', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Duarte da Silveira', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'São Sebastião', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Meio da Serra', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Carangola', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Quarteirão Brasileiro', cidade: 'Petrópolis', estado: 'RJ' },
 
         // Paty do Alferes - RJ
         { nome: 'Centro', cidade: 'Paty do Alferes', estado: 'RJ' },
@@ -146,57 +158,57 @@ export class SeedService implements OnModuleInit {
 
       this.logger.log(`� ${bairrosDisponiveis.length} bairros disponíveis para os usuários`);
       const nomesBrasileiros = [
-        // Nomes típicos da região serrana do RJ
-        'Carlos Eduardo Silva',
-        'Ana Beatriz Santos',
-        'João Pedro Oliveira',
-        'Maria Clara Costa',
-        'Pedro Henrique Souza',
-        'Fernanda Cristina Lima',
-        'Rafael dos Santos Pereira',
-        'Juliana Aparecida Alves',
-        'Lucas Gabriel Ferreira',
-        'Camila Vitória Rocha',
-        'Thiago Augusto Martins',
-        'Larissa Fernanda Barbosa',
-        'Bruno Henrique Ribeiro',
-        'Priscila dos Santos Dias',
-        'André Luis Gomes',
-        'Letícia Maria Cardoso',
-        'Mateus Felipe Araújo',
-        'Gabriela Cristiane Mendes',
-        'Felipe Augusto Castro',
-        'Bianca Aparecida Moreira',
-        'Rodrigo Antônio Azevedo',
-        'Natália Cristina Reis',
-        'Vinicius Eduardo Correia',
-        'Amanda Fernanda Teixeira',
-        'Gustavo Henrique Nunes',
-        'Isabella Vitória Freitas',
-        'Diego Luiz Carvalho',
-        'Sophia Maria Ramos',
-        'Henrique dos Santos Monteiro',
-        'Yasmin Cristina Torres',
-        'Leonardo Augusto Pinto',
-        'Manuela Aparecida Cruz',
-        'Ricardo Luiz Fernandes',
-        'Eduarda Beatriz Campos',
-        'Marcelo Antonio Vieira',
-        'Luana Cristiane Rodrigues',
-        'Guilherme Eduardo Miranda',
-        'Beatriz Fernanda Santana',
-        'Caio Henrique Nascimento',
-        'Marina Vitória Sales',
-        'Daniel Augusto Caldeira',
-        'Renata Aparecida Moraes',
-        'Victor Hugo dos Santos',
-        'Carolina Maria Machado',
-        'Samuel Eduardo Lopes',
-        'Isadora Cristina Cunha',
-        'Nicolas Gabriel Borges',
-        'Valentina dos Santos Duarte',
-        'Arthur Henrique Melo',
-        'Giovanna Beatriz Farias',
+        // Novos nomes masculinos brasileiros da região serrana do RJ
+        'Alexandre Moreira Silva',
+        'Anderson Pereira dos Santos',
+        'Antonio Carlos Oliveira',
+        'Bernardo Henrique Costa',
+        'César Augusto Ferreira',
+        'Danilo José Almeida',
+        'Eduardo Ribeiro Lima',
+        'Fabiano dos Santos Cruz',
+        'Gabriel Martins Rocha',
+        'Henrique Barbosa Nunes',
+        'Igor Fernandes Cardoso',
+        'João Carlos Mendes',
+        'José Roberto Araújo',
+        'Klaus Eduardo Gomes',
+        'Leandro Antônio Reis',
+        'Márcio Luiz Teixeira',
+        'Nelson Vinicius Correia',
+        'Otávio Henrique Miranda',
+        'Paulo César Nascimento',
+        'Quintino dos Santos Monteiro',
+        'Roberto Carlos Vieira',
+        'Sérgio Augusto Caldeira',
+        'Tiago Fernandes Machado',
+        'Ulisses Gabriel Lopes',
+        'Valter Hugo Cunha',
+        'Wagner Eduardo Borges',
+        'Xavier dos Santos Duarte',
+        'Yago Henrique Melo',
+        'Zacarias Antonio Farias',
+        'Adriano Silva Carvalho',
+        'Bruno César Torres',
+        'Caio Roberto Pinto',
+        'Diego Augusto Sales',
+        'Emerson Luis Moraes',
+        'Fernando Gabriel Castro',
+        'Gustavo Antônio Azevedo',
+        'Hugo dos Santos Pereira',
+        'Ivan Eduardo Freitas',
+        'Juliano César Ramos',
+        'Kevin Gabriel Santana',
+        'Lucas Henrique Campos',
+        'Mauricio dos Santos Rodrigues',
+        'Nathan Eduardo Fernandes',
+        'Orlando César Moreira',
+        'Pedro Augusto Barbosa',
+        'Quirino José Alves',
+        'Renato Luis Dias',
+        'Sandro Henrique Ribeiro',
+        'Thales Gabriel Martins',
+        'Ubiratan dos Santos Gomes',
       ];
 
       for (let i = 0; i < nomesBrasileiros.length; i++) {
