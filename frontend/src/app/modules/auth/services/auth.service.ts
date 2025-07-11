@@ -215,21 +215,10 @@ export class AuthService {
     );
   }
 
-  logout(): Observable<void> {
-    return this.httpService.post<void>('auth/logout').pipe(
-      tap(() => {
-        this.clearAllData();
-        this._authState.set('UNAUTHENTICATED');
-        this._currentUser.set(null);
-      }),
-      catchError(() => {
-        // Mesmo se o logout falhar no backend, limpar localmente
-        this.clearAllData();
-        this._authState.set('UNAUTHENTICATED');
-        this._currentUser.set(null);
-        return of(undefined);
-      })
-    );
+  logout(): void {
+    this.clearAllData();
+    this._authState.set('UNAUTHENTICATED');
+    this._currentUser.set(null);
   }
 
   /**
@@ -327,18 +316,8 @@ export class AuthService {
   }
 
   private clearAllData(): void {
-    // Limpar localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('quadrafc_logged_in');
-      localStorage.removeItem('quadrafc_user_data');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('current_user');
-    }
-
-    // Limpar cookies
-    this.cookieService.delete('quadrafc_logged_in');
-    this.cookieService.delete('quadrafc_user_data');
-
+    this.cookieService.deleteAll();
+    localStorage.clear();
     this.premiumPermissionsService.clearPermissions();
   }
 

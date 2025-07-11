@@ -271,73 +271,9 @@ export class ConfiguracoesComponent implements OnInit {
     this.showLogoutConfirm = false;
   }
 
-  private logout(): void {
-    // Mostrar loading/confirmação se necessário
-    this.toastService.show({
-      detail: 'Fazendo logout...',
-      severity: 'info',
-    });
-
-    this.authService.logout().subscribe({
-      next: () => {
-        this.clearLocalData();
-
-        // Fechar modal e parar loading
-        this.showLogoutConfirm = false;
-        this.logoutLoading = false;
-
-        // Mostrar mensagem de sucesso
-        this.toastService.show({
-          detail: 'Logout realizado com sucesso',
-          severity: 'success',
-        });
-
-        // Navegar para login e recarregar a página para limpar completamente o estado
-        this.router.navigate(['/auth/login'], { replaceUrl: true }).then(() => {
-          window.location.reload();
-        });
-      },
-      error: (error) => {
-        console.error('Erro no logout:', error);
-
-        // Mesmo com erro, limpar estado local e redirecionar
-        this.clearLocalData();
-
-        // Fechar modal e parar loading
-        this.showLogoutConfirm = false;
-        this.logoutLoading = false;
-
-        this.toastService.show({
-          detail: 'Sessão encerrada',
-          severity: 'warn',
-        });
-
-        // Forçar navegação mesmo com erro
-        this.router.navigate(['/auth/login'], { replaceUrl: true }).then(() => {
-          window.location.reload();
-        });
-      },
-    });
-  }
-
-  private clearLocalData(): void {
-    // Limpar dados do componente
-    this.user = null;
-    this.editProfileForm = {
-      nome: '',
-      email: '',
-      cidade: '',
-      estado: '',
-      bairro: '',
-    };
-
-    // Limpar dados do localStorage como backup (o AuthService já faz isso, mas garantindo)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('quadrafc_logged_in');
-      localStorage.removeItem('quadrafc_user_data');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('current_user');
-    }
+  private async logout(): Promise<void> {
+    await this.authService.logout();
+    window.location.reload();
   }
 
   // Métodos dos modais
