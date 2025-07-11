@@ -1,15 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
 
-import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { RegisterUserSchema, RegisterUserDto } from '../../../../shared/schemas/user.schema';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -20,10 +19,10 @@ import { RegisterUserSchema, RegisterUserDto } from '../../../../shared/schemas/
     ButtonModule,
     InputTextModule,
     PasswordModule,
-    ToastModule
+    ToastModule,
   ],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
@@ -35,17 +34,20 @@ export class RegisterComponent implements OnInit {
     private router: Router,
     private toastService: ToastService
   ) {
-    this.registerForm = this.fb.group({
-      nome: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    this.registerForm = this.fb.group(
+      {
+        nome: ['', [Validators.required, Validators.minLength(2)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]],
+      },
+      { validators: this.passwordMatchValidator }
+    );
   }
 
   ngOnInit(): void {
     // Verifica se já está logado
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe((user) => {
       if (user) {
         this.router.navigate(['/jogos']);
       }
@@ -54,7 +56,6 @@ export class RegisterComponent implements OnInit {
 
   async onSubmit(): Promise<void> {
     if (this.registerForm.invalid) {
-
       this.markFormGroupTouched();
       return;
     }
@@ -62,18 +63,8 @@ export class RegisterComponent implements OnInit {
     this.isLoading = true;
 
     try {
-
       const formData = { ...this.registerForm.value };
       delete formData.confirmPassword; // Remove confirmPassword antes de enviar
-
-      console.log('Dados do formulário:', formData);
-
-      // Validação com Zod
-      const validatedData: RegisterUserDto = RegisterUserSchema.parse(formData);
-      console.log('Dados validados:', validatedData);
-
-      const result = await this.authService.register(validatedData).toPromise();
-      console.log('Resultado do registro:', result);
 
       this.toastService.success('Cadastro realizado com sucesso!', 'Vamos configurar seu perfil');
       this.router.navigate(['/onboarding']);
@@ -129,7 +120,7 @@ export class RegisterComponent implements OnInit {
   }
 
   private markFormGroupTouched(): void {
-    Object.keys(this.registerForm.controls).forEach(key => {
+    Object.keys(this.registerForm.controls).forEach((key) => {
       const control = this.registerForm.get(key);
       control?.markAsTouched();
     });
@@ -145,7 +136,9 @@ export class RegisterComponent implements OnInit {
         return 'Email inválido';
       }
       if (field.errors['minlength']) {
-        return `${this.getFieldLabel(fieldName)} deve ter pelo menos ${field.errors['minlength'].requiredLength} caracteres`;
+        return `${this.getFieldLabel(fieldName)} deve ter pelo menos ${
+          field.errors['minlength'].requiredLength
+        } caracteres`;
       }
       if (field.errors['passwordMismatch']) {
         return 'Senhas não conferem';
@@ -155,11 +148,11 @@ export class RegisterComponent implements OnInit {
   }
 
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       nome: 'Nome',
       email: 'Email',
       password: 'Senha',
-      confirmPassword: 'Confirmação de senha'
+      confirmPassword: 'Confirmação de senha',
     };
     return labels[fieldName] || fieldName;
   }

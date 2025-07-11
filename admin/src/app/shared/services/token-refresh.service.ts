@@ -22,8 +22,6 @@ export class TokenRefreshService implements OnDestroy {
 
     // Iniciar novo monitoramento apenas se o usuário estiver autenticado
     if (this.authService.isAuthenticated) {
-      console.log('TokenRefreshService: Iniciando monitoramento do token JWT');
-
       this.refreshSubscription = interval(this.CHECK_INTERVAL).subscribe(() => {
         if (this.authService.isAuthenticated) {
           this.authService.checkAndRenewTokenIfNeeded(this.MINIMUM_VALID_TIME);
@@ -43,7 +41,6 @@ export class TokenRefreshService implements OnDestroy {
    */
   stopTokenRefreshMonitoring(): void {
     if (this.refreshSubscription) {
-      console.log('TokenRefreshService: Parando monitoramento do token JWT');
       this.refreshSubscription.unsubscribe();
       this.refreshSubscription = undefined;
     }

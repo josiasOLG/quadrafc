@@ -186,8 +186,6 @@ export class GameListComponent implements OnInit {
     // Usa o novo endpoint de sincronização global de 60 dias
     this.jogoService.sincronizarGlobal60Dias().subscribe({
       next: (resultado: any) => {
-        console.log('Resultado da sincronização 60 dias:', resultado);
-
         const totalJogosSalvos = resultado?.totalJogosSalvos || 0;
         const totalCampeonatos = resultado?.totalCampeonatos || 0;
         const periodosProcessados = resultado?.periodosProcessados || 0;
@@ -248,7 +246,6 @@ export class GameListComponent implements OnInit {
 
     this.jogoService.verificarJogosFinalizados().subscribe({
       next: (resultado: any) => {
-        console.log('Resultado da verificação:', resultado);
         this.messageService.add({
           severity: 'success',
           summary: 'Verificação Completa!',
@@ -257,7 +254,6 @@ export class GameListComponent implements OnInit {
         });
       },
       error: (error: any) => {
-        console.error('Erro na verificação:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro na Verificação',
@@ -274,8 +270,6 @@ export class GameListComponent implements OnInit {
   verStatusCrons() {
     this.jogoService.obterStatusCrons().subscribe({
       next: (status: any) => {
-        console.log('Status dos crons:', status);
-
         const cronInfo = Object.entries(status.crons || {})
           .map(([nome, horario]) => `${nome}: ${horario}`)
           .join('\n');

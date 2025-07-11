@@ -265,7 +265,6 @@
         if (isIOS && (isStandalone || isInWebAppiOS) && !isWebView) {
           document.body.classList.add('ios-pwa');
         } else {
-          console.log('ℹ️ Not iOS PWA - no padding adjustment needed');
         }
       }
 
@@ -288,12 +287,8 @@
         window.addEventListener('load', function () {
           navigator.serviceWorker
             .register('/ngsw-worker.js')
-            .then((registration) => {
-              console.log('✅ SW registered:', registration);
-            })
-            .catch((error) => {
-              console.log('❌ SW registration failed:', error);
-            });
+            .then((registration) => {})
+            .catch((error) => {});
         });
       }
 
@@ -301,18 +296,15 @@
       window.addEventListener('load', function () {
         if ('performance' in window) {
           const perfData = performance.getEntriesByType('navigation')[0];
-          console.log('📊 Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
         }
       });
 
       // Offline detection
       window.addEventListener('online', function () {
-        console.log('🌐 App is online');
         document.body.classList.remove('offline');
       });
 
       window.addEventListener('offline', function () {
-        console.log('📴 App is offline');
         document.body.classList.add('offline');
       });
 

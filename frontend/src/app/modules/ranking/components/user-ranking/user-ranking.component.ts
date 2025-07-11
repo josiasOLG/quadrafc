@@ -79,16 +79,12 @@ export class UserRankingComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log('🔄 Inicializando componente user-ranking');
     // Primeiro, carregar o usuário atual
     this.loadCurrentUser();
 
     // Se já temos um bairro selecionado, carregar ranking imediatamente
     if (this.selectedBairro) {
-      console.log('🏠 Bairro já selecionado:', this.selectedBairro.bairro.nome);
       this.loadUserRanking();
-    } else {
-      console.log('⏳ Aguardando dados do usuário para carregar ranking...');
     }
   }
 
@@ -98,18 +94,11 @@ export class UserRankingComponent implements OnInit {
         this.user = user;
         // Após carregar o usuário, verificamos se devemos iniciar o carregamento do ranking
         if (user && (!this.selectedBairro || !this.rankingUsuarios.length)) {
-          console.log('👤 Usuário carregado, carregando ranking com dados do usuário:', {
-            cidade: user.cidade,
-            estado: user.estado,
-            bairro: user.bairro,
-          });
           // Carregar ranking com os dados do usuário logado
           this.loadUserRankingFromUserData();
         }
       },
-      error: (error: any) => {
-        console.error('Erro ao carregar usuário:', error);
-      },
+      error: (error: any) => {},
     });
   }
 
@@ -161,21 +150,12 @@ export class UserRankingComponent implements OnInit {
 
   // Método auxiliar para processar a resposta do ranking
   private processRankingResponse(response: any) {
-    console.log('🏆 Resposta de top usuários por bairro:', response);
-
     if (response?.podio && response?.outros) {
-      // Nova estrutura de dados com podio e outros separados
       this.podioUsuarios = this.convertUsuariosArray(response.podio);
       this.outrosUsuarios = this.convertUsuariosArray(response.outros);
 
-      // Manter compatibilidade com rankingUsuarios (todos juntos)
       this.rankingUsuarios = [...this.podioUsuarios, ...this.outrosUsuarios];
-
-      console.log(`🏆 Pódio: ${this.podioUsuarios.length} usuários`);
-      console.log(`👥 Outros: ${this.outrosUsuarios.length} usuários`);
-      console.log(`📊 Total: ${this.rankingUsuarios.length} usuários`);
     } else {
-      console.error('❌ Formato de resposta inválido:', response);
       this.resetRankingData();
       this.toastService.error('Erro ao processar dados do ranking');
     }
@@ -209,7 +189,6 @@ export class UserRankingComponent implements OnInit {
 
   // Método auxiliar para lidar com erros
   private handleRankingError(error: any) {
-    console.error('❌ Erro ao carregar ranking de usuários:', error);
     this.resetRankingData();
     this.isLoading = false;
     this.toastService.error('Erro ao carregar ranking de usuários');

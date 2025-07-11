@@ -231,10 +231,7 @@ export class ConfiguracoesComponent implements OnInit {
     });
   }
 
-  private salvarConfiguracao(id: string, valor: string | boolean | number): void {
-    // Implementar salvamento da configuração
-    console.log(`Salvando configuração ${id}:`, valor);
-  }
+  private salvarConfiguracao(id: string, valor: string | boolean | number): void {}
 
   private downloadDados(): void {
     // Implementar download dos dados

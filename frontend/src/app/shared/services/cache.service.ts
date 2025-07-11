@@ -31,8 +31,6 @@ export class CacheService {
             }
           }
         }
-
-        console.log('✅ Cache invalidado após operação de escrita');
       } catch (error) {
         console.warn('Erro ao invalidar cache:', error);
       }

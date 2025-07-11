@@ -99,12 +99,8 @@ export class LayoutComponent {
 
   logout() {
     this.authService.logout().subscribe({
-      next: () => {
-        console.log('Logout realizado com sucesso');
-      },
-      error: (error) => {
-        console.error('Erro ao fazer logout:', error);
-      },
+      next: () => {},
+      error: (error) => {},
     });
   }
 }

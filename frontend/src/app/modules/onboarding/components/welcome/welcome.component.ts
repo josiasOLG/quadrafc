@@ -162,7 +162,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   }
 
   private handleCepResponse(response: CepResponse): void {
-    console.log('CEP Response:', response); // Debug
     this.cepData = response;
     this.isLoadingCep = false; // Resetar loading no sucesso
 
@@ -313,8 +312,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           pais: 'Brasil',
           bairro: formData.bairro.trim(), // Sempre salva o nome do bairro como string
         };
-
-        console.log('Enviando dados do onboarding:', updateData);
 
         await firstValueFrom(this.authService.updateProfile(updateData));
 

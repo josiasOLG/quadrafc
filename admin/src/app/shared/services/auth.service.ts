@@ -51,16 +51,13 @@ export class AuthService {
   get isAdmin(): boolean {
     // Verificar se o usuário é admin
     const user = this.currentUser;
-    console.log('AuthService: Verificando isAdmin para:', user);
 
     // Para desenvolvimento, permitir acesso se email contém 'admin' ou 'josias'
     if (user?.email && (user.email.includes('admin') || user.email.includes('josias'))) {
-      console.log('AuthService: Usuário reconhecido como admin por email');
       return true;
     }
 
     const isAdmin = user?.isAdmin || (user as any)?.nivel === 999 || false;
-    console.log('AuthService: isAdmin resultado:', isAdmin);
     return isAdmin;
   }
 
@@ -79,8 +76,6 @@ export class AuthService {
 
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
-        console.log('AuthService: Resposta completa do login:', response);
-
         // Verificar se a resposta tem estrutura padrão com 'data' ou direta
         let token: string | undefined;
         let user: UserProfile | undefined;
@@ -99,25 +94,19 @@ export class AuthService {
           // Salvar o token no localStorage
           localStorage.setItem(this.AUTH_STORAGE_KEY, token);
           this.tokenSubject.next(token);
-          console.log('AuthService: Token JWT salvo com sucesso');
         } else {
-          console.warn('AuthService: Token JWT não encontrado na resposta');
         }
 
         if (user) {
-          console.log('AuthService: Dados do usuário extraídos:', user);
           // Salvar dados no localStorage
           this.saveUserToStorage(user);
           // Atualizar o estado
           this.currentUserSubject.next(user);
-          console.log('AuthService: currentUser atualizado:', this.currentUser);
-          console.log('AuthService: isAuthenticated agora é:', this.isAuthenticated);
         }
 
         this.isLoadingSubject.next(false);
       }),
       catchError((error) => {
-        console.error('AuthService: Erro no login:', error);
         this.isLoadingSubject.next(false);
         throw error;
       })
@@ -152,15 +141,8 @@ export class AuthService {
   logout(): Observable<any> {
     // Tentar fazer logout no servidor (opcional)
     return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
-      tap(() => {
-        console.log('AuthService: Logout realizado no servidor');
-      }),
+      tap(() => {}),
       catchError((error) => {
-        // Mesmo se der erro no servidor, continuar com logout local
-        console.warn(
-          'AuthService: Erro no logout do servidor, continuando com logout local:',
-          error
-        );
         return of(null);
       }),
       tap(() => {
@@ -171,8 +153,6 @@ export class AuthService {
         // Atualizar estado
         this.currentUserSubject.next(null);
         this.tokenSubject.next(null);
-
-        console.log('AuthService: Dados locais limpos');
       }),
       tap(() => {
         // Redirecionar para login
@@ -189,7 +169,6 @@ export class AuthService {
         this.currentUserSubject.next(user);
       }),
       catchError((error) => {
-        console.error('AuthService: Erro ao buscar perfil:', error);
         if (error.status === 401) {
           this.logout(); // Logout se token expirado
         }
@@ -205,7 +184,6 @@ export class AuthService {
         this.currentUserSubject.next(updatedUser);
       }),
       catchError((error) => {
-        console.error('AuthService: Erro ao atualizar perfil:', error);
         throw error;
       })
     );
@@ -221,14 +199,12 @@ export class AuthService {
     if (!token) return;
 
     const remainingTime = JwtHelper.getTokenRemainingTime(token);
-    console.log('AuthService: Tempo restante do token:', remainingTime, 'segundos');
 
     // Se tiver menos de X segundos (5 minutos por padrão), tentar renovar
     if (remainingTime > 0 && remainingTime < minimumValidTime) {
-      console.log('AuthService: Token próximo de expirar, tentando renovar...');
       this.refreshToken().subscribe({
-        next: () => console.log('AuthService: Token renovado com sucesso'),
-        error: (err) => console.error('AuthService: Erro ao renovar token:', err),
+        next: () => {},
+        error: (err) => {},
       });
     }
   }
@@ -243,12 +219,9 @@ export class AuthService {
         if (response.data.access_token) {
           localStorage.setItem(this.AUTH_STORAGE_KEY, response.data.access_token);
           this.tokenSubject.next(response.data.access_token);
-          console.log('AuthService: Token renovado com sucesso');
         }
       }),
       catchError((error) => {
-        console.error('AuthService: Erro ao renovar token:', error);
-        // Se falhar com 401, faz logout
         if (error.status === 401) {
           this.logout();
         }
@@ -267,16 +240,10 @@ export class AuthService {
         this.currentUserSubject.next(storedUser);
       }
 
-      // Carregar token do localStorage
       const storedToken = localStorage.getItem(this.AUTH_STORAGE_KEY);
       if (storedToken) {
         this.tokenSubject.next(storedToken);
       }
-
-      console.log('AuthService: Dados carregados do localStorage:', {
-        user: this.currentUser,
-        token: !!this.token,
-      });
     } catch (error) {
       console.error('AuthService: Erro ao carregar dados do localStorage:', error);
       this.clearUserData(); // Limpar dados em caso de erro

@@ -18,7 +18,6 @@ export class AdvancedPwaService {
   private initPWA(): void {
     // Detectar prompt de instalação
     window.addEventListener('beforeinstallprompt', (e) => {
-      console.log('📱 PWA: Install prompt available');
       e.preventDefault();
       this.deferredPrompt = e;
       this.showInstallBanner();
@@ -26,7 +25,6 @@ export class AdvancedPwaService {
 
     // Detectar instalação
     window.addEventListener('appinstalled', () => {
-      console.log('✅ PWA: App installed successfully');
       this.deferredPrompt = null;
       this.hideInstallBanner();
       this.trackInstallation();
@@ -36,8 +34,8 @@ export class AdvancedPwaService {
     if ('screen' in window && 'orientation' in window.screen) {
       try {
         (window.screen.orientation as any).lock('portrait-primary');
-      } catch {
-        console.log('🔄 Orientation lock not supported');
+      } catch (error) {
+        console.error('❌ PWA: Orientation lock failed:', error);
       }
     }
   }

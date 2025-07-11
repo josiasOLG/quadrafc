@@ -86,7 +86,6 @@ export class AuthService {
     const cachedUser = this.getCachedUser();
 
     if (!token) {
-      console.log('🔄 AuthService: Sem token - estado não autenticado');
       this._authState.set('UNAUTHENTICATED');
       this._currentUser.set(null);
       this._isInitialized.set(true);
@@ -94,7 +93,6 @@ export class AuthService {
     }
 
     if (cachedUser) {
-      console.log('🔄 AuthService: Token e usuário encontrados - estado autenticado imediatamente');
       this._currentUser.set(cachedUser);
 
       // Determinar estado baseado na necessidade de onboarding
@@ -106,7 +104,6 @@ export class AuthService {
     }
 
     // Token existe mas sem cache - manter como loading para validação
-    console.log('🔄 AuthService: Token encontrado mas sem cache - aguardando validação');
     this._authState.set('LOADING');
   }
 
@@ -116,7 +113,6 @@ export class AuthService {
   async initializeAuth(): Promise<void> {
     // Se já foi inicializado sincronamente e está autenticado, não precisa validar
     if (this._isInitialized() && this.isAuthenticated()) {
-      console.log('✅ AuthService: Já inicializado e autenticado - pulando validação');
       return;
     }
 
@@ -130,7 +126,6 @@ export class AuthService {
     try {
       this._authState.set('LOADING');
 
-      console.log('🔄 AuthService: Validando token com o backend...');
       const user = await firstValueFrom(
         this.httpService.get<User>('auth/profile').pipe(
           catchError(() => {
@@ -142,7 +137,6 @@ export class AuthService {
       );
 
       if (user) {
-        console.log('✅ AuthService: Token válido - usuário autenticado', user.email);
         this._currentUser.set(user);
         this.setCachedUser(user);
 
@@ -156,8 +150,7 @@ export class AuthService {
         this._authState.set('UNAUTHENTICATED');
         this._currentUser.set(null);
       }
-    } catch (error) {
-      console.error('❌ AuthService: Erro na validação do token', error);
+    } catch (error: any) {
       this.clearAllData();
       this._authState.set('UNAUTHENTICATED');
       this._currentUser.set(null);
@@ -305,8 +298,8 @@ export class AuthService {
     setInterval(() => {
       if (this.isAuthenticated()) {
         this.refreshToken().subscribe({
-          next: () => console.log('Token renovado automaticamente'),
-          error: (error) => console.error('Falha na renovação automática:', error),
+          next: () => {},
+          error: (error) => {},
         });
       }
     }, 12 * 60 * 60 * 1000); // 12 horas

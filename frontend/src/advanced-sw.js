@@ -13,8 +13,6 @@ const CRITICAL_URLS = ['/', '/index.html', '/manifest.webmanifest', '/assets/ico
 const API_URLS = ['/api/rodadas', '/api/ranking', '/api/user'];
 
 self.addEventListener('install', (event) => {
-  console.log('🚀 Service Worker: Installing...');
-
   event.waitUntil(
     Promise.all([
       // Cache crítico
@@ -31,15 +29,12 @@ self.addEventListener('install', (event) => {
       // Cache de API
       caches.open(API_CACHE),
     ]).then(() => {
-      console.log('✅ Service Worker: Installation complete');
       return self.skipWaiting();
     })
   );
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('🔄 Service Worker: Activating...');
-
   event.waitUntil(
     Promise.all([
       // Limpar caches antigos
@@ -52,7 +47,6 @@ self.addEventListener('activate', (event) => {
               cacheName !== IMAGE_CACHE &&
               cacheName !== API_CACHE
             ) {
-              console.log('🗑️ Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
@@ -61,9 +55,7 @@ self.addEventListener('activate', (event) => {
 
       // Tomar controle de todas as páginas
       self.clients.claim(),
-    ]).then(() => {
-      console.log('✅ Service Worker: Activation complete');
-    })
+    ]).then(() => {})
   );
 });
 
@@ -99,7 +91,6 @@ async function handleImageRequest(request) {
     }
     return networkResponse;
   } catch (error) {
-    console.log('🔴 Image fetch failed:', error);
     // Retornar imagem placeholder se necessário
     return new Response('', { status: 404 });
   }
@@ -122,8 +113,6 @@ async function handleApiRequest(request) {
       throw new Error(`API returned ${networkResponse.status}`);
     }
   } catch (error) {
-    console.log('🔴 API fetch failed, trying cache:', error);
-
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
       return cachedResponse;
@@ -147,8 +136,6 @@ async function handleDocumentRequest(request) {
 
     return networkResponse;
   } catch (error) {
-    console.log('🔴 Document fetch failed, trying cache:', error);
-
     const cache = await caches.open(RUNTIME_CACHE);
     const cachedResponse = await cache.match(request);
 
@@ -188,7 +175,6 @@ async function handleResourceRequest(request) {
     }
     return networkResponse;
   } catch (error) {
-    console.log('🔴 Resource fetch failed:', error);
     return new Response('', { status: 404 });
   }
 }
@@ -346,8 +332,6 @@ self.addEventListener('sync', (event) => {
 });
 
 async function doBackgroundSync() {
-  console.log('🔄 Background sync started');
-
   try {
     // Sincronizar dados críticos
     const cache = await caches.open(API_CACHE);
@@ -358,15 +342,9 @@ async function doBackgroundSync() {
         if (response.ok) {
           await cache.put(url, response);
         }
-      } catch (error) {
-        console.log(`Failed to sync ${url}:`, error);
-      }
+      } catch (error) {}
     }
-
-    console.log('✅ Background sync completed');
-  } catch (error) {
-    console.log('🔴 Background sync failed:', error);
-  }
+  } catch (error) {}
 }
 
 // Listener para push notifications
@@ -405,5 +383,3 @@ self.addEventListener('notificationclick', (event) => {
     event.waitUntil(self.clients.openWindow('/'));
   }
 });
-
-console.log('🎯 QuadraFC Advanced Service Worker loaded!');

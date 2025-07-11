@@ -39,19 +39,14 @@ export const authCanMatchGuard: CanMatchFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  console.log('[AuthGuard] Aguardando AuthService estar completamente pronto...');
-
-  // AGUARDAR até que o AuthService esteja 100% inicializado
   const isReady = await waitForAuthServiceReady(authService);
 
   if (!isReady) {
-    console.error('[AuthGuard] Timeout aguardando AuthService - redirecionando para login');
     router.navigate(['/auth/login']);
     return false;
   }
 
   const authState = authService.authState();
-  console.log('[AuthGuard] AuthService pronto, estado:', authState);
 
   if (authState === 'AUTHENTICATED' || authState === 'NEEDS_ONBOARDING') {
     return true;
@@ -59,7 +54,6 @@ export const authCanMatchGuard: CanMatchFn = async () => {
 
   // Só redireciona para login se explicitamente UNAUTHENTICATED
   if (authState === 'UNAUTHENTICATED') {
-    console.log('[AuthGuard] Usuário não autenticado, redirecionando para login');
     router.navigate(['/auth/login']);
   }
   return false;
@@ -72,18 +66,14 @@ export const noAuthCanMatchGuard: CanMatchFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  console.log('[NoAuthGuard] Aguardando AuthService estar completamente pronto...');
-
   // AGUARDAR até que o AuthService esteja 100% inicializado
   const isReady = await waitForAuthServiceReady(authService);
 
   if (!isReady) {
-    console.error('[NoAuthGuard] Timeout aguardando AuthService');
     return true; // Em caso de timeout, permitir acesso à tela de login
   }
 
   const authState = authService.authState();
-  console.log('[NoAuthGuard] AuthService pronto, estado:', authState);
 
   // Só permite acesso se explicitamente UNAUTHENTICATED
   if (authState === 'UNAUTHENTICATED') {
@@ -92,10 +82,8 @@ export const noAuthCanMatchGuard: CanMatchFn = async () => {
 
   // Se usuário está autenticado, redirecionar baseado no estado
   if (authState === 'NEEDS_ONBOARDING') {
-    console.log('[NoAuthGuard] Usuário precisa de onboarding, redirecionando');
     router.navigate(['/onboarding']);
   } else {
-    console.log('[NoAuthGuard] Usuário autenticado, redirecionando para jogos');
     router.navigate(['/jogos']);
   }
   return false;
@@ -108,19 +96,15 @@ export const onboardingCanMatchGuard: CanMatchFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  console.log('[OnboardingGuard] Aguardando AuthService estar completamente pronto...');
-
   // AGUARDAR até que o AuthService esteja 100% inicializado
   const isReady = await waitForAuthServiceReady(authService);
 
   if (!isReady) {
-    console.error('[OnboardingGuard] Timeout aguardando AuthService - redirecionando para login');
     router.navigate(['/auth/login']);
     return false;
   }
 
   const authState = authService.authState();
-  console.log('[OnboardingGuard] AuthService pronto, estado:', authState);
 
   // Só permite acesso se usuário precisa de onboarding
   if (authState === 'NEEDS_ONBOARDING') {
@@ -129,13 +113,10 @@ export const onboardingCanMatchGuard: CanMatchFn = async () => {
 
   // Se usuário está completamente autenticado, redirecionar para jogos
   if (authState === 'AUTHENTICATED') {
-    console.log('[OnboardingGuard] Usuário já completou onboarding, redirecionando para jogos');
     router.navigate(['/jogos']);
     return false;
   }
 
-  // Se não está autenticado, redirecionar para login
-  console.log('[OnboardingGuard] Usuário não autenticado, redirecionando para login');
   router.navigate(['/auth/login']);
   return false;
 };

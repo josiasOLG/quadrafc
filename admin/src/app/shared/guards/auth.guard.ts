@@ -14,8 +14,6 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> | Promise<boolean> | boolean {
-    console.log('AuthGuard: Verificando autenticação para:', state.url);
-
     // Evitar loop infinito verificando se já estamos na página de login
     if (state.url === '/login') {
       return true;
@@ -26,7 +24,6 @@ export class AuthGuard implements CanActivate {
 
     // Se não há token, redirecionar para login
     if (!token) {
-      console.log('AuthGuard: Nenhum token encontrado, redirecionando para login');
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: state.url },
         replaceUrl: true,
@@ -36,23 +33,19 @@ export class AuthGuard implements CanActivate {
 
     // Se há token mas não está no serviço, recarregar dados
     if (token && !this.authService.token) {
-      console.log('AuthGuard: Token encontrado no localStorage, recarregando dados');
       this.authService.reloadAuthData();
     }
 
     // Verificar se o token é válido
     if (token && JwtHelper.isTokenExpired(token)) {
-      console.log('AuthGuard: Token expirado ou inválido, redirecionando para login');
       this.authService.logout();
       return false;
     }
 
     if (this.authService.isAuthenticated) {
-      console.log('AuthGuard: Usuário autenticado, permitindo acesso');
       return true;
     }
 
-    console.log('AuthGuard: Usuário não autenticado, redirecionando para login');
     // Usar replace para evitar loop de navegação
     this.router.navigate(['/login'], {
       queryParams: { returnUrl: state.url },
@@ -72,8 +65,6 @@ export class AdminGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> | Promise<boolean> | boolean {
-    console.log('AdminGuard: Verificando permissões de admin para:', state.url);
-
     // Evitar loop infinito verificando se já estamos na página de login
     if (state.url === '/login') {
       return true;
@@ -84,7 +75,6 @@ export class AdminGuard implements CanActivate {
 
     // Se não há token, redirecionar para login
     if (!token) {
-      console.log('AdminGuard: Nenhum token encontrado, redirecionando para login');
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: state.url },
         replaceUrl: true,
@@ -94,23 +84,19 @@ export class AdminGuard implements CanActivate {
 
     // Verificar se o token é válido
     if (token && JwtHelper.isTokenExpired(token)) {
-      console.log('AdminGuard: Token expirado ou inválido, redirecionando para login');
       this.authService.logout();
       return false;
     }
 
     // Se há token mas não está no serviço, recarregar dados
     if (token && !this.authService.token) {
-      console.log('AdminGuard: Token encontrado no localStorage, recarregando dados');
       this.authService.reloadAuthData();
     }
 
     if (this.authService.isAuthenticated && this.authService.isAdmin) {
-      console.log('AdminGuard: Usuário é admin, permitindo acesso');
       return true;
     }
 
-    console.log('AdminGuard: Usuário não é admin, redirecionando para dashboard ou login');
     // Se está autenticado mas não é admin, vai para dashboard. Senão, vai para login
     if (this.authService.isAuthenticated) {
       this.router.navigate(['/dashboard'], { replaceUrl: true });

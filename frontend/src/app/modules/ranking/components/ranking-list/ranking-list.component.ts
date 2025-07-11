@@ -72,19 +72,14 @@ export class RankingListComponent implements OnInit {
       const userCookie = this.getCookie(this.USER_COOKIE_KEY);
       if (userCookie) {
         const userData = JSON.parse(decodeURIComponent(userCookie));
-        console.log('📄 Dados do usuário carregados do cookie:', userData);
         this.user = userData;
 
         if (!this.rankingBairros || this.rankingBairros.length === 0) {
-          console.log('🔄 Carregando rankings com dados do cookie...');
           this.loadRankings();
         }
       } else {
-        console.warn('⚠️ Cookie de usuário não encontrado');
       }
-    } catch (error) {
-      console.error('❌ Erro ao carregar dados do cookie:', error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -100,7 +95,6 @@ export class RankingListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('🎯 Inicializando ranking-list component...');
     this.loadUserFromCookie();
     this.loadUser();
 
@@ -122,7 +116,6 @@ export class RankingListComponent implements OnInit {
         this.loadRankings();
       }
     } else {
-      console.warn('⚠️ Usuário não logado');
     }
   }
 
@@ -130,8 +123,6 @@ export class RankingListComponent implements OnInit {
    * Método principal para carregar os rankings
    */
   private loadRankings(): void {
-    console.log('🎯 Iniciando carregamento dos rankings...');
-
     if (!this.user?.cidade || !this.user?.estado) {
       console.warn('⚠️ Dados de localização do usuário não disponíveis');
       this.toastService.warn('Configure sua localização para ver o ranking');
@@ -153,15 +144,9 @@ export class RankingListComponent implements OnInit {
       return;
     }
 
-    console.log(
-      `🏘️ Carregando ranking de bairros para ${this.user.cidade} - ${this.user.estado}...`
-    );
-
     this.rankingService.getRankingBairrosCidade(this.user.cidade, this.user.estado).subscribe({
       next: (response: any) => {
         try {
-          console.log('🏘️ Resposta do ranking de bairros:', response);
-
           if (response?.data) {
             this.rankingBairros = response.data.map((item: any, index: number) => ({
               posicao: index + 1,
@@ -174,14 +159,10 @@ export class RankingListComponent implements OnInit {
               usuarios_ativos: item.usuarios_ativos || item.totalUsuarios || item.usuarios || 0,
               media_pontuacao: item.media_pontuacao || item.pontuacaoMedia || item.mediaPoints || 0,
             }));
-
-            console.log(`🏆 Ranking de bairros carregado: ${this.rankingBairros.length} bairros`);
           } else {
-            console.warn('⚠️ Resposta inválida do ranking de bairros:', response);
             this.rankingBairros = [];
           }
         } catch (error) {
-          console.error('❌ Erro ao processar dados de bairros:', error);
           this.rankingBairros = [];
           this.toastService.error('Erro ao processar dados do ranking de bairros');
         } finally {
@@ -189,7 +170,6 @@ export class RankingListComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('❌ Erro ao carregar ranking de bairros:', error);
         this.isLoading = false;
         this.rankingBairros = [];
         this.toastService.error('Erro ao carregar ranking de bairros');
