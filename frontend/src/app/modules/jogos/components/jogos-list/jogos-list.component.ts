@@ -17,12 +17,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
-import { AppModalComponent } from '../../../../shared/components/app-modal/app-modal.component';
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { UserMiniHeaderComponent } from '../../../../shared/components/user-mini-header/user-mini-header.component';
-
-import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { Palpite } from '../../../../shared/schemas/palpite.schema';
 import { User } from '../../../../shared/schemas/user.schema';
 import { PalpitesService } from '../../../../shared/services/palpites.service';
@@ -93,11 +88,7 @@ interface CampeonatoOrganizado {
     TooltipModule,
     InputTextModule,
     TabViewModule,
-    AppModalComponent,
-    AppButtonComponent,
-    PageHeaderComponent,
     UserMiniHeaderComponent,
-    CurrencyFormatPipe,
   ],
   templateUrl: './jogos-list.component.html',
   styleUrls: ['./jogos-list.component.scss'],
@@ -161,7 +152,7 @@ export class JogosListComponent implements OnInit {
         }
         this.isLoading = false;
       },
-      error: (error: any) => {
+      error: () => {
         // Fallback para o método original
         this.jogosService.getJogosByData(new Date()).subscribe({
           next: (response: any) => {
@@ -171,7 +162,7 @@ export class JogosListComponent implements OnInit {
             this.organizarJogosEmCampeonatos(this.jogos);
             this.isLoading = false;
           },
-          error: (fallbackError: any) => {
+          error: () => {
             this.toastService.show({ detail: 'Erro ao carregar jogos do dia', severity: 'error' });
             this.campeonatos = [];
             this.isLoading = false;
@@ -244,7 +235,7 @@ export class JogosListComponent implements OnInit {
 
       this.closePalpiteDialog();
       this.loadJogos(); // Recarregar para atualizar status dos palpites
-    } catch (error) {
+    } catch {
       this.toastService.show({
         detail: 'Erro ao enviar palpite',
         severity: 'error',
@@ -307,36 +298,75 @@ export class JogosListComponent implements OnInit {
   getPalpiteStatus(jogo: JogoComPalpite): {
     label: string;
     severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
+    icon?: string;
+    showPoints?: boolean;
+    points?: number;
+    exactScore?: boolean;
   } | null {
-    if (!jogo.palpites) {
+    if (!jogo.palpites || jogo.palpites.length === 0) {
       return null;
     }
 
-    if ((jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado) {
-      const palpite = jogo.palpites.at(0) as Palpite;
-      const resultado = jogo.resultado;
+    const palpite = jogo.palpites[0] as any;
 
-      const palpiteValue = palpite.palpite as any;
-      const acertouPlacar =
-        palpiteValue.gols_casa === (resultado.gols_casa || 0) &&
-        palpiteValue.gols_visitante === (resultado.gols_visitante || 0);
-
-      if (acertouPlacar) {
-        return { label: 'Acertou o placar!', severity: 'success' };
-      }
-
-      const acertouVencedor =
-        this.getVencedor(palpiteValue.gols_casa, palpiteValue.gols_visitante) ===
-        this.getVencedor(resultado.gols_casa || 0, resultado.gols_visitante || 0);
-
-      if (acertouVencedor) {
-        return { label: 'Acertou o vencedor', severity: 'info' };
-      }
-
-      return { label: 'Errou', severity: 'danger' };
+    // Se o jogo ainda não terminou
+    if (jogo.status !== 'finalizado' && jogo.status !== 'encerrado') {
+      return {
+        label: 'Palpite enviado',
+        severity: 'info',
+        icon: 'pi pi-clock',
+      };
     }
 
-    return { label: 'Palpite enviado', severity: 'success' };
+    // Se o jogo terminou mas não tem resultado
+    if (!jogo.resultado) {
+      return {
+        label: 'Aguardando resultado',
+        severity: 'warning',
+        icon: 'pi pi-hourglass',
+      };
+    }
+
+    const resultado = jogo.resultado;
+    const palpiteValue = palpite.palpite;
+
+    // Normaliza os valores do resultado (trata undefined como 0)
+    const resultadoTimeA = resultado.timeA ?? 0;
+    const resultadoTimeB = resultado.timeB ?? 0;
+
+    // Normaliza os valores do palpite (trata undefined como 0)
+    const palpiteTimeA = palpiteValue.timeA ?? 0;
+    const palpiteTimeB = palpiteValue.timeB ?? 0;
+
+    console.log('Comparação de palpite:', {
+      palpite: { timeA: palpiteTimeA, timeB: palpiteTimeB },
+      resultado: { timeA: resultadoTimeA, timeB: resultadoTimeB },
+    });
+
+    // Verifica se acertou o placar exato (números iguais)
+    const acertouPlacar = palpiteTimeA === resultadoTimeA && palpiteTimeB === resultadoTimeB;
+
+    if (acertouPlacar) {
+      return {
+        label: 'Acertou o placar exato!',
+        severity: 'success',
+        icon: 'pi pi-trophy',
+        showPoints: true,
+        points: palpite.pontos || 0,
+        exactScore: true,
+      };
+    }
+
+    // Se não acertou o placar exato, sempre mostra como erro
+    // (mesmo que tenha acertado o vencedor)
+    return {
+      label: '',
+      severity: 'danger',
+      icon: '',
+      showPoints: true,
+      points: palpite.pontos || 0,
+      exactScore: false,
+    };
   }
 
   private getVencedor(golsA: number, golsB: number): 'A' | 'B' | 'empate' {

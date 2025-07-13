@@ -108,25 +108,33 @@
                   <div class="game-card__palpite">
                     <div *ngIf="jogo.palpites && jogo.palpites.length > 0" class="palpite-info">
                       <div class="palpite-info__header">
-                        <i class="pi pi-check-circle" *ngIf="getPalpiteStatus(jogo)?.severity === 'success'"></i>
-                        <span>{{ getPalpiteStatus(jogo)?.label || 'Seu palpite' }}</span>
+                        <div class="palpite-status" [ngClass]="'status-' + getPalpiteStatus(jogo)?.severity">
+                          <i [class]="getPalpiteStatus(jogo)?.icon"></i>
+                          <span>{{ getPalpiteStatus(jogo)?.label || '' }}</span>
+                        </div>
                       </div>
-                      <div class="palpite-info__score">
-                        {{
-                          (jogo.palpites &&
-                            jogo.palpites[0] &&
-                            jogo.palpites[0].palpite &&
-                            jogo.palpites[0].palpite.timeA) ||
-                            0
-                        }}
-                        x
-                        {{
-                          (jogo.palpites &&
-                            jogo.palpites[0] &&
-                            jogo.palpites[0].palpite &&
-                            jogo.palpites[0].palpite.timeB) ||
-                            0
-                        }}
+
+                      <div class="palpite-info__content">
+                        <div class="palpite-info__score">
+                          <span class="score-label">Seu palpite:</span>
+                          <span class="score-value">
+                            {{
+                              (jogo.palpites &&
+                                jogo.palpites[0] &&
+                                jogo.palpites[0].palpite &&
+                                jogo.palpites[0].palpite.timeA) ||
+                                0
+                            }}
+                            x
+                            {{
+                              (jogo.palpites &&
+                                jogo.palpites[0] &&
+                                jogo.palpites[0].palpite &&
+                                jogo.palpites[0].palpite.timeB) ||
+                                0
+                            }}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
