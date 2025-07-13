@@ -40,62 +40,59 @@ export class SincronizacaoService {
     timeZone: 'America/Sao_Paulo',
   })
   async verificarJogosFinalizados() {
-    this.logger.log('Iniciando verificação de jogos finalizados...');
-
     try {
-      // Buscar jogos que ainda estão abertos mas já passaram da data de realização
       const jogosParaVerificar = await this.jogosService.findJogosParaProcessar();
-
       if (jogosParaVerificar.length === 0) {
         this.logger.log('Nenhum jogo pendente para verificar.');
         return;
       }
+      const ontem = new Date();
+      ontem.setDate(ontem.getDate() - 2);
+      const ontemStr = ontem.toISOString().split('T')[0];
 
-      this.logger.log(`Encontrados ${jogosParaVerificar.length} jogos para verificar status.`);
-
+      const hoje = new Date();
+      hoje.setDate(hoje.getDate() + 1);
+      const hojeStr = hoje.toISOString().split('T')[0];
+      const jogosFinalizadosAPI = await this.footballApiService.getJogosFinalizadosPorPeriodo(
+        ontemStr,
+        hojeStr
+      );
+      const jogosFinalizadosMap = new Map();
+      if (jogosFinalizadosAPI && jogosFinalizadosAPI.matches) {
+        for (const match of jogosFinalizadosAPI.matches) {
+          jogosFinalizadosMap.set(match.id, match);
+        }
+      }
       for (const jogo of jogosParaVerificar) {
         try {
-          // Buscar informações atualizadas do jogo na API externa
-          const jogoAtualizado = await this.footballApiService.getJogoDetalhes(jogo.codigoAPI);
-
-          // Verificar se o jogo já terminou
-          if (jogoAtualizado.match.status === 'FINISHED') {
-            this.logger.log(
-              `Jogo #${jogo.codigoAPI} (${jogo.timeA.nome} x ${jogo.timeB.nome}) finalizado. Processando resultado...`
-            );
-
-            // Extrair placar final
-            const placarFinal = {
-              timeA: jogoAtualizado.match.score.fullTime.homeTeam || 0,
-              timeB: jogoAtualizado.match.score.fullTime.awayTeam || 0,
-            };
-
-            // Atualizar status e resultado do jogo no banco de dados
-            await this.jogosService.updateResultado(jogo._id.toString(), placarFinal);
-
-            // Processar palpites e atribuir pontos
-            await this.processarPalpites(jogo._id.toString(), placarFinal);
-          } else {
-            this.logger.log(
-              `Jogo #${jogo.codigoAPI} ainda não finalizado. Status atual: ${jogoAtualizado.match.status}`
-            );
-          }
+          const jogoFinalizado = jogosFinalizadosMap.get(jogo.codigoAPI);
+          const placarFinal = {
+            timeA: jogoFinalizado.score.fullTime.home || 0,
+            timeB: jogoFinalizado.score.fullTime.away || 0,
+          };
+          await this.jogosService.updateResultado(jogo._id.toString(), placarFinal);
+          await this.processarPalpites(jogo._id.toString(), placarFinal);
         } catch (error) {
-          this.logger.error(`Erro ao processar jogo ${jogo._id}:`, error.message);
+          this.logger.debug(`Detalhes do jogo que causou erro:`, {
+            jogoId: jogo._id,
+            codigoAPI: jogo.codigoAPI,
+            timeA: jogo.timeA?.nome,
+            timeB: jogo.timeB?.nome,
+          });
         }
       }
 
-      this.logger.log('Verificação de jogos finalizados concluída.');
+      // this.logger.log('Verificação de jogos finalizados concluída.');
     } catch (error) {
       this.logger.error('Erro na verificação de jogos finalizados:', error.message);
     }
   }
 
   // Executa uma vez por dia para verificar jogos dos últimos 7 dias (usando menos requisições)
-  @Cron('0 2 * * *', {
-    name: 'verificar-jogos-ultimos-dias',
-    timeZone: 'America/Sao_Paulo',
-  })
+  // @Cron('0 2 * * *', {
+  //   name: 'verificar-jogos-ultimos-dias',
+  //   timeZone: 'America/Sao_Paulo',
+  // })
   async verificarJogosUltimosDias() {
     this.logger.log('Iniciando verificação de jogos dos últimos 7 dias...');
 
@@ -200,11 +197,27 @@ export class SincronizacaoService {
             // Buscar informações atualizadas do jogo na API externa
             const jogoAtualizado = await this.footballApiService.getJogoDetalhes(jogo.codigoAPI);
 
+            // Verificar se a resposta da API é válida
+            if (!jogoAtualizado || !jogoAtualizado.match) {
+              this.logger.warn(
+                `Dados inválidos retornados da API para o jogo #${jogo.codigoAPI} da data ${dataStr}. Pulando...`
+              );
+              continue;
+            }
+
             // Verificar se o jogo já terminou
             if (jogoAtualizado.match.status === 'FINISHED') {
               this.logger.log(
                 `Jogo #${jogo.codigoAPI} (${jogo.timeA.nome} x ${jogo.timeB.nome}) finalizado. Processando resultado...`
               );
+
+              // Verificar se o placar está disponível
+              if (!jogoAtualizado.match.score || !jogoAtualizado.match.score.fullTime) {
+                this.logger.warn(
+                  `Placar não disponível para o jogo #${jogo.codigoAPI} da data ${dataStr}. Pulando processamento...`
+                );
+                continue;
+              }
 
               // Extrair placar final
               const placarFinal = {
@@ -220,7 +233,7 @@ export class SincronizacaoService {
             }
           } catch (error) {
             this.logger.error(
-              `Erro ao processar jogo ${jogo._id} da data ${dataStr}:`,
+              `Erro ao processar jogo ${jogo._id} da data ${dataStr} (código API: ${jogo.codigoAPI}):`,
               error.message
             );
           }
@@ -235,6 +248,39 @@ export class SincronizacaoService {
     } catch (error) {
       this.logger.error('Erro na verificação manual de jogos finalizados:', error.message);
       throw error;
+    }
+  }
+
+  // Método para testar a configuração da API
+  async testarConfiguracaoAPI() {
+    this.logger.log('=== TESTE DE CONFIGURAÇÃO DA API ===');
+
+    try {
+      // Teste 1: Verificar se a API está acessível
+      this.logger.log('1. Testando acesso básico à API...');
+
+      // Teste 2: Buscar jogos finalizados com datas específicas
+      this.logger.log('2. Testando busca de jogos finalizados...');
+
+      const resultado = await this.footballApiService.getJogosFinalizadosPorPeriodo(
+        '2025-07-10',
+        '2025-07-12'
+      );
+
+      this.logger.log(`✅ Teste concluído. Resultado: ${JSON.stringify(resultado, null, 2)}`);
+
+      return {
+        success: true,
+        resultado: resultado,
+        message: 'Teste de configuração da API executado com sucesso',
+      };
+    } catch (error) {
+      this.logger.error('❌ Erro no teste de configuração:', error.message);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Falha no teste de configuração da API',
+      };
     }
   }
 

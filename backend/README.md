@@ -2,6 +2,8 @@
 
 Backend da aplicação QuadraFC - Sistema de palpites de futebol brasileiro.
 
+api token: 7a9ae731057949969045f9e64afb9676
+
 ## 🚀 Tecnologias
 
 - **NestJS** - Framework Node.js
@@ -70,7 +72,8 @@ Após iniciar o servidor, acesse: `http://localhost:3000/api/docs`
 
 ## 🔐 Autenticação
 
-O sistema utiliza **cookies httpOnly** para autenticação, proporcionando maior segurança contra ataques XSS.
+O sistema utiliza **cookies httpOnly** para autenticação, proporcionando maior
+segurança contra ataques XSS.
 
 ### Endpoints principais:
 

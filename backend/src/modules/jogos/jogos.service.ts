@@ -77,7 +77,7 @@ export class JogosService {
   async findJogosParaProcessar(): Promise<JogoDocument[]> {
     return this.jogoModel
       .find({
-        status: 'aberto',
+        status: { $in: ['aberto', 'encerrado'] },
         data: { $lt: new Date() },
       })
       .exec();

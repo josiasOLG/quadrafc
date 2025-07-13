@@ -981,4 +981,43 @@ export class FootballApiService {
       };
     }
   }
+
+  // Novo método para buscar jogos finalizados por período
+  async getJogosFinalizadosPorPeriodo(dataInicial: string, dataFinal: string): Promise<any> {
+    try {
+      const params = {
+        dateFrom: dataInicial,
+        dateTo: dataFinal,
+        status: 'FINISHED',
+      };
+
+      const url = `${this.apiUrl}/matches`;
+      const urlComParams = new URL(url);
+      Object.keys(params).forEach((key) => urlComParams.searchParams.append(key, params[key]));
+      const response = await axios.get(url, {
+        headers: {
+          'X-Auth-Token': this.apiKey,
+        },
+        params: params,
+      });
+
+      return response.data;
+    } catch (error) {
+      this.logger.error('Erro ao buscar jogos finalizados por período:', error.message);
+      if (error.response) {
+        this.logger.error('Status da resposta de erro:', error.response.status);
+        this.logger.error('Headers da resposta de erro:', error.response.headers);
+        this.logger.error('Dados da resposta de erro:', error.response.data);
+      }
+      if (error.request) {
+        this.logger.error('Dados da requisição que falhou:', {
+          url: error.request.url || error.config?.url,
+          method: error.request.method || error.config?.method,
+          headers: error.config?.headers,
+          params: error.config?.params,
+        });
+      }
+      throw error;
+    }
+  }
 }

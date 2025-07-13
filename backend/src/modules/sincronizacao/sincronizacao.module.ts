@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ScheduleModule } from '@nestjs/schedule';
 import { Palpite, PalpiteSchema } from '../../shared/schemas/palpite.schema';
 import { User, UserSchema } from '../../shared/schemas/user.schema';
 import { FootballApiModule } from '../football-api/football-api.module';
@@ -10,7 +9,6 @@ import { SincronizacaoService } from './sincronizacao.service';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     JogosModule,
     FootballApiModule,
     MongooseModule.forFeature([
