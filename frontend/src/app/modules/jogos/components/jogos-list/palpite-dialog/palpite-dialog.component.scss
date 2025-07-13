@@ -1,0 +1,126 @@
+// ===================================
+// PALPITE DIALOG - MINIMAL SCSS
+// ===================================
+:host {
+  ::ng-deep {
+    .palpite-dialog {
+      .p-dialog {
+        border-radius: 16px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        border: none !important;
+        overflow: hidden !important;
+        animation: scaleIn 0.3s ease-out forwards !important;
+      }
+
+      .p-dialog-content {
+        padding: 0 !important;
+        border-radius: 16px !important;
+      }
+
+      .p-dialog-mask {
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: blur(8px) !important;
+      }
+
+      .p-dialog-header-close {
+        color: #6b7280 !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          color: #374151 !important;
+        }
+      }
+    }
+    p-inputnumber {
+      input {
+        width: 30dvw;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+// Force input width
+
+// ===================================
+// CUSTOM STYLES
+// ===================================
+
+.header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  i {
+    font-size: 20px;
+    color: white;
+  }
+}
+
+.match-preview {
+  background: rgba(30, 58, 138, 0.05);
+  border: 1px solid rgba(30, 58, 138, 0.1);
+}
+
+.team-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.team-name {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-input-container {
+  width: 80px;
+}
+
+.score-input-container label {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.submit-button::ng-deep .p-button {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  &:disabled {
+    opacity: 0.6 !important;
+    transform: none !important;
+  }
+}
+
+// ===================================
+// ANIMATIONS
+// ===================================
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

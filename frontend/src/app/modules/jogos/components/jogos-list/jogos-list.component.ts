@@ -24,6 +24,7 @@ import { PalpitesService } from '../../../../shared/services/palpites.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { JogosService } from '../../services/jogos.service';
+import { PalpiteDialogComponent } from './palpite-dialog/palpite-dialog.component';
 import { WelcomeDialogComponent } from './welcome-dialog/welcome-dialog.component';
 import { WelcomeService } from './welcome-dialog/welcome.service';
 
@@ -92,6 +93,7 @@ interface CampeonatoOrganizado {
     TabViewModule,
     UserMiniHeaderComponent,
     WelcomeDialogComponent,
+    PalpiteDialogComponent,
   ],
   templateUrl: './jogos-list.component.html',
   styleUrls: ['./jogos-list.component.scss'],

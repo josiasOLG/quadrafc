@@ -116,7 +116,7 @@
 
                       <div class="palpite-info__content">
                         <div class="palpite-info__score">
-                          <span class="score-label">Palpite:</span>
+                          <span class="score-label"></span>
                           <span class="score-value">
                             {{
                               (jogo.palpites &&
@@ -158,3 +158,12 @@
 </div>
 <!-- Welcome Dialog -->
 <app-welcome-dialog [(visible)]="showWelcomeDialog" (dialogClose)="onWelcomeDialogClose()"></app-welcome-dialog>
+
+<!-- Palpite Dialog -->
+<app-palpite-dialog
+  [(visible)]="showPalpiteDialog"
+  [jogo]="selectedJogo"
+  [palpiteForm]="palpiteForm"
+  [isSubmitting]="isSubmittingPalpite"
+  (submitPalpite)="submitPalpite()"
+  (dialogClose)="closePalpiteDialog()"></app-palpite-dialog>

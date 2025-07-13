@@ -181,6 +181,7 @@
   background: var(--qfc-bg-secondary);
   position: relative;
   z-index: 1;
+  padding-bottom: 150px;
 
   ::ng-deep .welcome-button {
     width: 100% !important;
@@ -254,9 +255,5 @@
         align-self: center;
       }
     }
-  }
-
-  .welcome-footer {
-    padding: var(--qfc-spacing-md);
   }
 }

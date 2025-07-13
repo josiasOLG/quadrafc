@@ -1,0 +1,117 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="palpite-dialog"
+  position="center"
+  [showHeader]="false"
+  (onHide)="onDialogHide()"
+  [breakpoints]="{ '960px': '100vw' }"
+  [style]="{ width: '100%', 'max-width': '400px' }">
+  <div class="p-4" *ngIf="jogo">
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <div class="header-icon mx-auto mb-3">
+        <i class="pi pi-futbol-o"></i>
+      </div>
+      <h2 class="text-xl font-bold text-color m-0 mb-1">Fazer Palpite</h2>
+      <p class="text-sm text-color-secondary m-0">Qual será o placar do jogo?</p>
+    </div>
+
+    <!-- Match Info -->
+    <div class="flex align-items-center justify-content-between p-3 mb-4 border-round-lg match-preview">
+      <div class="flex flex-column align-items-center gap-1 flex-1">
+        <img
+          [src]="jogo.timeA.escudo"
+          [alt]="jogo.timeA.nome"
+          class="team-logo border-round"
+          (error)="onImageError($event)" />
+        <span class="team-name text-xs font-medium text-center">{{ jogo.timeA.nome }}</span>
+      </div>
+
+      <div class="flex flex-column align-items-center gap-1 px-2">
+        <span class="text-sm font-bold text-primary">VS</span>
+        <div class="text-xs text-color-secondary text-center">{{ formatDataHora(jogo.data) }}</div>
+      </div>
+
+      <div class="flex flex-column align-items-center gap-1 flex-1">
+        <img
+          [src]="jogo.timeB.escudo"
+          [alt]="jogo.timeB.nome"
+          class="team-logo border-round"
+          (error)="onImageError($event)" />
+        <span class="team-name text-xs font-medium text-center">{{ jogo.timeB.nome }}</span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="palpiteForm" (ngSubmit)="onSubmit()">
+      <div class="flex align-items-end justify-content-center gap-3 mb-4">
+        <div class="flex flex-column align-items-center gap-1 score-input-container">
+          <label class="text-sm font-medium text-color-secondary text-center" for="golsTimeA">
+            {{ jogo.timeA.nome }}
+          </label>
+          <p-inputNumber
+            formControlName="golsTimeA"
+            inputId="golsTimeA"
+            [min]="0"
+            [max]="20"
+            [showButtons]="false"
+            styleClass="score-input"></p-inputNumber>
+        </div>
+
+        <div class="flex align-items-center justify-content-center px-3" style="height: 48px">
+          <span class="text-xl font-bold text-primary">X</span>
+        </div>
+
+        <div class="flex flex-column align-items-center gap-1 score-input-container">
+          <label class="text-sm font-medium text-color-secondary text-center" for="golsTimeB">
+            {{ jogo.timeB.nome }}
+          </label>
+          <p-inputNumber
+            formControlName="golsTimeB"
+            inputId="golsTimeB"
+            [min]="0"
+            [max]="20"
+            [showButtons]="false"
+            class="score-input"></p-inputNumber>
+        </div>
+      </div>
+
+      <!-- Error Messages -->
+      <div
+        *ngIf="palpiteForm.get('golsTimeA')?.invalid && palpiteForm.get('golsTimeA')?.touched"
+        class="flex align-items-center gap-2 text-red-500 text-sm mb-3">
+        <i class="pi pi-exclamation-triangle text-xs"></i>
+        Gols do {{ jogo.timeA.nome }} são obrigatórios
+      </div>
+
+      <div
+        *ngIf="palpiteForm.get('golsTimeB')?.invalid && palpiteForm.get('golsTimeB')?.touched"
+        class="flex align-items-center gap-2 text-red-500 text-sm mb-3">
+        <i class="pi pi-exclamation-triangle text-xs"></i>
+        Gols do {{ jogo.timeB.nome }} são obrigatórios
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3 mt-4">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          styleClass="flex-1"
+          [outlined]="true"
+          (onClick)="closeDialog()"></p-button>
+
+        <p-button
+          label="Enviar Palpite"
+          icon="pi pi-check"
+          styleClass="flex-2 submit-button"
+          type="submit"
+          [loading]="isSubmitting"
+          [disabled]="palpiteForm.invalid || isSubmitting"></p-button>
+      </div>
+    </form>
+  </div>
+</p-dialog>
