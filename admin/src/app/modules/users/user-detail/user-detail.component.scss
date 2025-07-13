@@ -43,6 +43,10 @@
       font-weight: bold;
       color: #1e40af;
       margin-bottom: 0.5rem;
+
+      &.text-sm {
+        font-size: 0.875rem;
+      }
     }
 
     .stat-label {
@@ -52,8 +56,11 @@
   }
 
   .palpite-placar {
-    font-weight: 600;
-    color: #1e40af;
+    font-weight: bold;
+    font-family: monospace;
+    background-color: var(--surface-100);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius);
   }
 
   .ranking-card {
@@ -115,8 +122,8 @@
         padding-left: 1.5rem;
 
         li {
-          color: #166534;
-          margin-bottom: 0.25rem;
+          margin-bottom: 0.5rem;
+          color: var(--text-color);
         }
       }
     }
@@ -125,9 +132,8 @@
   .premium-inactive {
     text-align: center;
     padding: 2rem;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
+    background-color: var(--surface-ground);
+    border-radius: var(--border-radius);
   }
 }
 

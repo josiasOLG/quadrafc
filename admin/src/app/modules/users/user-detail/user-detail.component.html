@@ -1,11 +1,12 @@
 <div class="user-detail" *ngIf="user">
-  <!-- Header com informações básicas -->
+  <!-- Header com informações básicas e ações administrativas -->
   <div class="user-header mb-4">
     <p-card>
       <div class="flex align-items-center justify-content-between">
         <div class="flex align-items-center gap-3">
           <p-avatar
-            [label]="user.nome?.charAt(0).toUpperCase()"
+            [label]="user.nome.charAt(0).toUpperCase() || 'U'"
+            [image]="user.avatarUrl"
             size="large"
             shape="circle"
             styleClass="bg-primary"></p-avatar>
@@ -15,8 +16,13 @@
             <div class="flex align-items-center gap-2 mt-2">
               <p-tag [value]="user.ativo ? 'Ativo' : 'Inativo'" [severity]="getStatusSeverity(user.ativo)"></p-tag>
               <p-tag
-                [value]="user.isPremium ? 'Premium' : 'Gratuito'"
-                [severity]="getPremiumStatusSeverity(user.isPremium)"></p-tag>
+                [value]="user.assinaturaPremium ? 'Premium' : 'Gratuito'"
+                [severity]="getPremiumStatusSeverity(user.assinaturaPremium || false)"></p-tag>
+              <p-tag
+                [value]="user.banned ? 'Banido' : 'Liberado'"
+                [severity]="getBanStatusSeverity(user.banned || false)"
+                *ngIf="user.banned !== undefined"></p-tag>
+              <p-tag value="Admin" severity="warning" *ngIf="user.isAdmin"></p-tag>
             </div>
           </div>
         </div>
@@ -32,10 +38,10 @@
           <button
             pButton
             type="button"
-            [label]="user.ativo ? 'Desativar' : 'Ativar'"
-            [icon]="user.ativo ? 'pi pi-times' : 'pi pi-check'"
-            [class]="user.ativo ? 'p-button-danger' : 'p-button-success'"
-            (click)="toggleUserStatus()"></button>
+            label="Ações"
+            icon="pi pi-cog"
+            class="p-button-outlined"
+            [disabled]="true"></button>
           <button
             pButton
             type="button"
@@ -45,6 +51,60 @@
             (click)="goBack()"></button>
         </div>
       </div>
+
+      <!-- Toolbar com ações administrativas -->
+      <p-toolbar styleClass="mt-3">
+        <ng-template pTemplate="left">
+          <div class="flex gap-2">
+            <button
+              pButton
+              type="button"
+              label="Reset Senha"
+              icon="pi pi-key"
+              class="p-button-outlined p-button-sm"
+              (click)="showPasswordDialog = true"></button>
+            <button
+              pButton
+              type="button"
+              label="Ajustar Moedas"
+              icon="pi pi-dollar"
+              class="p-button-outlined p-button-sm"
+              (click)="showMoedasDialog = true"></button>
+            <button
+              pButton
+              type="button"
+              label="Ajustar Pontos"
+              icon="pi pi-chart-line"
+              class="p-button-outlined p-button-sm"
+              (click)="showPontosDialog = true"></button>
+            <button
+              pButton
+              type="button"
+              label="Conceder Medalha"
+              icon="pi pi-star"
+              class="p-button-outlined p-button-sm"
+              (click)="showMedalDialog = true"></button>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="right">
+          <div class="flex gap-2">
+            <button
+              pButton
+              type="button"
+              [label]="user.banned ? 'Desbanir' : 'Banir'"
+              [icon]="user.banned ? 'pi pi-check' : 'pi pi-ban'"
+              [class]="user.banned ? 'p-button-success p-button-sm' : 'p-button-danger p-button-sm'"
+              (click)="user.banned ? toggleBan() : (showBanDialog = true)"></button>
+            <button
+              pButton
+              type="button"
+              label="Exportar Dados"
+              icon="pi pi-download"
+              class="p-button-outlined p-button-sm"
+              (click)="exportUserData()"></button>
+          </div>
+        </ng-template>
+      </p-toolbar>
     </p-card>
   </div>
 
@@ -104,27 +164,39 @@
             <div class="grid">
               <div class="col-6 md:col-3">
                 <div class="stat-item">
-                  <div class="stat-value">{{ user.totalPontos || 0 }}</div>
+                  <div class="stat-value">{{ user.totalPoints || user.totalPontos || 0 }}</div>
                   <div class="stat-label">Pontos Totais</div>
                 </div>
               </div>
               <div class="col-6 md:col-3">
                 <div class="stat-item">
-                  <div class="stat-value">{{ user.totalMoedas || 0 }}</div>
+                  <div class="stat-value">{{ user.moedas || user.totalMoedas || 0 }}</div>
                   <div class="stat-label">Moedas</div>
                 </div>
               </div>
               <div class="col-6 md:col-3">
                 <div class="stat-item">
-                  <div class="stat-value">{{ user.totalVitorias || 0 }}</div>
-                  <div class="stat-label">Vitórias</div>
+                  <div class="stat-value">{{ (user.medals || user.medalhas || []).length }}</div>
+                  <div class="stat-label">Medalhas</div>
                 </div>
               </div>
               <div class="col-6 md:col-3">
                 <div class="stat-item">
-                  <div class="stat-value">{{ user.totalDerrotas || 0 }}</div>
-                  <div class="stat-label">Derrotas</div>
+                  <div class="stat-value text-sm">{{ formatDate(user.createdAt || '') }}</div>
+                  <div class="stat-label">Membro desde</div>
                 </div>
+              </div>
+            </div>
+
+            <!-- Medalhas conquistadas -->
+            <div class="mt-4" *ngIf="(user.medals || user.medalhas || []).length > 0">
+              <h4>Medalhas Conquistadas</h4>
+              <div class="flex flex-wrap gap-2">
+                <p-chip
+                  *ngFor="let medal of user.medals || user.medalhas || []"
+                  [label]="medal"
+                  icon="pi pi-star"
+                  styleClass="p-chip-outlined"></p-chip>
               </div>
             </div>
           </p-card>
@@ -171,8 +243,10 @@
               </td>
               <td>
                 <p-tag
-                  [value]="palpite.acertou ? 'Acertou' : 'Errou'"
-                  [severity]="getPalpiteSeverity(palpite.acertou)"></p-tag>
+                  [value]="palpite.status || (palpite.acertou ? 'Acertou' : 'Errou')"
+                  [severity]="
+                    getPalpiteStatusSeverity(palpite.status || (palpite.acertou ? 'acertou' : 'errou'))
+                  "></p-tag>
               </td>
             </tr>
           </ng-template>
@@ -232,6 +306,7 @@
               <th>Tipo</th>
               <th>Descrição</th>
               <th>Valor</th>
+              <th>Saldo</th>
               <th>Data</th>
             </tr>
           </ng-template>
@@ -247,13 +322,16 @@
                   {{ transacao.valor > 0 ? '+' : '' }}{{ transacao.valor }}
                 </span>
               </td>
-              <td>{{ transacao.createdAt | date : 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="text-600">{{ transacao.saldoAtual || '-' }}</span>
+              </td>
+              <td>{{ formatDate(transacao.createdAt) }}</td>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="4" class="text-center p-4">Nenhuma transação encontrada</td>
+              <td colspan="5" class="text-center p-4">Nenhuma transação encontrada</td>
             </tr>
           </ng-template>
         </p-table>
@@ -263,7 +341,7 @@
     <!-- Aba: Assinatura Premium -->
     <p-tabPanel header="Premium" leftIcon="pi pi-star-fill">
       <p-card header="Assinatura Premium">
-        <div *ngIf="user.isPremium" class="premium-active">
+        <div *ngIf="user.assinaturaPremium" class="premium-active">
           <div class="flex align-items-center gap-2 mb-3">
             <i class="pi pi-check-circle text-green-600 text-xl"></i>
             <span class="text-lg font-semibold text-green-600">Assinatura Ativa</span>
@@ -272,14 +350,14 @@
           <div class="grid">
             <div class="col-12 md:col-6">
               <div class="field">
-                <label>Data de Início:</label>
-                <p>{{ user.premiumStartDate ? (user.premiumStartDate | date : 'dd/MM/yyyy') : 'Não informado' }}</p>
+                <label>Data de Vencimento:</label>
+                <p>{{ user.dataVencimentoPremium ? formatDate(user.dataVencimentoPremium) : 'Vitalício' }}</p>
               </div>
             </div>
             <div class="col-12 md:col-6">
               <div class="field">
-                <label>Data de Expiração:</label>
-                <p>{{ user.premiumEndDate ? (user.premiumEndDate | date : 'dd/MM/yyyy') : 'Não informado' }}</p>
+                <label>Status:</label>
+                <p-tag value="Ativa" severity="success"></p-tag>
               </div>
             </div>
           </div>
@@ -295,7 +373,7 @@
           </div>
         </div>
 
-        <div *ngIf="!user.isPremium" class="premium-inactive">
+        <div *ngIf="!user?.assinaturaPremium" class="premium-inactive">
           <div class="flex align-items-center gap-2 mb-3">
             <i class="pi pi-times-circle text-red-600 text-xl"></i>
             <span class="text-lg font-semibold text-red-600">Sem Assinatura Premium</span>
@@ -305,6 +383,90 @@
             Este usuário não possui assinatura premium ativa. Ele tem acesso apenas aos recursos básicos da plataforma.
           </p>
         </div>
+      </p-card>
+    </p-tabPanel>
+
+    <!-- Aba: Conquistas -->
+    <p-tabPanel header="Conquistas" leftIcon="pi pi-star">
+      <p-card header="Medalhas e Conquistas">
+        <p-table
+          [value]="conquistas"
+          [loading]="loadingConquistas"
+          styleClass="p-datatable-sm"
+          [paginator]="true"
+          [rows]="10">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Conquista</th>
+              <th>Descrição</th>
+              <th>Nível</th>
+              <th>Data</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-conquista>
+            <tr>
+              <td>
+                <div class="flex align-items-center gap-2">
+                  <i [class]="conquista.icone || 'pi pi-star'" class="text-yellow-500"></i>
+                  <span class="font-semibold">{{ conquista.nome }}</span>
+                </div>
+              </td>
+              <td>{{ conquista.descricao }}</td>
+              <td>
+                <p-tag [value]="'Nível ' + (conquista.nivel || 1)" severity="info" *ngIf="conquista.nivel"></p-tag>
+                <span *ngIf="!conquista.nivel">-</span>
+              </td>
+              <td>{{ formatDate(conquista.conquistadaEm) }}</td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4" class="text-center p-4">Nenhuma conquista encontrada</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabPanel>
+
+    <!-- Aba: Logs de Atividade -->
+    <p-tabPanel header="Atividade" leftIcon="pi pi-history">
+      <p-card header="Logs de Atividade">
+        <p-table
+          [value]="activityLogs"
+          [loading]="loadingActivity"
+          styleClass="p-datatable-sm"
+          [paginator]="true"
+          [rows]="10">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Ação</th>
+              <th>Detalhes</th>
+              <th>IP</th>
+              <th>Data</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-log>
+            <tr>
+              <td>
+                <span class="font-semibold">{{ log.acao }}</span>
+              </td>
+              <td>{{ log.detalhes }}</td>
+              <td>
+                <code class="text-xs">{{ log.ip || 'N/A' }}</code>
+              </td>
+              <td>{{ formatDate(log.createdAt) }}</td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4" class="text-center p-4">Nenhum log encontrado</td>
+            </tr>
+          </ng-template>
+        </p-table>
       </p-card>
     </p-tabPanel>
   </p-tabView>
@@ -327,4 +489,219 @@
   </div>
 </div>
 
+<!-- Dialogs Administrativos -->
+<!-- Dialog: Reset Senha -->
+<p-dialog
+  header="Resetar Senha"
+  [(visible)]="showPasswordDialog"
+  [modal]="true"
+  [closable]="true"
+  styleClass="p-fluid"
+  [style]="{ width: '400px' }">
+  <div class="field">
+    <label for="newPassword">Nova Senha</label>
+    <input
+      pInputText
+      id="newPassword"
+      type="password"
+      [(ngModel)]="newPassword"
+      placeholder="Digite a nova senha"
+      class="w-full" />
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="showPasswordDialog = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Resetar"
+      icon="pi pi-key"
+      class="p-button-primary"
+      (click)="resetPassword()"
+      [disabled]="!newPassword.trim()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Ajustar Moedas -->
+<p-dialog
+  header="Ajustar Moedas"
+  [(visible)]="showMoedasDialog"
+  [modal]="true"
+  [closable]="true"
+  styleClass="p-fluid"
+  [style]="{ width: '400px' }">
+  <div class="field">
+    <label for="moedaAmount">Quantidade (use valores negativos para remover)</label>
+    <p-inputNumber
+      id="moedaAmount"
+      [(ngModel)]="moedaAmount"
+      [showButtons]="true"
+      buttonLayout="horizontal"
+      spinnerMode="horizontal"
+      [step]="10"
+      class="w-full"></p-inputNumber>
+  </div>
+
+  <div class="field">
+    <label for="moedaDescription">Descrição</label>
+    <textarea
+      pInputTextarea
+      id="moedaDescription"
+      [(ngModel)]="moedaDescription"
+      rows="3"
+      placeholder="Motivo do ajuste de moedas"
+      class="w-full"></textarea>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="showMoedasDialog = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Aplicar"
+      icon="pi pi-dollar"
+      class="p-button-primary"
+      (click)="updateMoedas()"
+      [disabled]="!moedaDescription.trim()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Ajustar Pontos -->
+<p-dialog
+  header="Ajustar Pontuação"
+  [(visible)]="showPontosDialog"
+  [modal]="true"
+  [closable]="true"
+  styleClass="p-fluid"
+  [style]="{ width: '400px' }">
+  <div class="field">
+    <label for="pontosAmount">Pontos (use valores negativos para remover)</label>
+    <p-inputNumber
+      id="pontosAmount"
+      [(ngModel)]="pontosAmount"
+      [showButtons]="true"
+      buttonLayout="horizontal"
+      spinnerMode="horizontal"
+      [step]="5"
+      class="w-full"></p-inputNumber>
+  </div>
+
+  <div class="field">
+    <label for="pontosReason">Motivo</label>
+    <textarea
+      pInputTextarea
+      id="pontosReason"
+      [(ngModel)]="pontosReason"
+      rows="3"
+      placeholder="Motivo do ajuste de pontuação"
+      class="w-full"></textarea>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="showPontosDialog = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Aplicar"
+      icon="pi pi-chart-line"
+      class="p-button-primary"
+      (click)="adjustPoints()"
+      [disabled]="!pontosReason.trim()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Conceder Medalha -->
+<p-dialog
+  header="Conceder Medalha"
+  [(visible)]="showMedalDialog"
+  [modal]="true"
+  [closable]="true"
+  styleClass="p-fluid"
+  [style]="{ width: '400px' }">
+  <div class="field">
+    <label for="medalType">Tipo da Medalha</label>
+    <input
+      pInputText
+      id="medalType"
+      [(ngModel)]="medalType"
+      placeholder="Ex: primeira_vitoria, sequencia_10"
+      class="w-full" />
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="showMedalDialog = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Conceder"
+      icon="pi pi-star"
+      class="p-button-primary"
+      (click)="addMedal()"
+      [disabled]="!medalType.trim()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Banir Usuário -->
+<p-dialog
+  header="Banir Usuário"
+  [(visible)]="showBanDialog"
+  [modal]="true"
+  [closable]="true"
+  styleClass="p-fluid"
+  [style]="{ width: '400px' }">
+  <div class="field">
+    <label for="banReason">Motivo do Banimento</label>
+    <textarea
+      pInputTextarea
+      id="banReason"
+      [(ngModel)]="banReason"
+      rows="4"
+      placeholder="Descreva o motivo do banimento"
+      class="w-full"></textarea>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="showBanDialog = false"></button>
+    <button
+      pButton
+      type="button"
+      label="Banir"
+      icon="pi pi-ban"
+      class="p-button-danger"
+      (click)="toggleBan()"
+      [disabled]="!banReason.trim()"></button>
+  </ng-template>
+</p-dialog>
+
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

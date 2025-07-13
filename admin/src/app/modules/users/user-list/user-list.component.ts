@@ -5,17 +5,19 @@ import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
-import { TableModule } from 'primeng/table';
+import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { User, UserFilters } from '../../../shared/models/user.model';
-import { UserService } from '../../../shared/services/user.service';
+import { UserService } from '../services/user.service';
+import { UserStateService } from '../state/user-state.service';
 
 @Component({
   selector: 'app-user-list',
@@ -28,6 +30,7 @@ import { UserService } from '../../../shared/services/user.service';
     InputTextModule,
     DropdownModule,
     TagModule,
+    ChipModule,
     ConfirmDialogModule,
     ToastModule,
     CardModule,
@@ -64,8 +67,21 @@ export class UserListComponent implements OnInit {
     { label: 'Gratuito', value: false },
   ];
 
+  adminOptions = [
+    { label: 'Todos', value: null },
+    { label: 'Administrador', value: true },
+    { label: 'Usuário', value: false },
+  ];
+
+  banOptions = [
+    { label: 'Todos', value: null },
+    { label: 'Banido', value: true },
+    { label: 'Liberado', value: false },
+  ];
+
   constructor(
     private userService: UserService,
+    private userStateService: UserStateService,
     private router: Router,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
@@ -85,7 +101,6 @@ export class UserListComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Erro ao carregar usuários:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
@@ -96,10 +111,17 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  onPageChange(event: any) {
-    this.filters.page = event.first / event.rows + 1;
-    this.filters.limit = event.rows;
-    this.loadUsers();
+  onPageChange(event: TableLazyLoadEvent) {
+    if (
+      event.first !== undefined &&
+      event.first !== null &&
+      event.rows !== undefined &&
+      event.rows !== null
+    ) {
+      this.filters.page = event.first / event.rows + 1;
+      this.filters.limit = event.rows;
+      this.loadUsers();
+    }
   }
 
   onSearch() {
@@ -124,11 +146,13 @@ export class UserListComponent implements OnInit {
   }
 
   editUser(user: User) {
+    this.userStateService.selectUser(user);
     const userId = user._id || user.id;
     this.router.navigate(['/users/edit', userId]);
   }
 
   viewUser(user: User) {
+    this.userStateService.selectUser(user);
     const userId = user._id || user.id;
     this.router.navigate(['/users/view', userId]);
   }
@@ -160,6 +184,7 @@ export class UserListComponent implements OnInit {
             const index = this.users.findIndex((u) => (u._id || u.id) === userId);
             if (index !== -1) {
               this.users[index] = updatedUser;
+              this.userStateService.updateUser(updatedUser);
             }
             this.messageService.add({
               severity: 'success',
@@ -168,7 +193,6 @@ export class UserListComponent implements OnInit {
             });
           },
           error: (error) => {
-            console.error(`Erro ao ${action} usuário:`, error);
             this.messageService.add({
               severity: 'error',
               summary: 'Erro',
@@ -212,7 +236,6 @@ export class UserListComponent implements OnInit {
             });
           },
           error: (error) => {
-            console.error('Erro ao atualizar premium:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Erro',
@@ -252,7 +275,6 @@ export class UserListComponent implements OnInit {
             });
           },
           error: (error) => {
-            console.error('Erro ao excluir usuário:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Erro',
@@ -274,5 +296,158 @@ export class UserListComponent implements OnInit {
     premium: boolean
   ): 'success' | 'secondary' | 'info' | 'warning' | 'danger' | 'contrast' {
     return premium ? 'warning' : 'info';
+  }
+
+  getBanSeverity(
+    banned: boolean
+  ): 'success' | 'secondary' | 'info' | 'warning' | 'danger' | 'contrast' {
+    return banned ? 'danger' : 'success';
+  }
+
+  getAdminSeverity(
+    isAdmin: boolean
+  ): 'success' | 'secondary' | 'info' | 'warning' | 'danger' | 'contrast' {
+    return isAdmin ? 'warning' : 'secondary';
+  }
+
+  // Métodos de ação em lote
+  exportSelectedUsers() {
+    if (this.selectedUsers.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione pelo menos um usuário para exportar',
+      });
+      return;
+    }
+
+    const csvData = this.generateCsvData(this.selectedUsers);
+    this.downloadCsv(csvData, 'usuarios_selecionados.csv');
+  }
+
+  exportAllUsers() {
+    const csvData = this.generateCsvData(this.users);
+    this.downloadCsv(csvData, 'todos_usuarios.csv');
+  }
+
+  private generateCsvData(users: User[]): string {
+    const headers = [
+      'Nome',
+      'Email',
+      'Cidade',
+      'Estado',
+      'Pontos',
+      'Moedas',
+      'Premium',
+      'Ativo',
+      'Data Cadastro',
+    ];
+
+    const rows = users.map((user) => [
+      user.nome || '',
+      user.email || '',
+      user.cidade || '',
+      user.estado || '',
+      (user.totalPoints || user.totalPontos || 0).toString(),
+      (user.moedas || user.totalMoedas || 0).toString(),
+      user.assinaturaPremium ? 'Sim' : 'Não',
+      user.ativo ? 'Ativo' : 'Inativo',
+      user.createdAt ? new Date(user.createdAt).toLocaleDateString('pt-BR') : '',
+    ]);
+
+    return [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
+  }
+
+  private downloadCsv(csvData: string, filename: string) {
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  bulkActivateUsers() {
+    if (this.selectedUsers.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione pelo menos um usuário',
+      });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Tem certeza que deseja ativar ${this.selectedUsers.length} usuário(s)?`,
+      header: 'Confirmar Ativação em Lote',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.processBulkAction('activate');
+      },
+    });
+  }
+
+  bulkDeactivateUsers() {
+    if (this.selectedUsers.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione pelo menos um usuário',
+      });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Tem certeza que deseja desativar ${this.selectedUsers.length} usuário(s)?`,
+      header: 'Confirmar Desativação em Lote',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.processBulkAction('deactivate');
+      },
+    });
+  }
+
+  private processBulkAction(action: 'activate' | 'deactivate') {
+    const promises = this.selectedUsers.map((user) => {
+      const userId = user._id || user.id;
+      if (!userId) return Promise.resolve();
+
+      return action === 'activate'
+        ? this.userService.activateUser(userId).toPromise()
+        : this.userService.deactivateUser(userId).toPromise();
+    });
+
+    Promise.all(promises)
+      .then(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: `${this.selectedUsers.length} usuário(s) ${
+            action === 'activate' ? 'ativado(s)' : 'desativado(s)'
+          } com sucesso`,
+        });
+        this.selectedUsers = [];
+        this.loadUsers();
+      })
+      .catch((error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: `Erro ao ${action === 'activate' ? 'ativar' : 'desativar'} usuários`,
+        });
+      });
+  }
+
+  formatDate(date: string | Date): string {
+    if (!date) return '-';
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(new Date(date));
   }
 }

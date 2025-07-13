@@ -13,8 +13,9 @@ import { ToastModule } from 'primeng/toast';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { ToolbarModule } from 'primeng/toolbar';
 
-import { User, UserCreateSchema, UserUpdateSchema } from '../../../shared/models/user.model';
-import { UserService } from '../../../shared/services/user.service';
+import { User } from '../../../shared/models/user.model';
+import { UserService } from '../services/user.service';
+import { UserStateService } from '../state/user-state.service';
 
 @Component({
   selector: 'app-user-form',
@@ -39,7 +40,7 @@ import { UserService } from '../../../shared/services/user.service';
 export class UserFormComponent implements OnInit {
   userForm: FormGroup;
   isEditMode = false;
-  userId: number | null = null;
+  userId: string | null = null;
   loading = false;
   saving = false;
 
@@ -52,6 +53,7 @@ export class UserFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private userStateService: UserStateService,
     private router: Router,
     private route: ActivatedRoute,
     private messageService: MessageService
@@ -63,8 +65,10 @@ export class UserFormComponent implements OnInit {
     this.route.params.subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
-        this.userId = +params['id'];
-        this.loadUser(this.userId);
+        this.userId = params['id'];
+        if (this.userId) {
+          this.loadUser(this.userId);
+        }
       }
     });
   }
@@ -86,16 +90,27 @@ export class UserFormComponent implements OnInit {
     });
   }
 
-  loadUser(id: number) {
-    this.loading = true;
+  loadUser(id: string) {
+    // 🚀 SOLUÇÃO AVANÇADA: Busca SEMPRE no cache primeiro
+    const cachedUser = this.userStateService.getCachedUser(id);
 
+    if (cachedUser) {
+      // ✅ Usuário encontrado no cache - ZERO requisições ao backend!
+      this.populateForm(cachedUser);
+      this.loading = false;
+      return;
+    }
+
+    // ⚠️ Fallback: só vai ao backend se NÃO estiver no cache
+    // Isso só acontece se o usuário acessar a URL diretamente
+    this.loading = true;
     this.userService.getUserById(id).subscribe({
       next: (user) => {
         this.populateForm(user);
+        this.userStateService.forceUpdateUserInCache(user);
         this.loading = false;
       },
       error: (error) => {
-        console.error('Erro ao carregar usuário:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
@@ -129,65 +144,49 @@ export class UserFormComponent implements OnInit {
       this.saving = true;
       const formData = this.userForm.value;
 
-      try {
-        if (this.isEditMode) {
-          // Validação com Zod para atualização
-          const validatedData = UserUpdateSchema.parse({
-            ...formData,
-            id: this.userId,
-          });
+      if (this.isEditMode) {
+        const updateData = {
+          ...formData,
+          id: this.userId,
+        };
 
-          this.userService.updateUser(this.userId!, validatedData).subscribe({
-            next: () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Sucesso',
-                detail: 'Usuário atualizado com sucesso',
-              });
-              this.router.navigate(['/users']);
-            },
-            error: (error) => {
-              console.error('Erro ao atualizar usuário:', error);
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Erro',
-                detail: 'Erro ao atualizar usuário',
-              });
-              this.saving = false;
-            },
-          });
-        } else {
-          // Validação com Zod para criação
-          const validatedData = UserCreateSchema.parse(formData);
-
-          this.userService.createUser(validatedData).subscribe({
-            next: () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Sucesso',
-                detail: 'Usuário criado com sucesso',
-              });
-              this.router.navigate(['/users']);
-            },
-            error: (error) => {
-              console.error('Erro ao criar usuário:', error);
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Erro',
-                detail: 'Erro ao criar usuário',
-              });
-              this.saving = false;
-            },
-          });
-        }
-      } catch (zodError: any) {
-        console.error('Erro de validação:', zodError);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro de Validação',
-          detail: 'Dados inválidos. Verifique os campos.',
+        this.userService.updateUser(this.userId!, updateData).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: 'Usuário atualizado com sucesso',
+            });
+            this.router.navigate(['/users']);
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao atualizar usuário',
+            });
+            this.saving = false;
+          },
         });
-        this.saving = false;
+      } else {
+        this.userService.createUser(formData).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: 'Usuário criado com sucesso',
+            });
+            this.router.navigate(['/users']);
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao criar usuário',
+            });
+            this.saving = false;
+          },
+        });
       }
     } else {
       this.markFormGroupTouched();

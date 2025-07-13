@@ -38,31 +38,13 @@ export const routes: Routes = [
           import('./modules/users/user-form/user-form.component').then((m) => m.UserFormComponent),
       },
       {
-        path: 'games',
+        path: 'users/view/:id',
         loadComponent: () =>
-          import('./modules/games/game-list/game-list.component').then((m) => m.GameListComponent),
-      },
-      {
-        path: 'games/new',
-        loadComponent: () =>
-          import('./modules/games/game-form/game-form.component').then((m) => m.GameFormComponent),
-      },
-      {
-        path: 'games/create',
-        redirectTo: 'games/new',
-      },
-      {
-        path: 'games/:id/edit',
-        loadComponent: () =>
-          import('./modules/games/game-form/game-form.component').then((m) => m.GameFormComponent),
-      },
-      {
-        path: 'games/:id',
-        loadComponent: () =>
-          import('./modules/games/game-detail/game-detail.component').then(
-            (m) => m.GameDetailComponent
+          import('./modules/users/user-detail/user-detail.component').then(
+            (m) => m.UserDetailComponent
           ),
       },
+
       // Adicionar mais rotas conforme necessário
     ],
   },

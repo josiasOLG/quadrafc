@@ -4,15 +4,25 @@
       <p-toolbar>
         <div class="p-toolbar-group-start">
           <h2>Gerenciamento de Usuários</h2>
+          <p-chip [label]="'Total: ' + totalRecords" styleClass="ml-2" *ngIf="totalRecords > 0"></p-chip>
         </div>
         <div class="p-toolbar-group-end">
-          <button
-            pButton
-            type="button"
-            label="Novo Usuário"
-            icon="pi pi-plus"
-            class="p-button-success"
-            (click)="createUser()"></button>
+          <div class="flex gap-2">
+            <button
+              pButton
+              type="button"
+              label="Exportar Todos"
+              icon="pi pi-download"
+              class="p-button-outlined"
+              (click)="exportAllUsers()"></button>
+            <button
+              pButton
+              type="button"
+              label="Novo Usuário"
+              icon="pi pi-plus"
+              class="p-button-success"
+              (click)="createUser()"></button>
+          </div>
         </div>
       </p-toolbar>
     </ng-template>
@@ -20,7 +30,7 @@
     <!-- Filtros -->
     <div class="filters-section">
       <div class="grid">
-        <div class="col-12 md:col-4">
+        <div class="col-12 md:col-3">
           <div class="p-inputgroup">
             <input
               pInputText
@@ -33,7 +43,7 @@
           </div>
         </div>
 
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-2">
           <p-dropdown
             [options]="statusOptions"
             [(ngModel)]="filters.ativo"
@@ -44,7 +54,7 @@
             class="w-full"></p-dropdown>
         </div>
 
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-2">
           <p-dropdown
             [options]="premiumOptions"
             [(ngModel)]="filters.assinaturaPremium"
@@ -56,16 +66,70 @@
         </div>
 
         <div class="col-12 md:col-2">
+          <p-dropdown
+            [options]="adminOptions"
+            [(ngModel)]="filters.isAdmin"
+            placeholder="Tipo"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onFilterChange()"
+            class="w-full"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-2">
+          <p-dropdown
+            [options]="banOptions"
+            [(ngModel)]="filters.banned"
+            placeholder="Situação"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onFilterChange()"
+            class="w-full"></p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-1">
           <button
             pButton
             type="button"
-            label="Limpar"
             icon="pi pi-filter-slash"
-            class="p-button-outlined w-full"
+            class="p-button-outlined p-button-secondary"
+            pTooltip="Limpar filtros"
             (click)="clearFilters()"></button>
         </div>
       </div>
     </div>
+
+    <!-- Toolbar de ações em lote -->
+    <p-toolbar styleClass="mb-3" *ngIf="selectedUsers.length > 0">
+      <ng-template pTemplate="left">
+        <span class="text-sm text-600">{{ selectedUsers.length }} usuário(s) selecionado(s)</span>
+      </ng-template>
+      <ng-template pTemplate="right">
+        <div class="flex gap-2">
+          <button
+            pButton
+            type="button"
+            label="Ativar"
+            icon="pi pi-check"
+            class="p-button-success p-button-sm"
+            (click)="bulkActivateUsers()"></button>
+          <button
+            pButton
+            type="button"
+            label="Desativar"
+            icon="pi pi-times"
+            class="p-button-danger p-button-sm"
+            (click)="bulkDeactivateUsers()"></button>
+          <button
+            pButton
+            type="button"
+            label="Exportar"
+            icon="pi pi-download"
+            class="p-button-outlined p-button-sm"
+            (click)="exportSelectedUsers()"></button>
+        </div>
+      </ng-template>
+    </p-toolbar>
 
     <!-- Tabela -->
     <p-table
@@ -94,13 +158,26 @@
             Email
             <p-sortIcon field="email"></p-sortIcon>
           </th>
-          <th>Telefone</th>
-          <th>Cidade</th>
+          <th pSortableColumn="cidade">
+            Localização
+            <p-sortIcon field="cidade"></p-sortIcon>
+          </th>
+          <th pSortableColumn="totalPoints">
+            Pontos
+            <p-sortIcon field="totalPoints"></p-sortIcon>
+          </th>
+          <th pSortableColumn="moedas">
+            Moedas
+            <p-sortIcon field="moedas"></p-sortIcon>
+          </th>
           <th>Status</th>
           <th>Premium</th>
-          <th>Moedas</th>
-          <th>Pontuação</th>
-          <th style="width: 200px">Ações</th>
+          <th>Tipo</th>
+          <th pSortableColumn="createdAt">
+            Cadastro
+            <p-sortIcon field="createdAt"></p-sortIcon>
+          </th>
+          <th style="width: 10rem">Ações</th>
         </tr>
       </ng-template>
 
@@ -116,26 +193,43 @@
             </div>
           </td>
           <td>{{ user.email }}</td>
-          <td>{{ user.telefone }}</td>
-          <td>{{ user.cidade || '-' }}</td>
+          <td>
+            <div *ngIf="user.cidade || user.estado">
+              {{ user.cidade }}{{ user.cidade && user.estado ? ', ' : '' }}{{ user.estado }}
+            </div>
+            <span *ngIf="!user.cidade && !user.estado" class="text-500">-</span>
+          </td>
+          <td>
+            <span class="font-bold">{{ user.totalPoints || user.totalPontos || 0 }}</span>
+          </td>
+          <td>
+            <span class="font-bold">{{ user.moedas || user.totalMoedas || 0 }}</span>
+          </td>
           <td>
             <p-tag
               [value]="(user.ativo !== undefined ? user.ativo : true) ? 'Ativo' : 'Inativo'"
               [severity]="getStatusSeverity(user.ativo !== undefined ? user.ativo : true)"></p-tag>
+            <p-tag *ngIf="user.banned" value="Banido" severity="danger" styleClass="ml-1"></p-tag>
           </td>
           <td>
             <p-tag
-              [value]="user.assinaturaPremium || user.isPremium ? 'Premium' : 'Gratuito'"
-              [severity]="getPremiumSeverity(user.assinaturaPremium || user.isPremium)"></p-tag>
+              [value]="user.assinaturaPremium ? 'Premium' : 'Gratuito'"
+              [severity]="getPremiumSeverity(user.assinaturaPremium || false)"></p-tag>
           </td>
           <td>
-            <span class="font-bold">{{ user.moedas }}</span>
+            <p-tag
+              [value]="user.isAdmin ? 'Admin' : 'Usuário'"
+              [severity]="getAdminSeverity(user.isAdmin || false)"></p-tag>
           </td>
           <td>
-            <span class="font-bold text-primary">{{ user.totalPoints || user.pontuacaoTotal || 0 }}</span>
+            <span class="text-sm">{{ formatDate(user.createdAt) }}</span>
+          </td>
+
+          <td>
+            <span class="text-sm">{{ formatDate(user.createdAt) }}</span>
           </td>
           <td>
-            <div class="action-buttons">
+            <div class="action-buttons flex gap-1">
               <button
                 pButton
                 type="button"

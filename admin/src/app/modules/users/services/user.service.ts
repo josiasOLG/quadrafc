@@ -2,9 +2,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { User, UserCreate, UserFilters, UserListResponse, UserUpdate } from '../models/user.model';
-import { UserStateService } from './user-state.service';
+import { environment } from '../../../../environments/environment';
+import {
+  User,
+  UserCreate,
+  UserFilters,
+  UserListResponse,
+  UserUpdate,
+} from '../../../shared/models/user.model';
+import { UserStateService } from '../state/user-state.service';
 
 @Injectable({
   providedIn: 'root',
@@ -59,12 +65,10 @@ export class UserService {
   }
 
   getUsers(filters?: UserFilters): Observable<UserListResponse> {
-    // Se há filtros de busca, usar POST para search
     if (filters && this.hasSearchFilters(filters)) {
       return this.searchUsers(filters);
     }
 
-    // Caso contrário, usar GET simples com paginação
     let params = new HttpParams();
     if (filters?.page) {
       params = params.set('page', filters.page.toString());
@@ -93,12 +97,9 @@ export class UserService {
           return response as UserListResponse;
         }),
         tap((result: UserListResponse) => {
-          // Atualiza o state com os usuários carregados
           if (filters?.page === 1 || !filters?.page) {
-            // Se é a primeira página, substitui a lista
             this.userState.setUsers(result.users);
           } else {
-            // Se é paginação, adiciona à lista existente
             this.userState.addUsers(result.users);
           }
         })
@@ -116,6 +117,9 @@ export class UserService {
             return this.mapUserData(response.data);
           }
           return this.mapUserData(response);
+        }),
+        tap((user: User) => {
+          this.userState.updateUser(user);
         })
       );
   }
@@ -135,6 +139,9 @@ export class UserService {
             return this.mapUserData(response.data);
           }
           return this.mapUserData(response);
+        }),
+        tap((newUser: User) => {
+          this.userState.addUser(newUser);
         })
       );
   }
@@ -150,14 +157,23 @@ export class UserService {
             return this.mapUserData(response.data);
           }
           return this.mapUserData(response);
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
 
   deleteUser(id: number | string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http
+      .delete<void>(`${this.apiUrl}/${id}`, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap(() => {
+          this.userState.removeUser(id);
+        })
+      );
   }
 
   activateUser(id: number | string): Observable<User> {
@@ -187,6 +203,9 @@ export class UserService {
             ativo: true,
             banned: false,
           } as User;
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
@@ -207,7 +226,7 @@ export class UserService {
               ...response.data,
               id: response.data._id,
               dataNascimento: response.data.data_nascimento,
-              ativo: true,
+              ativo: false,
               banned: false,
             } as User;
           }
@@ -215,9 +234,12 @@ export class UserService {
             ...response,
             id: response._id,
             dataNascimento: response.data_nascimento,
-            ativo: true,
+            ativo: false,
             banned: false,
           } as User;
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
@@ -282,6 +304,9 @@ export class UserService {
             return response.data as User;
           }
           return response as User;
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
@@ -350,6 +375,9 @@ export class UserService {
             return response.data as User;
           }
           return response as User;
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
@@ -369,6 +397,9 @@ export class UserService {
             return response.data as User;
           }
           return response as User;
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
@@ -385,6 +416,9 @@ export class UserService {
             return response.data as User;
           }
           return response as User;
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
@@ -436,6 +470,9 @@ export class UserService {
             return response.data as User;
           }
           return response as User;
+        }),
+        tap((updatedUser: User) => {
+          this.userState.updateUser(updatedUser);
         })
       );
   }
