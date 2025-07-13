@@ -334,10 +334,10 @@ export class SincronizacaoService {
         let moedasGanhas = 0;
 
         if (acertouPlacar) {
-          pontos = 3; // Pontuação maior para acerto de placar exato
+          pontos = 1; // 1 ponto para acerto de placar exato
           moedasGanhas = 10;
         } else if (acertouResultado) {
-          pontos = 1; // Pontuação menor para acerto apenas do resultado
+          pontos = 1; // 1 ponto para acerto apenas do resultado
           moedasGanhas = 3;
         }
 
