@@ -21,7 +21,11 @@
 }
 
 .p-dialog {
-  z-index: 9999 !important;
+  z-index: 10500 !important;
+}
+
+.p-dialog-mask {
+  z-index: 10400 !important;
 }
 
 .p-component-overlay {
@@ -33,7 +37,73 @@
 }
 
 .p-tooltip {
-  z-index: 10001 !important;
+  z-index: 10600 !important;
+}
+
+.p-toast {
+  z-index: 10700 !important;
+}
+
+.p-confirmdialog {
+  z-index: 10800 !important;
+}
+
+// ===================================
+// DIALOG MASK OVERLAY PRIORITY
+// ===================================
+// Garantir que masks de dialogs sempre fiquem acima da navegação
+.p-dialog-mask,
+.p-component-overlay-enter,
+.p-component-overlay-leave {
+  z-index: 10300 !important;
+}
+
+// Forçar z-index para qualquer dialog aninhado
+.p-dialog {
+  position: fixed !important;
+  z-index: 10500 !important;
+
+  &.p-component-overlay {
+    z-index: 10500 !important;
+  }
+}
+
+// Override para dialogs específicos do projeto
+.palpite-dialog,
+.premium-dialog,
+.perfil-dialog,
+.configuracoes-dialog,
+.welcome-dialog,
+.loja-dialog {
+  .p-dialog {
+    z-index: 10500 !important;
+  }
+
+  .p-dialog-mask {
+    z-index: 10400 !important;
+  }
+}
+
+// ===================================
+// FORCE ALL DIALOGS ABOVE NAVIGATION
+// ===================================
+// Regra super específica para garantir prioridade
+body {
+  .p-dialog,
+  .p-dialog-mask,
+  .p-component-overlay {
+    z-index: 15000 !important;
+  }
+
+  .welcome-dialog {
+    .p-dialog {
+      z-index: 15500 !important;
+    }
+
+    .p-dialog-mask {
+      z-index: 15400 !important;
+    }
+  }
 }
 
 // ===================================

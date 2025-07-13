@@ -8,6 +8,7 @@
   }
   .welcome-dialog {
     margin: 0 !important;
+
     .p-dialog {
       border-radius: var(--qfc-radius-xl) var(--qfc-radius-xl) 0 0 !important;
       box-shadow: var(--qfc-shadow-xl) !important;
@@ -15,6 +16,8 @@
       margin: 0 !important;
       animation: slideUpWelcome 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
       overflow: hidden !important;
+      z-index: 11000 !important;
+      position: fixed !important;
     }
 
     .p-dialog-content {
@@ -27,6 +30,8 @@
       background: var(--qfc-bg-overlay) !important;
       backdrop-filter: blur(8px) !important;
       -webkit-backdrop-filter: blur(8px) !important;
+      z-index: 10900 !important;
+      position: fixed !important;
     }
   }
 }
@@ -35,19 +40,6 @@
   background: var(--qfc-bg-primary);
   position: relative;
   overflow: hidden;
-
-  // Gradient background decorativo
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 120px;
-    background: var(--qfc-gradient-primary);
-    opacity: 0.1;
-    z-index: 0;
-  }
 }
 
 // ===================================
@@ -58,7 +50,7 @@
   text-align: center;
   padding: var(--qfc-spacing-2xl) var(--qfc-spacing-lg) var(--qfc-spacing-lg);
   z-index: 1;
-
+  background: var(--qfc-border-primary);
   .welcome-title {
     font-size: var(--qfc-font-size-2xl);
     font-weight: var(--qfc-font-weight-bold);
@@ -83,7 +75,7 @@
 // BODY CONTENT
 // ===================================
 .welcome-body {
-  padding: 0 var(--qfc-spacing-lg) var(--qfc-spacing-lg);
+  padding: 10px var(--qfc-spacing-lg) var(--qfc-spacing-lg);
   position: relative;
   z-index: 1;
 
@@ -181,7 +173,7 @@
   background: var(--qfc-bg-secondary);
   position: relative;
   z-index: 1;
-  padding-bottom: 250px;
+  padding-bottom: 50px;
 
   ::ng-deep .welcome-button {
     width: 100% !important;
@@ -224,36 +216,5 @@
   100% {
     transform: translateY(0);
     opacity: 1;
-  }
-}
-
-// ===================================
-// RESPONSIVE DESIGN
-// ===================================
-@media (max-width: 480px) {
-  .welcome-header {
-    padding: var(--qfc-spacing-xl) var(--qfc-spacing-md) var(--qfc-spacing-md);
-
-    .welcome-title {
-      font-size: var(--qfc-font-size-xl);
-    }
-
-    .welcome-subtitle {
-      font-size: var(--qfc-font-size-base);
-    }
-  }
-
-  .welcome-body {
-    padding: 0 var(--qfc-spacing-md) var(--qfc-spacing-md);
-
-    .feature-highlight {
-      flex-direction: column;
-      text-align: center;
-      gap: var(--qfc-spacing-sm);
-
-      .feature-icon {
-        align-self: center;
-      }
-    }
   }
 }

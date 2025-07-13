@@ -14,6 +14,7 @@
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   font-family: var(--qfc-font-family);
   overflow: hidden;
+  z-index: 1;
 
   // Prevent iOS bounce scroll
   -webkit-overflow-scrolling: touch;
@@ -93,6 +94,10 @@
 // ===================================
 // FLOATING BOTTOM NAVIGATION
 // ===================================
+// Z-INDEX HIERARCHY:
+// - Layout: 1 (container base)
+// - Navigation: 2 (dentro do layout)
+// - PrimeNG Dialogs: 10000+ (fora do layout)
 .pwa-layout__nav-wrapper {
   position: absolute;
   bottom: 0;
@@ -101,7 +106,7 @@
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
   pointer-events: none;
-  z-index: 1000;
+  z-index: 2;
 }
 
 .pwa-layout__nav {
@@ -332,6 +337,27 @@
     .p-ripple {
       background: radial-gradient(circle, rgba(var(--qfc-primary-rgb), 0.2) 0%, transparent 70%) !important;
     }
+  }
+
+  // Garantir que dialogs sempre fiquem acima da navegação
+  .p-dialog-mask {
+    z-index: 10400 !important;
+  }
+
+  .p-dialog {
+    z-index: 10500 !important;
+  }
+
+  .p-toast {
+    z-index: 10700 !important;
+  }
+
+  .p-tooltip {
+    z-index: 10600 !important;
+  }
+
+  .p-confirmdialog {
+    z-index: 10800 !important;
   }
 }
 
