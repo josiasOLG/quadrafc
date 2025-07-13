@@ -73,7 +73,7 @@
                       <div
                         *ngIf="(jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado"
                         class="team__score">
-                        {{ jogo.resultado.gols_casa || 0 }}
+                        {{ jogo.resultado.timeA || 0 }}
                       </div>
                     </div>
 
@@ -99,7 +99,7 @@
                       <div
                         *ngIf="(jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado"
                         class="team__score">
-                        {{ jogo.resultado.gols_visitante || 0 }}
+                        {{ jogo.resultado.timeB || 0 }}
                       </div>
                     </div>
                   </div>
@@ -131,9 +131,9 @@
                     </div>
 
                     <button
-                      *ngIf="!jogo.palpites || jogo.palpites.length === 0"
+                      *ngIf="shouldShowPalpiteButton(jogo)"
                       class="palpite-button"
-                      [disabled]="jogo.status !== 'aberto'"
+                      [disabled]="jogo.status !== 'aberto' && jogo.status !== 'agendado'"
                       (click)="openPalpiteDialog(jogo)">
                       <i class="pi pi-plus"></i>
                       Palpitar

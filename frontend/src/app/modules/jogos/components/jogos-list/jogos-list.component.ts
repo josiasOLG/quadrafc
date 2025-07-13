@@ -46,6 +46,8 @@ interface JogoAPI {
   resultado?: {
     gols_casa?: number;
     gols_visitante?: number;
+    timeB?: number;
+    timeA?: number;
   } | null;
   status: 'aberto' | 'encerrado' | 'ao_vivo' | 'agendado' | 'finalizado';
   campeonato: string;
@@ -253,13 +255,8 @@ export class JogosListComponent implements OnInit {
   }
 
   canMakePalpite(jogo: JogoComPalpite): boolean {
-    const agora = new Date();
-    const inicioJogo = new Date(jogo.data);
-    return (
-      agora < inicioJogo &&
-      (jogo.status === 'agendado' || jogo.status === 'aberto') &&
-      jogo.palpites?.length === 0
-    );
+    // Usa a mesma lógica do botão para consistência
+    return this.shouldShowPalpiteButton(jogo);
   }
 
   // Verifica se o jogo já iniciou baseado na data/hora
@@ -267,6 +264,26 @@ export class JogosListComponent implements OnInit {
     const agora = new Date();
     const inicioJogo = new Date(jogo.data);
     return agora >= inicioJogo;
+  }
+
+  // Verifica se o botão palpitar deve ser exibido
+  shouldShowPalpiteButton(jogo: JogoComPalpite): boolean {
+    // Se já tem palpite, não mostra o botão
+    if (jogo.palpites && jogo.palpites.length > 0) {
+      return false;
+    }
+
+    // Se o jogo já iniciou (baseado na data/hora), não mostra o botão
+    if (this.jogoJaIniciou(jogo)) {
+      return false;
+    }
+
+    // Se o status não permite palpite, não mostra o botão
+    if (jogo.status !== 'aberto' && jogo.status !== 'agendado') {
+      return false;
+    }
+
+    return true;
   }
 
   getJogoStatus(jogo: JogoComPalpite): {
