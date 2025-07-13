@@ -18,24 +18,6 @@
     overscroll-behavior-y: contain; // Previne scroll do body em iOS
   }
 
-  // Header da página
-  &__header {
-    margin-bottom: var(--qfc-spacing-lg);
-
-    .page-title {
-      font-size: var(--qfc-font-size-xl);
-      font-weight: var(--qfc-font-weight-bold);
-      color: var(--qfc-text-primary);
-      margin: 0 0 var(--qfc-spacing-xs) 0;
-    }
-
-    .page-subtitle {
-      font-size: var(--qfc-font-size-sm);
-      color: var(--qfc-text-secondary);
-      margin: 0;
-    }
-  }
-
   // Estado de carregamento
   &__loading {
     padding: var(--qfc-spacing-md);
@@ -174,15 +156,6 @@
             background: var(--qfc-primary);
             transition: width 0.3s ease;
             border-radius: 3px 3px 0 0;
-          }
-
-          &.p-highlight:after {
-            // width: 100%;
-          }
-
-          &:hover:after {
-            // width: 100%;
-            // background: rgba(30, 58, 138, 0.5);
           }
 
           .p-tabview-nav-link {
@@ -459,15 +432,6 @@
         color: var(--qfc-primary);
         margin-bottom: var(--qfc-spacing-xs);
       }
-
-      &__points {
-        font-size: var(--qfc-font-size-xs);
-        font-weight: var(--qfc-font-weight-semibold);
-        color: var(--qfc-success);
-        background: rgba(16, 185, 129, 0.1);
-        padding: 2px 8px;
-        border-radius: var(--qfc-radius-full);
-      }
     }
 
     .palpite-button {
@@ -503,222 +467,6 @@
 }
 
 // ===================================
-// PALPITE MODAL
-// ===================================
-.palpite-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-
-  &__backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--qfc-bg-overlay);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
-
-  &__content {
-    position: relative;
-    background: var(--qfc-bg-primary);
-    border-radius: var(--qfc-radius-xl) var(--qfc-radius-xl) 0 0;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: var(--qfc-shadow-lg);
-    animation: slideUp 0.3s ease-out forwards;
-    padding-bottom: env(safe-area-inset-bottom, 16px);
-  }
-
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--qfc-spacing-md);
-    border-bottom: 1px solid var(--qfc-border-primary);
-
-    h3 {
-      font-size: var(--qfc-font-size-lg);
-      font-weight: var(--qfc-font-weight-semibold);
-      margin: 0;
-      color: var(--qfc-text-primary);
-    }
-  }
-
-  &__close {
-    background: none;
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--qfc-text-secondary);
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-
-    &:hover,
-    &:focus {
-      background: rgba(30, 58, 138, 0.05);
-      color: var(--qfc-text-primary);
-    }
-
-    i {
-      font-size: var(--qfc-font-size-lg);
-    }
-  }
-
-  &__body {
-    padding: 20px 20px 12rem 20px;
-  }
-
-  &__match {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: var(--qfc-spacing-lg);
-    margin-bottom: var(--qfc-spacing-xl);
-
-    .palpite-modal__team {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-
-      img {
-        width: 64px;
-        height: 64px;
-        object-fit: contain;
-        border-radius: 50%;
-        background: white;
-        padding: 4px;
-        box-shadow: var(--qfc-shadow-md);
-        margin-bottom: var(--qfc-spacing-md);
-        border: 1px solid var(--qfc-border-primary);
-      }
-
-      span {
-        font-size: var(--qfc-font-size-sm);
-        font-weight: var(--qfc-font-weight-semibold);
-        color: var(--qfc-text-primary);
-        max-width: 120px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-
-    .palpite-modal__vs {
-      font-size: var(--qfc-font-size-lg);
-      font-weight: var(--qfc-font-weight-bold);
-      color: var(--qfc-text-primary);
-      width: 48px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(30, 58, 138, 0.1);
-      border-radius: 50%;
-    }
-  }
-
-  &__form {
-    .palpite-modal__inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--qfc-spacing-lg);
-      margin-bottom: var(--qfc-spacing-xl);
-
-      .palpite-input {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-
-        label {
-          font-size: var(--qfc-font-size-sm);
-          font-weight: var(--qfc-font-weight-medium);
-          color: var(--qfc-text-secondary);
-          margin-bottom: var(--qfc-spacing-sm);
-          text-align: center;
-        }
-
-        input {
-          width: 100%;
-          max-width: 100px;
-          height: 60px;
-          border: 2px solid var(--qfc-border-primary);
-          border-radius: var(--qfc-radius-md);
-          text-align: center;
-          font-size: var(--qfc-font-size-2xl);
-          font-weight: var(--qfc-font-weight-bold);
-          color: var(--qfc-primary);
-          background: var(--qfc-bg-primary);
-          transition: border-color 0.2s ease;
-
-          &:focus {
-            outline: none;
-            border-color: var(--qfc-primary);
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2);
-          }
-        }
-      }
-    }
-
-    .palpite-modal__actions {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: var(--qfc-spacing-md);
-
-      button {
-        padding: var(--qfc-spacing-md);
-        border-radius: var(--qfc-radius-md);
-        font-weight: var(--qfc-font-weight-medium);
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .palpite-modal__cancel {
-        background: transparent;
-        border: 1px solid var(--qfc-border-secondary);
-        color: var(--qfc-text-secondary);
-
-        &:hover,
-        &:focus {
-          background: var(--qfc-bg-secondary);
-          color: var(--qfc-text-primary);
-        }
-      }
-
-      .palpite-modal__submit {
-        background: var(--qfc-primary);
-        border: none;
-        color: white;
-
-        &:hover,
-        &:focus {
-          background: var(--qfc-primary-hover);
-        }
-
-        &:disabled {
-          background: var(--qfc-text-tertiary);
-          cursor: not-allowed;
-        }
-      }
-    }
-  }
-}
-
-// ===================================
 // ANIMATIONS
 // ===================================
 @keyframes shimmer {
@@ -727,31 +475,6 @@
   }
   100% {
     background-position: 200% 0;
-  }
-}
-
-@keyframes slideUp {
-  0% {
-    transform: translateY(100%);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-// ===================================
-// ESTILOS PARA PALPITES ACERTADOS
-// ===================================
-.acertou {
-  background: var(--qfc-gradient-primary);
-  color: white;
-
-  .game-card__match-time,
-  .team__name,
-  .match-info__vs,
-  .championship-title,
-  .championship-count {
-    color: white !important;
   }
 }
 
@@ -836,8 +559,6 @@
   background-color: rgba(30, 58, 138, 0.05);
   border-radius: var(--qfc-radius-md);
   border-left: 3px solid var(--qfc-primary);
-  // animation: fadeOut 5s forwards;
-  // animation-delay: 3s;
 
   i {
     animation: moveRight 1.5s infinite;
@@ -852,21 +573,5 @@
   }
   50% {
     transform: translateX(5px);
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-    max-height: 40px;
-    margin-bottom: var(--qfc-spacing-sm);
-    padding: 8px 12px;
-  }
-  to {
-    opacity: 0;
-    max-height: 0;
-    margin-bottom: 0;
-    padding: 0;
-    overflow: hidden;
   }
 }

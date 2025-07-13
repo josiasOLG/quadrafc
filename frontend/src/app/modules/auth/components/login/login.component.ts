@@ -59,7 +59,7 @@ export class LoginComponent {
 
       this.authService.login(validation.data).subscribe({
         next: (response) => {
-          this.toastService.success('Login realizado com sucesso!');
+          // this.toastService.success('Login realizado com sucesso!');
           const user = response.user;
           if (user.bairro && user.cidade && user.estado) {
             this.router.navigate(['/ranking']);
