@@ -14,6 +14,7 @@ import { PremiumPermissionsService } from '../../../../core/services/premium-per
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { CurrencyFormatPipe } from '../../../../shared/pipes/currency-format.pipe';
 import { User } from '../../../../shared/schemas/user.schema';
+import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { RankingService } from '../../../ranking/services/ranking.service';
@@ -116,6 +117,7 @@ export class PremiumStoreComponent implements OnInit {
     private rankingService: RankingService,
     private premiumPermissionsService: PremiumPermissionsService,
     private toastService: ToastService,
+    private globalDialogService: GlobalDialogService,
     private router: Router
   ) {}
 
@@ -177,26 +179,20 @@ export class PremiumStoreComponent implements OnInit {
   // Métodos de compra
   confirmarCompraCidade(): void {
     if (!this.cidadeSelecionada) {
-      this.toastService.show({
-        detail: 'Selecione uma cidade para comprar',
-        severity: 'warn',
-      });
+      this.globalDialogService.showWarning('Atenção', 'Selecione uma cidade para comprar');
       return;
     }
 
     if (this.jaTemAcessoCidade(this.cidadeSelecionada.value, this.cidadeSelecionada.estado)) {
-      this.toastService.show({
-        detail: 'Você já tem acesso a esta cidade',
-        severity: 'info',
-      });
+      this.globalDialogService.showInfo('Informação', 'Você já tem acesso a esta cidade');
       return;
     }
 
     if (!this.temSaldoSuficiente(this.custos.cidade)) {
-      this.toastService.show({
-        detail: 'Saldo insuficiente para esta compra',
-        severity: 'error',
-      });
+      this.globalDialogService.showError(
+        'Saldo Insuficiente',
+        'Você não possui moedas suficientes para esta compra'
+      );
       return;
     }
 
@@ -208,26 +204,20 @@ export class PremiumStoreComponent implements OnInit {
 
   confirmarCompraEstado(): void {
     if (!this.estadoSelecionado) {
-      this.toastService.show({
-        detail: 'Selecione um estado para comprar',
-        severity: 'warn',
-      });
+      this.globalDialogService.showWarning('Atenção', 'Selecione um estado para comprar');
       return;
     }
 
     if (this.jaTemAcessoEstado(this.estadoSelecionado.value)) {
-      this.toastService.show({
-        detail: 'Você já tem acesso a este estado',
-        severity: 'info',
-      });
+      this.globalDialogService.showInfo('Informação', 'Você já tem acesso a este estado');
       return;
     }
 
     if (!this.temSaldoSuficiente(this.custos.estado)) {
-      this.toastService.show({
-        detail: 'Saldo insuficiente para esta compra',
-        severity: 'error',
-      });
+      this.globalDialogService.showError(
+        'Saldo Insuficiente',
+        'Você não possui moedas suficientes para esta compra'
+      );
       return;
     }
 
@@ -239,18 +229,15 @@ export class PremiumStoreComponent implements OnInit {
 
   confirmarCompraNacional(): void {
     if (this.jaTemAcessoNacional()) {
-      this.toastService.show({
-        detail: 'Você já tem acesso nacional',
-        severity: 'info',
-      });
+      this.globalDialogService.showInfo('Informação', 'Você já tem acesso nacional');
       return;
     }
 
     if (!this.temSaldoSuficiente(this.custos.nacional)) {
-      this.toastService.show({
-        detail: 'Saldo insuficiente para esta compra',
-        severity: 'error',
-      });
+      this.globalDialogService.showError(
+        'Saldo Insuficiente',
+        'Você não possui moedas suficientes para esta compra'
+      );
       return;
     }
 
@@ -262,18 +249,15 @@ export class PremiumStoreComponent implements OnInit {
 
   confirmarAssinaturaPremium(): void {
     if (this.acessosUsuario.assinaturaPremium) {
-      this.toastService.show({
-        detail: 'Você já tem assinatura premium ativa',
-        severity: 'info',
-      });
+      this.globalDialogService.showInfo('Informação', 'Você já tem assinatura premium ativa');
       return;
     }
 
     if (!this.temSaldoSuficiente(this.custos.assinaturaPremiumMensal)) {
-      this.toastService.show({
-        detail: 'Saldo insuficiente para esta compra',
-        severity: 'error',
-      });
+      this.globalDialogService.showError(
+        'Saldo Insuficiente',
+        'Você não possui moedas suficientes para esta compra'
+      );
       return;
     }
 
@@ -324,10 +308,7 @@ export class PremiumStoreComponent implements OnInit {
         });
     } catch (error) {
       this.isLoading = false;
-      this.toastService.show({
-        detail: 'Erro ao comprar acesso à cidade',
-        severity: 'error',
-      });
+      this.globalDialogService.showError('Erro', 'Erro ao comprar acesso à cidade');
     }
   }
 
@@ -369,10 +350,7 @@ export class PremiumStoreComponent implements OnInit {
       });
     } catch (error) {
       this.isLoading = false;
-      this.toastService.show({
-        detail: 'Erro ao comprar acesso ao estado',
-        severity: 'error',
-      });
+      this.globalDialogService.showError('Erro', 'Erro ao comprar acesso ao estado');
     }
   }
 
@@ -392,10 +370,10 @@ export class PremiumStoreComponent implements OnInit {
               this.loadPermissions();
             });
 
-            this.toastService.show({
-              detail: 'Acesso nacional adquirido com sucesso!',
-              severity: 'success',
-            });
+            this.globalDialogService.showSuccess(
+              'Sucesso',
+              'Acesso nacional adquirido com sucesso!'
+            );
           }
         },
         error: (error) => {
@@ -410,10 +388,7 @@ export class PremiumStoreComponent implements OnInit {
       });
     } catch (error) {
       this.isLoading = false;
-      this.toastService.show({
-        detail: 'Erro ao comprar acesso nacional',
-        severity: 'error',
-      });
+      this.globalDialogService.showError('Erro', 'Erro ao comprar acesso nacional');
     }
   }
 
@@ -433,10 +408,10 @@ export class PremiumStoreComponent implements OnInit {
               this.loadPermissions();
             });
 
-            this.toastService.show({
-              detail: 'Assinatura Premium ativada com sucesso! Você tem acesso completo por 1 mês.',
-              severity: 'success',
-            });
+            this.globalDialogService.showSuccess(
+              'Sucesso',
+              'Assinatura Premium ativada com sucesso! Você tem acesso completo por 1 mês.'
+            );
           }
         },
         error: (error) => {
@@ -451,10 +426,7 @@ export class PremiumStoreComponent implements OnInit {
       });
     } catch (error) {
       this.isLoading = false;
-      this.toastService.show({
-        detail: 'Erro ao contratar assinatura premium',
-        severity: 'error',
-      });
+      this.globalDialogService.showError('Erro', 'Erro ao contratar assinatura premium');
     }
   }
 

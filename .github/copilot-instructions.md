@@ -26,6 +26,10 @@ e **boas práticas avançadas**.
   componentes
 - Preservar padronização já existente em arquitetura, nomenclatura, formatação e
   responsabilidades
+- Nunca adicionar exemplos extras após a entrega do código.
+- Nunca sugerir ou gerar arquivos `.md`, `.markdown` ou qualquer tipo de
+  documentação adicional.
+- Nunca criar README, tutorial ou instruções explicativas automaticamente.
 
 ---
 
@@ -41,6 +45,31 @@ e **boas práticas avançadas**.
   da pasta do módulo
 - Nunca repetir lógica: reutilizar pipes, services, utils e componentes
 - Verificar se a funcionalidade já existe antes de sugerir nova
+- Este projeto é um **PWA exclusivo para uso em dispositivos móveis (iOS e
+  Android)**.
+  - **Nunca** otimizar pensando em navegador web ou desktop.
+  - Toda a estrutura, UX, UI e comportamento devem ser pensados exclusivamente
+    para **experiência mobile**.
+  - Sempre simular viewport e interações com base em **smartphones**.
+
+### ⚙️ Estrutura de HTML/CSS
+
+- O HTML e o SCSS devem **sempre priorizar o uso de PrimeFlex** (`p-grid`,
+  `p-col`, `flex`, `gap-*`, `align-items-*`, etc).
+- Usar classes utilitárias do PrimeFlex para evitar código CSS desnecessário.
+- O uso de SCSS deve ser **mínimo e apenas quando necessário**. Evitar estilos
+  manuais se existir utilitário correspondente no PrimeFlex.
+- Quando precisar criar estilos próprios, **usar a metodologia BEM (Block
+  Element Modifier)** de forma obrigatória e padronizada:
+
+  - Nome de classes: `bloco__elemento--modificador`
+  - Nesting no SCSS deve respeitar os níveis BEM sem exageros
+  - **Nunca** usar camelCase, kebab-case genérico, ou classes abreviadas
+
+- Sempre que possível, resolver layout e espaçamento com classes utilitárias do
+  PrimeFlex ao invés de SCSS.
+
+- O objetivo é manter o SCSS o menor possível, limpo e sem regras duplicadas.
 
 ### ⚙️ Padrões obrigatórios
 

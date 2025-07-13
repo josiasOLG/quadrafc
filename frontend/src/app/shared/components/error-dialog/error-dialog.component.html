@@ -1,0 +1,78 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="dialogData?.closable !== false"
+  [closable]="dialogData?.closable !== false"
+  [closeOnEscape]="dialogData?.closable !== false"
+  [maximizable]="false"
+  [blockScroll]="true"
+  position="bottom"
+  [styleClass]="'error-dialog error-dialog--' + (dialogData?.type || 'info')"
+  (onHide)="onHide()">
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center w-full gap-4 px-2">
+      <div
+        [class]="
+          'error-dialog__icon error-dialog__icon--' +
+          (dialogData?.type || 'info') +
+          ' flex align-items-center justify-content-center flex-shrink-0'
+        ">
+        <i [class]="getDialogIcon() + ' text-white text-2xl'"></i>
+      </div>
+      <div class="flex flex-column flex-1">
+        <h3 class="text-900 font-bold text-xl m-0 line-height-2">
+          {{ dialogData?.title || '' }}
+        </h3>
+        <p class="text-600 text-sm m-0 mt-1" *ngIf="getDialogSubtitle()">
+          {{ getDialogSubtitle() }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="px-2">
+    <div class="flex flex-column gap-4">
+      <div class="text-center" *ngIf="dialogData?.message">
+        <p class="text-700 m-0 line-height-3 text-base">
+          {{ dialogData?.message }}
+        </p>
+      </div>
+
+      <div class="error-dialog__code surface-50 border-round-lg p-4" *ngIf="dialogData?.code">
+        <div class="flex align-items-center gap-2 mb-3">
+          <i class="pi pi-code text-orange-500"></i>
+          <span class="text-600 font-semibold text-sm">Código de Referência</span>
+        </div>
+        <div class="error-dialog__code-block bg-gray-900 border-round-lg p-3 relative">
+          <code class="text-orange-300 font-mono text-sm block">{{ dialogData?.code }}</code>
+        </div>
+      </div>
+
+      <div class="error-dialog__details surface-50 border-round-lg p-4" *ngIf="dialogData?.details">
+        <div class="flex align-items-center gap-2 mb-3">
+          <i class="pi pi-info-circle text-blue-500"></i>
+          <span class="text-600 font-semibold text-sm">Detalhes</span>
+        </div>
+        <p class="text-600 m-0 text-sm line-height-3">
+          {{ dialogData?.details }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex flex-column gap-2 px-2 pt-4">
+      <p-button
+        *ngFor="let action of dialogData?.actions; trackBy: trackByActionLabel"
+        [label]="action.label"
+        [icon]="action.icon"
+        [class]="getActionClass(action.severity)"
+        [size]="'large'"
+        (onClick)="executeAction(action.action)"
+        [raised]="action.severity === 'primary' || action.severity === 'success'"
+        [outlined]="action.severity === 'secondary'"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

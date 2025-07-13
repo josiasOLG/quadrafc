@@ -1,8 +1,8 @@
-import { ToastService } from '../services/toast.service';
+import { GlobalDialogService } from '../services/global-dialog.service';
 
 export interface ResponseHandler {
-  showSuccessToast?: boolean;
-  showErrorToast?: boolean;
+  showSuccessDialog?: boolean;
+  showErrorDialog?: boolean;
   successMessage?: string;
   redirectTo?: string;
   callback?: (data?: any) => void;
@@ -10,18 +10,18 @@ export interface ResponseHandler {
 }
 
 export class ApiResponseHandler {
-  constructor(private toastService: ToastService) {}
+  constructor(private globalDialogService: GlobalDialogService) {}
 
   handleSuccess<T>(data: T, options: ResponseHandler = {}): T {
     const {
-      showSuccessToast = false,
+      showSuccessDialog = false,
       successMessage = 'Operação realizada com sucesso!',
       callback,
-      redirectTo
+      redirectTo,
     } = options;
 
-    if (showSuccessToast) {
-      this.toastService.success('Sucesso', successMessage);
+    if (showSuccessDialog) {
+      this.globalDialogService.showSuccess('Sucesso', successMessage);
     }
 
     if (callback) {
@@ -29,7 +29,6 @@ export class ApiResponseHandler {
     }
 
     if (redirectTo) {
-      // Implementar navegação se necessário
       window.location.href = redirectTo;
     }
 
@@ -37,15 +36,12 @@ export class ApiResponseHandler {
   }
 
   handleError(error: any, options: ResponseHandler = {}): never {
-    const {
-      showErrorToast = true,
-      errorCallback
-    } = options;
+    const { showErrorDialog = true, errorCallback } = options;
 
     const errorMessage = error?.message || 'Erro inesperado';
 
-    if (showErrorToast) {
-      this.toastService.error('Erro', errorMessage);
+    if (showErrorDialog) {
+      this.globalDialogService.showError('Erro', errorMessage);
     }
 
     if (errorCallback) {
@@ -56,21 +52,20 @@ export class ApiResponseHandler {
   }
 }
 
-// Utility functions para uso direto
 export const handleApiSuccess = <T>(
   data: T,
-  toastService: ToastService,
+  globalDialogService: GlobalDialogService,
   options: ResponseHandler = {}
 ): T => {
-  const handler = new ApiResponseHandler(toastService);
+  const handler = new ApiResponseHandler(globalDialogService);
   return handler.handleSuccess(data, options);
 };
 
 export const handleApiError = (
   error: any,
-  toastService: ToastService,
+  globalDialogService: GlobalDialogService,
   options: ResponseHandler = {}
 ): never => {
-  const handler = new ApiResponseHandler(toastService);
+  const handler = new ApiResponseHandler(globalDialogService);
   return handler.handleError(error, options);
 };

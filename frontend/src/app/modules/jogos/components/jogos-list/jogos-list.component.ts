@@ -20,8 +20,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { UserMiniHeaderComponent } from '../../../../shared/components/user-mini-header/user-mini-header.component';
 import { Palpite } from '../../../../shared/schemas/palpite.schema';
 import { User } from '../../../../shared/schemas/user.schema';
+import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { PalpitesService } from '../../../../shared/services/palpites.service';
-import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { JogosService } from '../../services/jogos.service';
 import { PalpiteDialogComponent } from './palpite-dialog/palpite-dialog.component';
@@ -115,8 +115,8 @@ export class JogosListComponent implements OnInit {
     private jogosService: JogosService,
     private palpitesService: PalpitesService,
     private authService: AuthService,
-    private toastService: ToastService,
-    private welcomeService: WelcomeService // Adicionado WelcomeService
+    private globalDialogService: GlobalDialogService,
+    private welcomeService: WelcomeService
   ) {
     this.palpiteForm = this.fb.group({
       golsTimeA: ['', [Validators.required, Validators.min(0), Validators.max(20)]],
@@ -171,7 +171,10 @@ export class JogosListComponent implements OnInit {
             this.isLoading = false;
           },
           error: () => {
-            this.toastService.show({ detail: 'Erro ao carregar jogos do dia', severity: 'error' });
+            this.globalDialogService.showError(
+              'Erro ao Carregar',
+              'Não foi possível carregar os jogos do dia'
+            );
             this.campeonatos = [];
             this.isLoading = false;
           },
@@ -236,18 +239,23 @@ export class JogosListComponent implements OnInit {
         })
         .toPromise();
 
-      this.toastService.show({
-        detail: 'Palpite enviado com sucesso!',
-        severity: 'success',
-      });
+      const props = {
+        title: 'Palpite enviado',
+        message: 'Seu palpite foi enviado com sucesso!',
+        details: 'Obrigado por participar!',
+        duration: 0,
+        btnTitleClose: 'Continuar',
+      };
+
+      this.globalDialogService.showSuccess(props);
 
       this.closePalpiteDialog();
-      this.loadJogos(); // Recarregar para atualizar status dos palpites
+      this.loadJogos();
     } catch {
-      this.toastService.show({
-        detail: 'Erro ao enviar palpite',
-        severity: 'error',
-      });
+      this.globalDialogService.showError(
+        'Erro',
+        'Não foi possível enviar o palpite. Tente novamente.'
+      );
     } finally {
       this.isSubmittingPalpite = false;
     }
@@ -345,11 +353,6 @@ export class JogosListComponent implements OnInit {
     // Normaliza os valores do palpite (trata undefined como 0)
     const palpiteTimeA = palpiteValue.timeA ?? 0;
     const palpiteTimeB = palpiteValue.timeB ?? 0;
-
-    console.log('Comparação de palpite:', {
-      palpite: { timeA: palpiteTimeA, timeB: palpiteTimeB },
-      resultado: { timeA: resultadoTimeA, timeB: resultadoTimeB },
-    });
 
     // Verifica se acertou o placar exato (números iguais)
     const acertouPlacar = palpiteTimeA === resultadoTimeA && palpiteTimeB === resultadoTimeB;

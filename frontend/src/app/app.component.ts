@@ -3,12 +3,21 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { AuthService } from './modules/auth/services/auth.service';
+import { GlobalDialogComponent } from './shared/components/error-dialog/error-dialog.component';
+import { SnackbarContainerComponent } from './shared/components/snackbar-container/snackbar-container.component';
 import { SplashScreenComponent } from './shared/components/splash-screen/splash-screen.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ToastModule, SplashScreenComponent],
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    ToastModule,
+    SplashScreenComponent,
+    SnackbarContainerComponent,
+    GlobalDialogComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
