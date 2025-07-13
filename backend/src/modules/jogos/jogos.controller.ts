@@ -8,6 +8,7 @@ import {
   Query,
   Request,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
@@ -186,8 +187,16 @@ export class JogosController {
       if (totalJogosLimitados >= limiteNumber) break;
 
       const jogosDisponiveis = campeonato.jogos || [];
+
+      // Ordena os jogos por data antes de aplicar o limite
+      const jogosOrdenados = jogosDisponiveis.sort((a, b) => {
+        const dataA = new Date(a.data);
+        const dataB = new Date(b.data);
+        return dataA.getTime() - dataB.getTime();
+      });
+
       const jogosRestantes = limiteNumber - totalJogosLimitados;
-      const jogosLimitados = jogosDisponiveis.slice(0, jogosRestantes);
+      const jogosLimitados = jogosOrdenados.slice(0, jogosRestantes);
 
       if (jogosLimitados.length > 0) {
         totalJogosLimitados += jogosLimitados.length;
@@ -249,6 +258,11 @@ export class JogosController {
     return this.footballApiService.listarCompeticoes();
   }
 
+  // Executa uma vez por dia às 04:00 para sincronizar jogos dos próximos 60 dias
+  @Cron('0 4 * * *', {
+    name: 'sincronizar-global-60-dias',
+    timeZone: 'America/Sao_Paulo',
+  })
   @Post('sincronizar-global-60-dias')
   @Public()
   @ResponseMessage('Sincronização global de 60 dias executada com sucesso')

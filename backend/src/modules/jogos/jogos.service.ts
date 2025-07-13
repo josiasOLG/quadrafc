@@ -75,10 +75,17 @@ export class JogosService {
   }
 
   async findJogosParaProcessar(): Promise<JogoDocument[]> {
+    const hoje = new Date();
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59, 999);
+
     return this.jogoModel
       .find({
         status: { $in: ['aberto', 'encerrado'] },
-        data: { $lt: new Date() },
+        data: {
+          $gte: inicioMes,
+          $lte: fimMes,
+        },
       })
       .exec();
   }
