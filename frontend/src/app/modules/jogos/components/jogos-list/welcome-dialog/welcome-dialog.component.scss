@@ -1,0 +1,262 @@
+// ===================================
+// WELCOME DIALOG STYLES
+// ===================================
+
+::ng-deep {
+  .p-dialog:not(.p-dialog-maximized) {
+    width: 100vw !important;
+  }
+  .welcome-dialog {
+    margin: 0 !important;
+    .p-dialog {
+      border-radius: var(--qfc-radius-xl) var(--qfc-radius-xl) 0 0 !important;
+      box-shadow: var(--qfc-shadow-xl) !important;
+      border: none !important;
+      margin: 0 !important;
+      animation: slideUpWelcome 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+      overflow: hidden !important;
+    }
+
+    .p-dialog-content {
+      padding: 0 !important;
+      border-radius: var(--qfc-radius-xl) var(--qfc-radius-xl) 0 0 !important;
+      overflow: hidden !important;
+    }
+
+    .p-dialog-mask {
+      background: var(--qfc-bg-overlay) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+    }
+  }
+}
+
+.welcome-content {
+  background: var(--qfc-bg-primary);
+  position: relative;
+  overflow: hidden;
+
+  // Gradient background decorativo
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: var(--qfc-gradient-primary);
+    opacity: 0.1;
+    z-index: 0;
+  }
+}
+
+// ===================================
+// HEADER SECTION
+// ===================================
+.welcome-header {
+  position: relative;
+  text-align: center;
+  padding: var(--qfc-spacing-2xl) var(--qfc-spacing-lg) var(--qfc-spacing-lg);
+  z-index: 1;
+
+  .welcome-title {
+    font-size: var(--qfc-font-size-2xl);
+    font-weight: var(--qfc-font-weight-bold);
+    color: var(--qfc-text-primary);
+    margin: 0 0 var(--qfc-spacing-sm) 0;
+    font-family: var(--qfc-font-family);
+  }
+
+  .welcome-subtitle {
+    font-size: var(--qfc-font-size-lg);
+    font-weight: var(--qfc-font-weight-medium);
+    color: var(--qfc-text-secondary);
+    margin: 0;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.4;
+  }
+}
+
+// ===================================
+// BODY CONTENT
+// ===================================
+.welcome-body {
+  padding: 0 var(--qfc-spacing-lg) var(--qfc-spacing-lg);
+  position: relative;
+  z-index: 1;
+
+  .feature-highlight {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--qfc-spacing-md);
+    background: rgba(30, 58, 138, 0.05);
+    border-radius: var(--qfc-radius-lg);
+    padding: var(--qfc-spacing-lg);
+    margin-bottom: var(--qfc-spacing-lg);
+    border-left: 4px solid var(--qfc-primary);
+    box-shadow: var(--qfc-shadow-sm);
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--qfc-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--qfc-shadow-md);
+
+      i {
+        font-size: 1.5rem;
+        color: var(--qfc-text-inverse);
+      }
+    }
+
+    .feature-content {
+      flex: 1;
+
+      .feature-title {
+        font-size: var(--qfc-font-size-lg);
+        font-weight: var(--qfc-font-weight-semibold);
+        color: var(--qfc-primary);
+        margin: 0 0 var(--qfc-spacing-xs) 0;
+      }
+
+      .feature-description {
+        font-size: var(--qfc-font-size-sm);
+        color: var(--qfc-text-secondary);
+        margin: 0;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+// ===================================
+// FEATURES GRID
+// ===================================
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--qfc-spacing-sm);
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: var(--qfc-spacing-sm);
+    padding: var(--qfc-spacing-sm) var(--qfc-spacing-md);
+    background: var(--qfc-bg-secondary);
+    border-radius: var(--qfc-radius-md);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--qfc-bg-tertiary);
+      transform: translateX(4px);
+    }
+
+    i {
+      font-size: var(--qfc-font-size-lg);
+      color: var(--qfc-primary);
+      width: 24px;
+      flex-shrink: 0;
+    }
+
+    span {
+      font-size: var(--qfc-font-size-sm);
+      font-weight: var(--qfc-font-weight-medium);
+      color: var(--qfc-text-primary);
+    }
+  }
+}
+
+// ===================================
+// FOOTER SECTION
+// ===================================
+.welcome-footer {
+  padding: var(--qfc-spacing-lg);
+  border-top: 1px solid var(--qfc-border-primary);
+  background: var(--qfc-bg-secondary);
+  position: relative;
+  z-index: 1;
+
+  ::ng-deep .welcome-button {
+    width: 100% !important;
+
+    .p-button {
+      width: 100% !important;
+      background: var(--qfc-gradient-primary) !important;
+      border: none !important;
+      padding: var(--qfc-spacing-md) var(--qfc-spacing-lg) !important;
+      font-size: var(--qfc-font-size-lg) !important;
+      font-weight: var(--qfc-font-weight-semibold) !important;
+      border-radius: var(--qfc-radius-lg) !important;
+      box-shadow: var(--qfc-shadow-md) !important;
+      transition: all 0.3s ease !important;
+
+      &:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: var(--qfc-shadow-lg) !important;
+      }
+
+      &:active {
+        transform: translateY(0) !important;
+      }
+
+      .p-button-icon {
+        margin-right: var(--qfc-spacing-sm) !important;
+      }
+    }
+  }
+}
+
+// ===================================
+// ANIMATIONS
+// ===================================
+@keyframes slideUpWelcome {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ===================================
+// RESPONSIVE DESIGN
+// ===================================
+@media (max-width: 480px) {
+  .welcome-header {
+    padding: var(--qfc-spacing-xl) var(--qfc-spacing-md) var(--qfc-spacing-md);
+
+    .welcome-title {
+      font-size: var(--qfc-font-size-xl);
+    }
+
+    .welcome-subtitle {
+      font-size: var(--qfc-font-size-base);
+    }
+  }
+
+  .welcome-body {
+    padding: 0 var(--qfc-spacing-md) var(--qfc-spacing-md);
+
+    .feature-highlight {
+      flex-direction: column;
+      text-align: center;
+      gap: var(--qfc-spacing-sm);
+
+      .feature-icon {
+        align-self: center;
+      }
+    }
+  }
+
+  .welcome-footer {
+    padding: var(--qfc-spacing-md);
+  }
+}

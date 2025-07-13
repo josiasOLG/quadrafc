@@ -1,0 +1,60 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="welcome-dialog"
+  position="bottom"
+  [showHeader]="false"
+  (onHide)="onDialogHide()"
+  [breakpoints]="{ '960px': '100vw' }"
+  [style]="{ width: '100vw !important', 'max-width': '500px' }">
+  <div class="welcome-content">
+    <!-- Header com ícone e título -->
+    <div class="welcome-header">
+      <h2 class="welcome-title">Bem-vindo ao QuadraFC!</h2>
+      <p class="welcome-subtitle">O maior ranking de bairros de futebol da sua cidade</p>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <div class="welcome-body">
+      <div class="feature-highlight">
+        <div class="feature-icon">
+          <i class="pi pi-trophy"></i>
+        </div>
+        <div class="feature-content">
+          <h3 class="feature-title">Ranking de Bairros</h3>
+          <p class="feature-description">
+            Descubra qual bairro da sua cidade tem os melhores palpiteiros! Compete com seus vizinhos e mostre que seu
+            bairro é o melhor no futebol.
+          </p>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <i class="pi pi-chart-line"></i>
+          <span>Faça palpites nos jogos</span>
+        </div>
+        <div class="feature-item">
+          <i class="pi pi-users"></i>
+          <span>Compete com seu bairro</span>
+        </div>
+        <div class="feature-item">
+          <i class="pi pi-star"></i>
+          <span>Ganhe pontos e rankings</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer com botão -->
+    <div class="welcome-footer">
+      <p-button
+        label="Entendi, vamos começar!"
+        icon="pi pi-check"
+        styleClass="welcome-button"
+        (onClick)="closeDialog()"></p-button>
+    </div>
+  </div>
+</p-dialog>

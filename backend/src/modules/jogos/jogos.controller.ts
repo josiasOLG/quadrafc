@@ -144,38 +144,78 @@ export class JogosController {
       .then((jogos) => jogos.filter((jogo) => jogo.data >= startDate && jogo.data <= endDate));
   }
 
-  @Get('campeonatos/:dataInicial/:dias')
+  @Get('campeonatos/:dataInicial/:limite')
   @ResponseMessage('Jogos por campeonatos recuperados com sucesso')
   @ApiOperation({
-    summary:
-      'Buscar jogos organizados por campeonatos de qualquer campeonato mundial (até 90 dias)',
+    summary: 'Buscar jogos organizados por campeonatos com limite de quantidade de jogos',
   })
   async findJogosPorCampeonatos(
     @Param('dataInicial') dataInicial: string,
-    @Param('dias') dias: string,
+    @Param('limite') limite: string,
     @Request() req: any
   ) {
-    const diasNumber = parseInt(dias, 10);
+    const limiteNumber = parseInt(limite, 10);
 
-    // Remove limite de 30 dias - agora permite até 90 dias para sincronização global
-    if (diasNumber > 90) {
-      throw new BadRequestException('O limite máximo é de 90 dias no futuro');
+    // Validação do limite
+    if (isNaN(limiteNumber) || limiteNumber < 1) {
+      throw new BadRequestException('O parâmetro "limite" deve ser um número válido maior que 0');
     }
 
-    // Busca diretamente do MongoDB todos os jogos organizados por campeonatos
+    if (limiteNumber > 1000) {
+      throw new BadRequestException('O limite máximo é de 1000 jogos');
+    }
+
+    this.logger.log(
+      `🔍 Buscando até ${limiteNumber} jogos a partir de ${dataInicial} (próximos 60 dias)`
+    );
+
+    // Busca jogos organizados por campeonatos (usando 60 dias para pegar mais jogos disponíveis)
     // Passa o userId para filtrar apenas os palpites do usuário logado
     const userId = req.user?.id || req.user?.sub;
-    const resultado = await this.jogosService.findByDataComCampeonatos(
+    const resultadoCompleto = await this.jogosService.findByDataComCampeonatos(
       dataInicial,
-      diasNumber,
+      60, // Busca em 60 dias para ter mais jogos disponíveis
       userId
     );
 
+    // Aplica o limite de quantidade de jogos de forma sequencial pelos campeonatos
+    let totalJogosLimitados = 0;
+    const campeonatosLimitados = [];
+
+    for (const campeonato of resultadoCompleto.campeonatos || []) {
+      if (totalJogosLimitados >= limiteNumber) break;
+
+      const jogosDisponiveis = campeonato.jogos || [];
+      const jogosRestantes = limiteNumber - totalJogosLimitados;
+      const jogosLimitados = jogosDisponiveis.slice(0, jogosRestantes);
+
+      if (jogosLimitados.length > 0) {
+        totalJogosLimitados += jogosLimitados.length;
+        campeonatosLimitados.push({
+          ...campeonato,
+          jogos: jogosLimitados,
+          total: jogosLimitados.length,
+        });
+      }
+    }
+
+    const resultado = {
+      ...resultadoCompleto,
+      campeonatos: campeonatosLimitados,
+      totalJogos: totalJogosLimitados,
+      totalCampeonatos: campeonatosLimitados.length,
+      limiteAplicado: limiteNumber,
+      periodoConsultado: '60 dias a partir da data inicial',
+    };
+
+    this.logger.log(
+      `📊 Retornando ${resultado.totalJogos} jogos (limite: ${limiteNumber}) em ${resultado.totalCampeonatos} campeonatos`
+    );
+
     // Se não encontrou jogos suficientes no MongoDB, retorna o que tem
-    // (não força sincronização automática para evitar demora na resposta)
     if (resultado.totalJogos === 0) {
       this.logger.log(
-        `⚠️ Nenhum jogo encontrado no MongoDB para ${dataInicial} até ${diasNumber} dias. Use a sincronização global para populá-los.`
+        `⚠️ Nenhum jogo encontrado no MongoDB a partir de ${dataInicial}. Use a sincronização global para populá-los.`
       );
     }
 

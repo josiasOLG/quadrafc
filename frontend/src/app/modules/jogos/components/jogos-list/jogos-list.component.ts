@@ -24,6 +24,8 @@ import { PalpitesService } from '../../../../shared/services/palpites.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { JogosService } from '../../services/jogos.service';
+import { WelcomeDialogComponent } from './welcome-dialog/welcome-dialog.component';
+import { WelcomeService } from './welcome-dialog/welcome.service';
 
 // Interface para jogos que vêm da API
 interface JogoAPI {
@@ -89,6 +91,7 @@ interface CampeonatoOrganizado {
     InputTextModule,
     TabViewModule,
     UserMiniHeaderComponent,
+    WelcomeDialogComponent,
   ],
   templateUrl: './jogos-list.component.html',
   styleUrls: ['./jogos-list.component.scss'],
@@ -101,6 +104,7 @@ export class JogosListComponent implements OnInit {
   isLoading = true;
   selectedJogo: JogoComPalpite | null = null;
   showPalpiteDialog = false;
+  showWelcomeDialog = false;
   palpiteForm: FormGroup;
   isSubmittingPalpite = false;
 
@@ -109,7 +113,8 @@ export class JogosListComponent implements OnInit {
     private jogosService: JogosService,
     private palpitesService: PalpitesService,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private welcomeService: WelcomeService // Adicionado WelcomeService
   ) {
     this.palpiteForm = this.fb.group({
       golsTimeA: ['', [Validators.required, Validators.min(0), Validators.max(20)]],
@@ -120,6 +125,7 @@ export class JogosListComponent implements OnInit {
   ngOnInit(): void {
     this.loadUser();
     this.loadJogos();
+    this.checkWelcomeDialog();
   }
 
   private loadUser(): void {
@@ -134,8 +140,8 @@ export class JogosListComponent implements OnInit {
     // Busca jogos organizados por campeonatos
     const hoje = new Date().toISOString().split('T')[0];
 
-    // Primeiro tenta buscar via endpoint de campeonatos
-    this.jogosService.getJogosPorCampeonatos(hoje, 60).subscribe({
+    // Primeiro tenta buscar via endpoint de campeonatos (limite de 50 jogos)
+    this.jogosService.getJogosPorCampeonatos(hoje, 12).subscribe({
       next: (response: any) => {
         // A resposta já vem diretamente com os dados (sem wrapper success/data)
         if (response && response.campeonatos) {
@@ -400,5 +406,20 @@ export class JogosListComponent implements OnInit {
       // Esconde a imagem quando falha ao carregar
       img.style.display = 'none';
     }
+  }
+
+  // Welcome Dialog Methods
+  checkWelcomeDialog(): void {
+    if (!this.welcomeService.hasSeenWelcomeDialog()) {
+      // Aguarda um pouco para garantir que a tela carregou
+      setTimeout(() => {
+        this.showWelcomeDialog = true;
+      }, 1000);
+    }
+  }
+
+  onWelcomeDialogClose(): void {
+    this.showWelcomeDialog = false;
+    this.welcomeService.markWelcomeDialogAsSeen();
   }
 }

@@ -72,8 +72,8 @@ export class JogosService extends BaseApiService<Jogo, CreateJogoDto> {
     return this.get<string[]>('campeonatos');
   }
 
-  getJogosPorCampeonatos(dataInicial: string, dias: number): Observable<any> {
-    return this.get<any>(`campeonatos/${dataInicial}/${dias}`);
+  getJogosPorCampeonatos(dataInicial: string, limite: number): Observable<any> {
+    return this.get<any>(`campeonatos/${dataInicial}/${limite}`);
   }
 
   getJogosHojePorCampeonatos(): Observable<any> {
