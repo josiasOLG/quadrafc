@@ -64,8 +64,9 @@ export class GlobalDialogComponent implements OnInit, OnDestroy {
         return `${baseClass} p-button-secondary`;
       case 'success':
         return `${baseClass} p-button-success`;
+      case 'primary':
       default:
-        return `${baseClass} p-button-primary`;
+        return `${baseClass}`;
     }
   }
 
