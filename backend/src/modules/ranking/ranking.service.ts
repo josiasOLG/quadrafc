@@ -430,38 +430,9 @@ export class RankingService {
     params: PaginationParams,
     campeonato?: string
   ) {
-    console.log('🔍 Iniciando getRankingBairrosCidade:', { cidade, estado, params, campeonato });
-
     if (!cidade || !estado) {
       throw new Error('Cidade e estado são obrigatórios');
     }
-
-    console.log(`🏆 Buscando ranking de bairros para o campeonato: ${campeonato}`);
-
-    // Primeiro, vamos verificar se existem dados base
-    const totalUsers = await this.userModel.countDocuments({ cidade, estado });
-    console.log(`📊 Total de usuários em ${cidade}/${estado}: ${totalUsers}`);
-
-    const usersWithBairro = await this.userModel.countDocuments({
-      cidade,
-      estado,
-      bairro: { $exists: true, $ne: null, $nin: [''] },
-    });
-    console.log(`🏠 Usuários com bairro em ${cidade}/${estado}: ${usersWithBairro}`);
-
-    // Verificar se existem palpites
-    const totalPalpites = await this.userModel.aggregate([
-      { $lookup: { from: 'palpites', localField: '_id', foreignField: 'userId', as: 'palpites' } },
-      { $unwind: '$palpites' },
-      { $count: 'total' },
-    ]);
-    console.log(
-      `🎯 Total de palpites no sistema: ${totalPalpites.length > 0 ? totalPalpites[0].total : 0}`
-    );
-
-    // Verificar se existem jogos para o campeonato
-    const jogosCount = await this.jogoModel.countDocuments({ campeonato });
-    console.log(`⚽ Total de jogos para campeonato "${campeonato}": ${jogosCount}`);
 
     // Pipeline com joins: users → palpites → jogos
     const bairrosPipeline: any[] = [
@@ -555,71 +526,6 @@ export class RankingService {
       },
     ];
 
-    console.log('🔧 Pipeline completo:', JSON.stringify(bairrosPipeline, null, 2));
-
-    // Vamos testar o pipeline passo a passo
-    console.log('🔍 Testando pipeline passo a passo...');
-
-    // Passo 1: Match inicial
-    const step1 = await this.userModel.aggregate([bairrosPipeline[0]]).exec();
-    console.log(`✅ Passo 1 - Match usuários: ${step1.length} encontrados`);
-
-    // Passo 2: Após lookup palpites
-    const step2 = await this.userModel.aggregate([bairrosPipeline[0], bairrosPipeline[1]]).exec();
-    console.log(`✅ Passo 2 - Após lookup palpites: ${step2.length} documentos`);
-
-    // Passo 3: Após unwind palpites
-    const step3 = await this.userModel
-      .aggregate([bairrosPipeline[0], bairrosPipeline[1], bairrosPipeline[2]])
-      .exec();
-    console.log(`✅ Passo 3 - Após unwind palpites: ${step3.length} documentos`);
-
-    // Passo 4: Após lookup jogos
-    const step4 = await this.userModel
-      .aggregate([bairrosPipeline[0], bairrosPipeline[1], bairrosPipeline[2], bairrosPipeline[3]])
-      .exec();
-    console.log(`✅ Passo 4 - Após lookup jogos: ${step4.length} documentos`);
-
-    // Debug: Verificar tipos de IDs
-    if (step4.length > 0) {
-      const sample = step4[0];
-      console.log('🔍 Sample após lookup jogos:', {
-        userId: sample._id,
-        userIdType: typeof sample._id,
-        palpiteJogoId: sample.palpites?.jogoId,
-        palpiteJogoIdType: typeof sample.palpites?.jogoId,
-        jogoArray: sample.jogo,
-        jogoArrayLength: sample.jogo?.length || 'undefined',
-      });
-
-      // Buscar um jogo diretamente para comparar
-      const umJogo = await this.jogoModel.findOne().exec();
-      console.log('🔍 Sample de jogo direto:', {
-        jogoId: umJogo?._id,
-        jogoIdType: typeof umJogo?._id,
-        jogoCampeonato: umJogo?.campeonato,
-      });
-
-      // Verificar se existem palpites com jogoId que bate com jogos
-      const palpitesSample = await this.userModel
-        .aggregate([
-          {
-            $lookup: {
-              from: 'palpites',
-              localField: '_id',
-              foreignField: 'userId',
-              as: 'palpites',
-            },
-          },
-          { $unwind: '$palpites' },
-          { $limit: 3 },
-          { $project: { 'palpites.jogoId': 1, 'palpites.pontos': 1 } },
-        ])
-        .exec();
-      console.log('🔍 Sample palpites:', palpitesSample);
-    }
-
-    // Passo 5: Após unwind jogos
     const step5 = await this.userModel
       .aggregate([
         bairrosPipeline[0],
@@ -629,7 +535,6 @@ export class RankingService {
         bairrosPipeline[4],
       ])
       .exec();
-    console.log(`✅ Passo 5 - Após unwind jogos: ${step5.length} documentos`);
 
     // Passo 6: Após match campeonato
     const step6 = await this.userModel
@@ -642,20 +547,8 @@ export class RankingService {
         bairrosPipeline[5],
       ])
       .exec();
-    console.log(`✅ Passo 6 - Após match campeonato: ${step6.length} documentos`);
-
-    if (step6.length > 0) {
-      console.log(
-        '🔍 Exemplo de documento após match campeonato:',
-        JSON.stringify(step6[0], null, 2)
-      );
-    }
 
     const bairrosData = await this.userModel.aggregate(bairrosPipeline).exec();
-
-    console.log(
-      `📊 Encontrados ${bairrosData.length} bairros em ${cidade}/${estado} para ${campeonato}`
-    );
 
     if (bairrosData.length === 0) {
       return {
@@ -703,13 +596,9 @@ export class RankingService {
   }
 
   async getRankingTopUsuariosPorBairro(cidade: string, estado: string, campeonato?: string) {
-    console.log('🔍 Iniciando getRankingTopUsuariosPorBairro:', { cidade, estado, campeonato });
-
     if (!cidade || !estado) {
       throw new Error('Cidade e estado são obrigatórios');
     }
-
-    console.log(`🏆 Buscando ranking de usuários para o campeonato: ${campeonato}`);
 
     // Pipeline com joins: users → palpites → jogos
     const aggregationPipeline: any[] = [
@@ -785,10 +674,6 @@ export class RankingService {
 
     const todosUsuarios = await this.userModel.aggregate(aggregationPipeline).exec();
 
-    console.log(
-      `📊 Encontrados ${todosUsuarios.length} usuários em ${cidade}/${estado} para o campeonato ${campeonato}`
-    );
-
     if (todosUsuarios.length === 0) {
       return {
         podio: [],
@@ -827,8 +712,6 @@ export class RankingService {
     // Separar pódio (3 primeiros) dos outros usuários
     const podio = usuariosFormatados.slice(0, 3);
     const outros = usuariosFormatados.slice(3);
-
-    console.log(`🏆 Pódio: ${podio.length} usuários, Outros: ${outros.length} usuários`);
 
     return {
       podio: podio,
