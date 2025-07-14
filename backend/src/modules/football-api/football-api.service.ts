@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { isStatusValido, obterDetalhesStatus } from '../../shared/enums/jogo-status.enum';
+import { formatarDataBrasil, preservarDataOriginalAPI } from '../../shared/utils/timezone.util';
 
 @Injectable()
 export class FootballApiService {
@@ -104,27 +106,47 @@ export class FootballApiService {
   }
 
   transformarJogosAPI(jogosAPI: any[]): any[] {
-    return jogosAPI.map((jogo) => ({
-      codigoAPI: jogo.id,
-      timeA: {
-        nome: jogo.homeTeam.name,
-        escudo: jogo.homeTeam.crest || '',
-      },
-      timeB: {
-        nome: jogo.awayTeam.name,
-        escudo: jogo.awayTeam.crest || '',
-      },
-      data: new Date(jogo.utcDate),
-      campeonato: jogo.competition?.name || 'Sem Campeonato',
-      status: jogo.status === 'FINISHED' ? 'encerrado' : 'aberto',
-      resultado:
-        jogo.status === 'FINISHED' && jogo.score?.fullTime
-          ? {
-              timeA: jogo.score.fullTime.home,
-              timeB: jogo.score.fullTime.away,
-            }
-          : null,
-    }));
+    return jogosAPI.map((jogo) => {
+      const statusOriginal = jogo.status;
+      const statusDetalhes = obterDetalhesStatus(statusOriginal);
+
+      if (!isStatusValido(statusOriginal)) {
+        this.logger.warn(
+          `Status inválido encontrado: ${statusOriginal}. Usando 'agendado' como padrão.`
+        );
+      }
+
+      return {
+        codigoAPI: jogo.id,
+        timeA: {
+          nome: jogo.homeTeam.name,
+          escudo: jogo.homeTeam.crest || '',
+        },
+        timeB: {
+          nome: jogo.awayTeam.name,
+          escudo: jogo.awayTeam.crest || '',
+        },
+        data: preservarDataOriginalAPI(jogo.utcDate),
+        dataOriginalUTC: jogo.utcDate,
+        campeonato: jogo.competition?.name || 'Sem Campeonato',
+        status: statusDetalhes.jogoFinalizado ? 'encerrado' : 'aberto',
+        _statusOriginalAPI: statusOriginal,
+        _statusDetalhes: {
+          podeAceitar: statusDetalhes.podeAceitar,
+          jogoFinalizado: statusDetalhes.jogoFinalizado,
+          descricao: statusDetalhes.descricao,
+        },
+        resultado:
+          jogo.score?.fullTime &&
+          jogo.score.fullTime.home !== null &&
+          jogo.score.fullTime.away !== null
+            ? {
+                timeA: jogo.score.fullTime.home,
+                timeB: jogo.score.fullTime.away,
+              }
+            : null,
+      };
+    });
   }
 
   // Lista de times brasileiros conhecidos (principais clubes)
@@ -422,8 +444,9 @@ export class FootballApiService {
 
           if (jogoRelevante) {
             const tipo = temTimeBrasileiro ? 'brasileiro' : 'competição importante';
+            const dataFormatadaBrasil = formatarDataBrasil(jogo.utcDate, 'dd/MM/yyyy HH:mm');
             this.logger.log(
-              `Jogo ${tipo} encontrado: ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name} (${jogo.utcDate})`
+              `Jogo ${tipo} encontrado: ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name} (${dataFormatadaBrasil})`
             );
           }
 
@@ -944,8 +967,9 @@ export class FootballApiService {
       if (todosJogos.length > 0) {
         this.logger.log(`📝 Exemplos de jogos encontrados:`);
         todosJogos.slice(0, 5).forEach((jogo, index) => {
+          const dataFormatadaBrasil = formatarDataBrasil(jogo.utcDate, 'dd/MM/yyyy HH:mm');
           this.logger.log(
-            `   ${index + 1}. ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name} (${jogo.utcDate})`
+            `   ${index + 1}. ${jogo.homeTeam?.name} vs ${jogo.awayTeam?.name} - ${jogo.competition?.name} (${dataFormatadaBrasil})`
           );
         });
       }

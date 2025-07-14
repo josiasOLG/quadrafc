@@ -42,7 +42,7 @@ export class LayoutComponent {
     {
       label: 'Jogos',
       icon: 'pi pi-trophy',
-      routerLink: '/games',
+      routerLink: '/jogos',
     },
     {
       label: 'Palpites',
@@ -53,43 +53,6 @@ export class LayoutComponent {
       label: 'Ranking',
       icon: 'pi pi-chart-line',
       routerLink: '/ranking',
-    },
-    {
-      label: 'Localização',
-      icon: 'pi pi-map',
-      items: [
-        {
-          label: 'Cidades',
-          icon: 'pi pi-building',
-          routerLink: '/cidades',
-        },
-        {
-          label: 'Bairros',
-          icon: 'pi pi-map-marker',
-          routerLink: '/bairros',
-        },
-      ],
-    },
-    {
-      label: 'Sistema',
-      icon: 'pi pi-cog',
-      items: [
-        {
-          label: 'Conquistas',
-          icon: 'pi pi-trophy',
-          routerLink: '/conquistas',
-        },
-        {
-          label: 'Transações',
-          icon: 'pi pi-dollar',
-          routerLink: '/transacoes-moedas',
-        },
-        {
-          label: 'Sincronização',
-          icon: 'pi pi-sync',
-          routerLink: '/sincronizacao',
-        },
-      ],
     },
   ];
 

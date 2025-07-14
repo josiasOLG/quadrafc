@@ -40,7 +40,7 @@ export class Jogo {
 
   @ApiProperty({ description: 'Data e hora do jogo' })
   @Prop({ required: true })
-  data: Date;
+  data: string;
 
   @ApiProperty({ description: 'Resultado do jogo' })
   @Prop({ type: Resultado })

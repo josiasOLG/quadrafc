@@ -44,6 +44,11 @@ export const routes: Routes = [
             (m) => m.UserDetailComponent
           ),
       },
+      {
+        path: 'jogos',
+        loadComponent: () =>
+          import('./modules/games/game-list/game-list.component').then((m) => m.GameListComponent),
+      },
 
       // Adicionar mais rotas conforme necessário
     ],

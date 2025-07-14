@@ -140,9 +140,12 @@ export class JogosController {
     const startDate = new Date(dataInicial + 'T00:00:00');
     const endDate = new Date(dataFim.toISOString().split('T')[0] + 'T23:59:59.999');
 
-    return this.jogosService
-      .findAll()
-      .then((jogos) => jogos.filter((jogo) => jogo.data >= startDate && jogo.data <= endDate));
+    return this.jogosService.findAll().then((jogos) =>
+      jogos.filter((jogo) => {
+        const jogoDate = new Date(jogo.data);
+        return jogoDate >= startDate && jogoDate <= endDate;
+      })
+    );
   }
 
   @Get('campeonatos/:dataInicial/:limite')

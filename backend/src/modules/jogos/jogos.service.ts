@@ -203,7 +203,7 @@ export class JogosService {
     // Atualiza apenas campos que podem ter mudado
     const camposParaAtualizar: any = {};
 
-    if (jogoExistente.data.getTime() !== new Date(dadosNovos.data).getTime()) {
+    if (jogoExistente.data !== dadosNovos.data) {
       camposParaAtualizar.data = dadosNovos.data;
     }
 

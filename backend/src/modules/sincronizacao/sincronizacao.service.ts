@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron } from '@nestjs/schedule';
 import { Model } from 'mongoose';
+import { isJogoFinalizado } from '../../shared/enums/jogo-status.enum';
 import { Palpite, PalpiteDocument } from '../../shared/schemas/palpite.schema';
 import { User, UserDocument } from '../../shared/schemas/user.schema';
 import { FootballApiService } from '../football-api/football-api.service';
@@ -129,7 +130,7 @@ export class SincronizacaoService {
             const jogoAtualizado = await this.footballApiService.getJogoDetalhes(jogo.codigoAPI);
 
             // Verificar se o jogo já terminou
-            if (jogoAtualizado.match.status === 'FINISHED') {
+            if (isJogoFinalizado(jogoAtualizado.match.status)) {
               this.logger.log(
                 `Jogo #${jogo.codigoAPI} (${jogo.timeA.nome} x ${jogo.timeB.nome}) finalizado. Processando resultado...`
               );
@@ -206,7 +207,7 @@ export class SincronizacaoService {
             }
 
             // Verificar se o jogo já terminou
-            if (jogoAtualizado.match.status === 'FINISHED') {
+            if (isJogoFinalizado(jogoAtualizado.match.status)) {
               this.logger.log(
                 `Jogo #${jogo.codigoAPI} (${jogo.timeA.nome} x ${jogo.timeB.nome}) finalizado. Processando resultado...`
               );
