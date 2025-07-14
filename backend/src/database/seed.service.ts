@@ -1,10 +1,14 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { JogosService } from '../modules/jogos/jogos.service';
 import { PalpitesService } from '../modules/palpites/palpites.service';
 import { RodadasService } from '../modules/rodadas/rodadas.service';
 import { TransacoesMoedasService } from '../modules/transacoes-moedas/transacoes-moedas.service';
 import { UsersService } from '../modules/users/users.service';
+import { Jogo, JogoDocument } from '../shared/schemas/jogo.schema';
+import { Palpite, PalpiteDocument } from '../shared/schemas/palpite.schema';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -16,7 +20,9 @@ export class SeedService implements OnModuleInit {
     private rodadasService: RodadasService,
     private jogosService: JogosService,
     private palpitesService: PalpitesService,
-    private transacoesMoedasService: TransacoesMoedasService
+    private transacoesMoedasService: TransacoesMoedasService,
+    @InjectModel(Palpite.name) private palpiteModel: Model<PalpiteDocument>,
+    @InjectModel(Jogo.name) private jogoModel: Model<JogoDocument>
   ) {}
 
   async onModuleInit() {
@@ -73,6 +79,10 @@ export class SeedService implements OnModuleInit {
       this.logger.log('👥 Executando seed de usuários...');
       await this.seedUsers();
 
+      // 2. Criar palpites para usuários
+      this.logger.log('🎯 Executando seed de palpites...');
+      await this.seedPalpites();
+
       /* COMENTADO - NÃO NECESSÁRIO
       // 2. Criar rodadas históricas
       await this.seedRodadas();
@@ -109,41 +119,58 @@ export class SeedService implements OnModuleInit {
       //   return;
       // }
 
-      // Lista de bairros disponíveis - Novos bairros de Petrópolis
+      // Lista completa de bairros - Região Serrana do RJ (máximo possível das 3 cidades)
       const bairrosDisponiveis = [
-        // Petrópolis - RJ - Novos bairros
+        // Petrópolis - RJ (máximo de bairros)
         { nome: 'Alcobacinha', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Bela Vista', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Provisória', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Alto da Serra', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Alto Independência', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Bela Vista', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Bingen', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Bonsucesso', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Carangola', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Castelânea', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Centro', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Chácara Flora', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Caxambu', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Cremerie', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Corrêas', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Duarte da Silveira', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Duchas', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Estrada da Saudade', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Fazenda Alpina', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Fazenda Inglesa', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Granja Guarani', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Herval', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Independência', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Itaipava', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Itamarati', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Jardim Salvador', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Mosela', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Moinho Preto', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Nogueira', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Nova Cascatinha', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Parque São Vicente', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Pedro do Rio', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Posse', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Provisória', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Quitandinha', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Retiro', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Roseiral', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'São Pedro', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Secretário', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Siméria', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Sumidouro', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Taquara', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Valparaíso', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Vila Cristina', cidade: 'Petrópolis', estado: 'RJ' },
+        { nome: 'Vila Felipe', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Vila Imperial', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Vila Real', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Washington Luís', cidade: 'Petrópolis', estado: 'RJ' },
         { nome: 'Zona Industrial', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Corrêas', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Itaipava', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Pedro do Rio', cidade: 'Petrópolis', estado: 'RJ' },
-        { nome: 'Posse', cidade: 'Petrópolis', estado: 'RJ' },
 
-        // Paty do Alferes - RJ
+        // Paty do Alferes - RJ (máximo de bairros)
         { nome: 'Centro', cidade: 'Paty do Alferes', estado: 'RJ' },
         { nome: 'Avelar', cidade: 'Paty do Alferes', estado: 'RJ' },
         { nome: 'Arcozelo', cidade: 'Paty do Alferes', estado: 'RJ' },
@@ -154,11 +181,54 @@ export class SeedService implements OnModuleInit {
         { nome: 'Palmital', cidade: 'Paty do Alferes', estado: 'RJ' },
         { nome: 'Governador Portela', cidade: 'Paty do Alferes', estado: 'RJ' },
         { nome: 'São João Marcos', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Banquete', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Bemposta', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Bela Vista', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Brasilândia', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Cabaceiras', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Fazenda da Ponte', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Ilhas', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Pedra Branca', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Rio de Janeiro Pequeno', cidade: 'Paty do Alferes', estado: 'RJ' },
+        { nome: 'Santa Cruz', cidade: 'Paty do Alferes', estado: 'RJ' },
+
+        // Miguel Pereira - RJ (máximo de bairros)
+        { nome: 'Centro', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Governador Portela', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Conrado', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Javary', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Vila Inhomirim', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Moças', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Várzea dos Pássaros', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Vera Cruz', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Stela Maris', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Vila Rica', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Amélia', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Antônio de Pádua', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Bairro da Estação', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Bairro do Colégio', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Bela Vista', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Coelhos', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Dutra', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Estiva', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Getúlio Vargas', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Graminha', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Jardim das Palmeiras', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Jardim de Alah', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Parque do Ingá', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Parque Floresta', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Pedro Versiani', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Santa Rita', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'São João', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Vila Cabuçu', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Vila Operária', cidade: 'Miguel Pereira', estado: 'RJ' },
+        { nome: 'Vale do Paraíso', cidade: 'Miguel Pereira', estado: 'RJ' },
       ];
 
       this.logger.log(`� ${bairrosDisponiveis.length} bairros disponíveis para os usuários`);
-      const nomesBrasileiros = [
-        // Novos nomes masculinos brasileiros da região serrana do RJ
+      // Lista expandida com pelo menos 80 nomes masculinos + 20 femininos = 100+ usuários
+      const nomesMasculinos = [
+        // Nomes masculinos brasileiros da região serrana do RJ
         'Alexandre Moreira Silva',
         'Anderson Pereira dos Santos',
         'Antonio Carlos Oliveira',
@@ -209,10 +279,79 @@ export class SeedService implements OnModuleInit {
         'Sandro Henrique Ribeiro',
         'Thales Gabriel Martins',
         'Ubiratan dos Santos Gomes',
+        // Adicionando mais 30 nomes masculinos para totalizar 80
+        'André Luiz Monteiro',
+        'Arthur César Nogueira',
+        'Benedito Santos Lima',
+        'Cláudio Roberto Figueiredo',
+        'Daniel Eduardo Soares',
+        'Evandro José Batista',
+        'Francisco Carlos Maia',
+        'Gilberto Antonio Leal',
+        'Heitor Gabriel Pacheco',
+        'Israel Fernando Barros',
+        'Jadson Luis Moura',
+        'Kleber dos Santos Viana',
+        'Leonardo César Magalhães',
+        'Marcos Vinicius Toledo',
+        'Nilton Eduardo Farias',
+        'Osmar Henrique Guedes',
+        'Patrick Gabriel Rezende',
+        'Robson Carlos Tavares',
+        'Samuel Antonio Silveira',
+        'Tadeu Fernando Costa',
+        'Vagner Luis Peixoto',
+        'Wesley Eduardo Macedo',
+        'Yuri Gabriel Campos',
+        'Zeferino dos Santos Rocha',
+        'Alberto César Miranda',
+        'Benjamin Luiz Freire',
+        'Cristiano José Mendes',
+        'Davi Eduardo Pereira',
+        'Élton Gabriel Santos',
+        'Fabrício Luis Cardoso',
       ];
 
-      for (let i = 0; i < nomesBrasileiros.length; i++) {
-        const nome = nomesBrasileiros[i];
+      const nomesFemininos = [
+        // 20+ nomes femininos para completar os 100+ usuários
+        'Ana Carolina Silva',
+        'Beatriz Santos Oliveira',
+        'Camila Ferreira Costa',
+        'Daniela Pereira Lima',
+        'Eduarda Ribeiro Rocha',
+        'Fernanda dos Santos Cruz',
+        'Gabriela Martins Almeida',
+        'Helena Barbosa Nunes',
+        'Isabela Fernandes Cardoso',
+        'Juliana Carlos Mendes',
+        'Karla Roberto Araújo',
+        'Larissa Eduardo Gomes',
+        'Mariana Antônio Reis',
+        'Natália Luiz Teixeira',
+        'Olivia Vinicius Correia',
+        'Patrícia Henrique Miranda',
+        'Rafaela César Nascimento',
+        'Sabrina dos Santos Monteiro',
+        'Tatiana Carlos Vieira',
+        'Vanessa Augusto Caldeira',
+        'Bianca Fernandes Machado',
+        'Carolina Gabriel Lopes',
+        'Débora Hugo Cunha',
+        'Elaine Eduardo Borges',
+      ];
+
+      // Concatenar listas mantendo proporção de 80% masculinos
+      const todosOsNomes = [...nomesMasculinos, ...nomesFemininos];
+
+      this.logger.log(
+        `👥 Total de ${todosOsNomes.length} nomes disponíveis (${nomesMasculinos.length} masculinos, ${nomesFemininos.length} femininos)`
+      );
+      this.logger.log(
+        `📊 Proporção: ${((nomesMasculinos.length / todosOsNomes.length) * 100).toFixed(1)}% masculinos`
+      );
+
+      for (let i = 0; i < todosOsNomes.length; i++) {
+        const nome = todosOsNomes[i];
         const email =
           nome
             .toLowerCase()
@@ -237,7 +376,7 @@ export class SeedService implements OnModuleInit {
         if (totalPoints > 90) medalhas.push('Entusiasta');
 
         this.logger.debug(
-          `👤 Criando usuário ${i + 1}/${nomesBrasileiros.length}: ${nome} (${bairro.nome}, ${bairro.cidade}) - ${totalPoints} pontos`
+          `👤 Criando usuário ${i + 1}/${todosOsNomes.length}: ${nome} (${bairro.nome}, ${bairro.cidade}) - ${totalPoints} pontos`
         );
 
         // Criar usuário
@@ -276,13 +415,11 @@ export class SeedService implements OnModuleInit {
 
         // Log de progresso a cada 10 usuários
         if ((i + 1) % 10 === 0) {
-          this.logger.log(`📈 Progresso: ${i + 1}/${nomesBrasileiros.length} usuários criados`);
+          this.logger.log(`📈 Progresso: ${i + 1}/${todosOsNomes.length} usuários criados`);
         }
       }
 
-      this.logger.log(
-        `✅ ${nomesBrasileiros.length} usuários fake criados com pontos entre 0 e 100!`
-      );
+      this.logger.log(`✅ ${todosOsNomes.length} usuários fake criados com pontos entre 0 e 100!`);
     } catch (error) {
       this.logger.error('Erro ao criar usuários:', error);
     }
@@ -362,65 +499,7 @@ export class SeedService implements OnModuleInit {
     }
   }
 
-  private async seedPalpites() {
-    try {
-      this.logger.log('🎯 Criando palpites históricos...');
 
-      const users = await this.usersService.getRankingIndividual();
-      const jogosEncerrados = await this.jogosService.findAll();
-
-      // Para cada jogo encerrado, criar palpites de alguns usuários
-      for (const jogo of jogosEncerrados.filter((j) => j.status === 'encerrado')) {
-        // 60-80% dos usuários fizeram palpites
-        const numPalpites = Math.floor(users.data.length * (0.6 + Math.random() * 0.2));
-        const usuariosQueVaoPalpitar = users.data
-          .sort(() => Math.random() - 0.5)
-          .slice(0, numPalpites);
-
-        for (const user of usuariosQueVaoPalpitar) {
-          // Gerar palpite realista
-          const palpiteA = Math.floor(Math.random() * 4);
-          const palpiteB = Math.floor(Math.random() * 4);
-
-          // Calcular se acertou
-          const acertouPlacar =
-            jogo.resultado.timeA === palpiteA && jogo.resultado.timeB === palpiteB;
-
-          const resultadoReal = this.getResultado(jogo.resultado.timeA, jogo.resultado.timeB);
-          const resultadoPalpite = this.getResultado(palpiteA, palpiteB);
-          const acertouResultado = resultadoReal === resultadoPalpite;
-
-          // Calcular pontos
-          let pontos = 0;
-          let moedas = 0;
-
-          if (acertouPlacar) {
-            pontos = 10;
-            moedas = 50;
-          } else if (acertouResultado) {
-            pontos = 3;
-            moedas = 15;
-          }
-
-          try {
-            const createPalpiteDto = {
-              jogoId: (jogo as any)._id.toString(),
-              timeA: palpiteA,
-              timeB: palpiteB,
-            };
-
-            await this.palpitesService.create((user as any)._id.toString(), createPalpiteDto);
-          } catch (error) {
-            // Pular palpites duplicados ou outros erros
-          }
-        }
-      }
-
-      this.logger.log(`✅ Palpites históricos criados!`);
-    } catch (error) {
-      this.logger.error('Erro ao criar palpites:', error);
-    }
-  }
 
   private async seedTransacoes() {
     try {
@@ -513,5 +592,110 @@ export class SeedService implements OnModuleInit {
     } catch (error) {
       this.logger.error('❌ Erro durante limpeza e seed:', error);
     }
+  }
+
+  /**
+   * Criar palpites para todos os usuários nos jogos fixos
+   */
+  private async seedPalpites(): Promise<void> {
+    try {
+      // Verificar se já existem palpites usando o modelo
+      const existingPalpites = await this.palpiteModel.countDocuments();
+      if (existingPalpites > 0) {
+        this.logger.log('Palpites já existem no banco de dados.');
+        return;
+      }
+
+      this.logger.log('🎯 Iniciando criação de palpites...');
+
+      // Buscar todos os jogos reais do banco de dados
+      const jogos = await this.jogoModel.find().select('_id').exec();
+
+      if (jogos.length === 0) {
+        this.logger.warn('❌ Nenhum jogo encontrado no banco de dados para criar palpites');
+        return;
+      }
+
+      // Extrair apenas os IDs dos jogos reais
+      const jogosIds = jogos.map((jogo) => jogo._id.toString());
+
+      // Buscar todos os usuários
+      const rankingUsers = await this.usersService.getRankingIndividual();
+      const users = rankingUsers.data;
+
+      if (users.length === 0) {
+        this.logger.warn('❌ Nenhum usuário encontrado para criar palpites');
+        return;
+      }
+
+      this.logger.log(`👥 ${users.length} usuários encontrados`);
+      this.logger.log(`⚽ ${jogosIds.length} jogos reais disponíveis para palpites`);
+
+      let totalPalpitesCriados = 0;
+      const palpitesParaInserir = [];
+
+      // Para cada usuário
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+
+        // Cada usuário fará palpites em uma quantidade aleatória de jogos (entre 10 e 25)
+        const quantidadeJogos = Math.min(
+          Math.floor(Math.random() * 16) + 10, // 10 a 25 jogos
+          jogosIds.length // Não pode exceder o total de jogos disponíveis
+        );
+        const jogosEscolhidos = this.shuffleArray([...jogosIds]).slice(0, quantidadeJogos);
+
+        // Para cada jogo escolhido
+        for (const jogoId of jogosEscolhidos) {
+          // Gerar palpite aleatório seguindo o schema
+          const golsTimeA = Math.floor(Math.random() * 4); // 0 a 3 gols
+          const golsTimeB = Math.floor(Math.random() * 4); // 0 a 3 gols
+
+          // Pontuação aleatória de 0 a 100 como solicitado
+          const pontos = Math.floor(Math.random() * 101);
+
+          const palpite = {
+            userId: user._id,
+            jogoId: new Types.ObjectId(jogoId),
+            palpite: {
+              timeA: golsTimeA,
+              timeB: golsTimeB,
+            },
+            pontos: pontos,
+            acertouPlacar: Math.random() > 0.85, // 15% de chance de acertar placar exato
+            acertouResultado: Math.random() > 0.4, // 60% de chance de acertar resultado
+            moedasGanhas: Math.floor(Math.random() * 50), // 0 a 49 moedas
+          };
+
+          palpitesParaInserir.push(palpite);
+          totalPalpitesCriados++;
+        }
+
+        // Log de progresso a cada 20 usuários
+        if ((i + 1) % 20 === 0) {
+          this.logger.log(`📈 Progresso: ${i + 1}/${users.length} usuários processados`);
+        }
+      }
+
+      // Inserir todos os palpites de uma vez para melhor performance
+      await this.palpiteModel.insertMany(palpitesParaInserir);
+
+      this.logger.log(`✅ ${totalPalpitesCriados} palpites criados com sucesso!`);
+      this.logger.log(
+        `📊 Média de ${(totalPalpitesCriados / users.length).toFixed(1)} palpites por usuário`
+      );
+    } catch (error) {
+      this.logger.error('❌ Erro ao criar palpites:', error);
+      throw error;
+    }
+  }
+
+  private shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   }
 }

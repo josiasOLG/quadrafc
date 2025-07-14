@@ -60,6 +60,7 @@ interface RankingBairro {
 })
 export class UserRankingComponent implements OnInit {
   @Input() selectedBairro: RankingBairro | null = null;
+  @Input() campeonatoNome: string | null = null;
 
   user: User | null = null;
   rankingUsuarios: RankingUsuario[] = [];
@@ -113,14 +114,16 @@ export class UserRankingComponent implements OnInit {
     this.bairroSelecionado = this.user.bairro || null;
 
     // Usando o endpoint com os dados do usuário logado
-    this.rankingService.getTopUsuariosPorBairro(this.user.cidade, this.user.estado).subscribe({
-      next: (response) => {
-        this.processRankingResponse(response);
-      },
-      error: (error) => {
-        this.handleRankingError(error);
-      },
-    });
+    this.rankingService
+      .getTopUsuariosPorBairro(this.user.cidade, this.user.estado, this.campeonatoNome)
+      .subscribe({
+        next: (response) => {
+          this.processRankingResponse(response);
+        },
+        error: (error) => {
+          this.handleRankingError(error);
+        },
+      });
   }
 
   loadUserRanking() {
@@ -137,7 +140,11 @@ export class UserRankingComponent implements OnInit {
 
     // Usando o novo endpoint para obter os top 5 usuários por bairro
     this.rankingService
-      .getTopUsuariosPorBairro(this.selectedBairro.bairro.cidade, this.selectedBairro.bairro.estado)
+      .getTopUsuariosPorBairro(
+        this.selectedBairro.bairro.cidade,
+        this.selectedBairro.bairro.estado,
+        this.campeonatoNome
+      )
       .subscribe({
         next: (response) => {
           this.processRankingResponse(response);

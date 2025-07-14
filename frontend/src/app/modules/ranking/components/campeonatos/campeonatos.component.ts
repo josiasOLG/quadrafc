@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -41,7 +42,8 @@ export class CampeonatosComponent implements OnInit {
   constructor(
     private rankingService: RankingService,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -159,5 +161,13 @@ export class CampeonatosComponent implements OnInit {
 
   trackByCampeonato(index: number, campeonato: CampeonatoResumo): string {
     return campeonato.id;
+  }
+
+  onCampeonatoClick(campeonato: CampeonatoResumo): void {
+    this.router.navigate(['/ranking'], {
+      queryParams: {
+        campeonatoNome: campeonato.nome,
+      },
+    });
   }
 }

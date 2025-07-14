@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
@@ -55,13 +56,17 @@ export class RankingListComponent implements OnInit {
   activeTab: 'bairros' | 'usuarios' = 'bairros';
   selectedBairroForUserRanking: RankingBairro | null = null;
 
+  // Parâmetros do campeonato
+  campeonatoNome: string | null = null;
+
   // Cookie key para usuário
   private readonly USER_COOKIE_KEY = 'quadrafc_user';
 
   constructor(
     private rankingService: RankingService,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private route: ActivatedRoute
   ) {}
 
   /**
@@ -97,10 +102,17 @@ export class RankingListComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserFromCookie();
     this.loadUser();
+    this.loadQueryParams();
 
     setTimeout(() => {
       this.loadRankings();
     }, 100);
+  }
+
+  private loadQueryParams(): void {
+    this.route.queryParams.subscribe((params) => {
+      this.campeonatoNome = params['campeonatoNome'] || null;
+    });
   }
 
   /**
@@ -144,37 +156,48 @@ export class RankingListComponent implements OnInit {
       return;
     }
 
-    this.rankingService.getRankingBairrosCidade(this.user.cidade, this.user.estado).subscribe({
-      next: (response: any) => {
-        try {
-          if (response?.data) {
-            this.rankingBairros = response.data.map((item: any, index: number) => ({
-              posicao: index + 1,
-              bairro: {
-                nome: item.bairro || item.nome || item._id,
-                cidade: item.cidade || this.user?.cidade || '',
-                estado: item.estado || this.user?.estado || '',
-              },
-              pontos_totais: item.pontos_totais || item.totalPoints || item.pontos || 0,
-              usuarios_ativos: item.usuarios_ativos || item.totalUsuarios || item.usuarios || 0,
-              media_pontuacao: item.media_pontuacao || item.pontuacaoMedia || item.mediaPoints || 0,
-            }));
-          } else {
+    this.rankingService
+      .getRankingBairrosCidade(
+        this.user.cidade,
+        this.user.estado,
+        {
+          limit: 50,
+          page: 1,
+        },
+        this.campeonatoNome
+      )
+      .subscribe({
+        next: (response: any) => {
+          try {
+            if (response?.data) {
+              this.rankingBairros = response.data.map((item: any, index: number) => ({
+                posicao: index + 1,
+                bairro: {
+                  nome: item.bairro || item.nome || item._id,
+                  cidade: item.cidade || this.user?.cidade || '',
+                  estado: item.estado || this.user?.estado || '',
+                },
+                pontos_totais: item.pontos_totais || item.totalPoints || item.pontos || 0,
+                usuarios_ativos: item.usuarios_ativos || item.totalUsuarios || item.usuarios || 0,
+                media_pontuacao:
+                  item.media_pontuacao || item.pontuacaoMedia || item.mediaPoints || 0,
+              }));
+            } else {
+              this.rankingBairros = [];
+            }
+          } catch (error) {
             this.rankingBairros = [];
+            this.toastService.error('Erro ao processar dados do ranking de bairros');
+          } finally {
+            this.isLoading = false;
           }
-        } catch (error) {
-          this.rankingBairros = [];
-          this.toastService.error('Erro ao processar dados do ranking de bairros');
-        } finally {
+        },
+        error: (error) => {
           this.isLoading = false;
-        }
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.rankingBairros = [];
-        this.toastService.error('Erro ao carregar ranking de bairros');
-      },
-    });
+          this.rankingBairros = [];
+          this.toastService.error('Erro ao carregar ranking de bairros');
+        },
+      });
   }
 
   /**

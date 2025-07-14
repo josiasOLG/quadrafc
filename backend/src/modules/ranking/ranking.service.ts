@@ -205,8 +205,13 @@ export class RankingService {
     };
   }
 
-  async getRankingUsuariosCidade(cidade: string, estado: string, params: PaginationParams) {
-    console.log('🔍 Iniciando getRankingUsuariosCidade:', { cidade, estado, params });
+  async getRankingUsuariosCidade(
+    cidade: string,
+    estado: string,
+    params: PaginationParams,
+    campeonato?: string
+  ) {
+    console.log('🔍 Iniciando getRankingUsuariosCidade:', { cidade, estado, params, campeonato });
 
     // Verificar se cidade e estado são válidos
     if (!cidade || !estado) {
@@ -216,31 +221,176 @@ export class RankingService {
     console.log('🔍 Buscando usuários da cidade diretamente na tabela users:', {
       cidade,
       estado,
+      campeonato,
     });
 
-    // Buscar usuários que moram na cidade/estado especificados diretamente na tabela users
-    const usuarios = await this.userModel
-      .find({
+    let usuarios: any[] = [];
+    let totalUsuarios = 0;
+
+    if (campeonato) {
+      // Se campeonato for especificado, usar agregação com join
+      const aggregationPipeline: any[] = [
+        // Filtrar usuários por cidade/estado
+        {
+          $match: {
+            cidade: cidade,
+            estado: estado,
+          },
+        },
+        // Lookup com palpites
+        {
+          $lookup: {
+            from: 'palpites',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'palpites',
+          },
+        },
+        // Unwind palpites
+        {
+          $unwind: {
+            path: '$palpites',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // Lookup com jogos para filtrar por campeonato
+        {
+          $lookup: {
+            from: 'jogos',
+            localField: 'palpites.jogoId',
+            foreignField: '_id',
+            as: 'jogo',
+          },
+        },
+        // Unwind jogo
+        {
+          $unwind: {
+            path: '$jogo',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // Filtrar apenas jogos do campeonato especificado
+        {
+          $match: {
+            'jogo.campeonato': campeonato,
+          },
+        },
+        // Agrupar de volta por usuário
+        {
+          $group: {
+            _id: '$_id',
+            nome: { $first: '$nome' },
+            avatarUrl: { $first: '$avatarUrl' },
+            bairro: { $first: '$bairro' },
+            cidade: { $first: '$cidade' },
+            estado: { $first: '$estado' },
+            totalPointsCampeonato: { $sum: '$palpites.pontos' },
+            totalPalpitesCampeonato: { $sum: 1 },
+            palpitesCorretos: {
+              $sum: {
+                $cond: [{ $gt: ['$palpites.pontos', 0] }, 1, 0],
+              },
+            },
+          },
+        },
+        // Ordenar por pontos do campeonato
+        {
+          $sort: { totalPointsCampeonato: -1 },
+        },
+        // Paginação
+        {
+          $skip: params.offset,
+        },
+        {
+          $limit: params.limit,
+        },
+      ];
+
+      usuarios = await this.userModel.aggregate(aggregationPipeline).exec();
+
+      // Contar total para paginação
+      const countPipeline: any[] = [
+        {
+          $match: {
+            cidade: cidade,
+            estado: estado,
+          },
+        },
+        {
+          $lookup: {
+            from: 'palpites',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'palpites',
+          },
+        },
+        {
+          $unwind: {
+            path: '$palpites',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'jogos',
+            localField: 'palpites.jogoId',
+            foreignField: '_id',
+            as: 'jogo',
+          },
+        },
+        {
+          $unwind: {
+            path: '$jogo',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $match: {
+            'jogo.campeonato': campeonato,
+          },
+        },
+        {
+          $group: {
+            _id: '$_id',
+          },
+        },
+        {
+          $count: 'total',
+        },
+      ];
+
+      const countResult = await this.userModel.aggregate(countPipeline).exec();
+      totalUsuarios = countResult.length > 0 ? countResult[0].total : 0;
+    } else {
+      // Se não especificar campeonato, usar query simples
+      const userFilter = {
         cidade: cidade,
         estado: estado,
-      })
-      .sort({ totalPoints: -1 })
-      .skip(params.offset)
-      .limit(params.limit)
-      .exec();
+      };
 
-    console.log(`👥 Encontrados ${usuarios.length} usuários na cidade ${cidade}/${estado}`);
+      usuarios = await this.userModel
+        .find(userFilter)
+        .sort({ totalPoints: -1 })
+        .skip(params.offset)
+        .limit(params.limit)
+        .exec();
 
-    // Contar total de usuários da cidade
-    const totalUsuarios = await this.userModel.countDocuments({
-      cidade: cidade,
-      estado: estado,
-    });
+      totalUsuarios = await this.userModel.countDocuments(userFilter);
+    }
 
-    console.log(`📊 Total de usuários na cidade: ${totalUsuarios}`);
+    console.log(
+      `� Encontrados ${usuarios.length} usuários na cidade ${cidade}/${estado} ${campeonato ? `para o campeonato ${campeonato}` : ''}`
+    );
+
+    console.log(`�📊 Total de usuários na cidade: ${totalUsuarios}`);
 
     // Formatar dados para o ranking
     const rankingData: RankingUsuario[] = usuarios.map((user, index) => {
+      const pontos = campeonato ? user.totalPointsCampeonato || 0 : user.totalPoints || 0;
+      const totalPalpites = campeonato ? user.totalPalpitesCampeonato || 0 : 0;
+      const palpitesCorretos = campeonato ? user.palpitesCorretos || 0 : 0;
+      const taxaAcerto = totalPalpites > 0 ? (palpitesCorretos / totalPalpites) * 100 : 0;
+
       return {
         _id: user._id.toString(),
         nome: user.nome,
@@ -249,11 +399,11 @@ export class RankingService {
         bairro: user.bairro || '',
         cidade: user.cidade || '',
         estado: user.estado || '',
-        totalPoints: user.totalPoints || 0,
-        pontos: user.totalPoints || 0,
-        palpites_corretos: 0, // TODO: Implementar lógica de palpites
-        total_palpites: 0, // TODO: Implementar lógica de palpites
-        taxa_acerto: 0, // TODO: Implementar lógica de palpites
+        totalPoints: pontos,
+        pontos: pontos,
+        palpites_corretos: palpitesCorretos,
+        total_palpites: totalPalpites,
+        taxa_acerto: taxaAcerto,
         sequencia_atual: 0, // TODO: Implementar lógica de sequência
         posicao: params.offset + index + 1,
         isCurrentUser: false,
@@ -274,55 +424,240 @@ export class RankingService {
     };
   }
 
-  async getRankingBairrosCidade(cidade: string, estado: string, params: PaginationParams) {
-    console.log('🔍 Iniciando getRankingBairrosCidade:', { cidade, estado, params });
+  async getRankingBairrosCidade(
+    cidade: string,
+    estado: string,
+    params: PaginationParams,
+    campeonato?: string
+  ) {
+    console.log('🔍 Iniciando getRankingBairrosCidade:', { cidade, estado, params, campeonato });
 
-    // Verificar se cidade e estado são válidos
     if (!cidade || !estado) {
       throw new Error('Cidade e estado são obrigatórios');
     }
 
-    console.log('🔍 Buscando bairros da cidade através dos usuários:', {
+    console.log(`🏆 Buscando ranking de bairros para o campeonato: ${campeonato}`);
+
+    // Primeiro, vamos verificar se existem dados base
+    const totalUsers = await this.userModel.countDocuments({ cidade, estado });
+    console.log(`📊 Total de usuários em ${cidade}/${estado}: ${totalUsers}`);
+
+    const usersWithBairro = await this.userModel.countDocuments({
       cidade,
       estado,
+      bairro: { $exists: true, $ne: null, $nin: [''] },
     });
+    console.log(`🏠 Usuários com bairro em ${cidade}/${estado}: ${usersWithBairro}`);
 
-    // Usar agregação para agrupar usuários por bairro e calcular estatísticas
-    const aggregationPipeline = [
-      // Filtrar usuários da cidade/estado especificados
+    // Verificar se existem palpites
+    const totalPalpites = await this.userModel.aggregate([
+      { $lookup: { from: 'palpites', localField: '_id', foreignField: 'userId', as: 'palpites' } },
+      { $unwind: '$palpites' },
+      { $count: 'total' },
+    ]);
+    console.log(
+      `🎯 Total de palpites no sistema: ${totalPalpites.length > 0 ? totalPalpites[0].total : 0}`
+    );
+
+    // Verificar se existem jogos para o campeonato
+    const jogosCount = await this.jogoModel.countDocuments({ campeonato });
+    console.log(`⚽ Total de jogos para campeonato "${campeonato}": ${jogosCount}`);
+
+    // Pipeline com joins: users → palpites → jogos
+    const bairrosPipeline: any[] = [
+      // 1. Filtrar usuários da cidade/estado com bairro
       {
         $match: {
           cidade: cidade,
           estado: estado,
-          bairro: { $exists: true, $ne: null, $nin: [''] }, // Apenas usuários com bairro definido
+          bairro: { $exists: true, $ne: null, $nin: [''] },
         },
       },
-      // Agrupar por bairro
+      // 2. Join com palpites do usuário
+      {
+        $lookup: {
+          from: 'palpites',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'palpites',
+        },
+      },
+      // 3. Unwind palpites
+      {
+        $unwind: {
+          path: '$palpites',
+          preserveNullAndEmptyArrays: false, // Só usuários com palpites
+        },
+      },
+      // 4. Join palpite → jogo para pegar dados do jogo
+      {
+        $lookup: {
+          from: 'jogos',
+          localField: 'palpites.jogoId',
+          foreignField: '_id',
+          as: 'jogo',
+        },
+      },
+      // 5. Unwind jogo
+      {
+        $unwind: {
+          path: '$jogo',
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      // 6. Filtrar apenas jogos do campeonato específico
+      {
+        $match: {
+          'jogo.campeonato': campeonato,
+        },
+      },
+      // 7. Agrupar por bairro e somar pontos do campeonato
       {
         $group: {
           _id: '$bairro',
           nome: { $first: '$bairro' },
           cidade: { $first: '$cidade' },
           estado: { $first: '$estado' },
-          pontos_totais: { $sum: '$totalPoints' },
-          usuarios_ativos: { $sum: 1 },
-          media_pontuacao: { $avg: '$totalPoints' },
+          pontos_totais: { $sum: '$palpites.pontos' },
+          usuarios_ativos: { $addToSet: '$_id' }, // Usuários únicos que fizeram palpites neste campeonato
+          total_palpites: { $sum: 1 },
         },
       },
-      // Ordenar por pontos totais (decrescente)
+      // 8. Calcular estatísticas
       {
-        $sort: { pontos_totais: -1 as const },
+        $addFields: {
+          usuarios_ativos_count: { $size: '$usuarios_ativos' },
+          media_pontuacao: {
+            $cond: [
+              { $gt: [{ $size: '$usuarios_ativos' }, 0] },
+              { $divide: ['$pontos_totais', { $size: '$usuarios_ativos' }] },
+              0,
+            ],
+          },
+        },
+      },
+      // 9. Renomear campo
+      {
+        $addFields: {
+          usuarios_ativos: '$usuarios_ativos_count',
+        },
+      },
+      // 9. Ordenar por pontos totais
+      {
+        $sort: { pontos_totais: -1 },
+      },
+      // 10. Paginação
+      {
+        $skip: params.offset,
+      },
+      {
+        $limit: params.limit,
       },
     ];
 
-    console.log('📊 Executando agregação para calcular ranking de bairros...');
+    console.log('🔧 Pipeline completo:', JSON.stringify(bairrosPipeline, null, 2));
 
-    const bairrosAgregados = await this.userModel.aggregate(aggregationPipeline).exec();
+    // Vamos testar o pipeline passo a passo
+    console.log('🔍 Testando pipeline passo a passo...');
 
-    console.log(`📊 Encontrados ${bairrosAgregados.length} bairros na cidade ${cidade}/${estado}`);
+    // Passo 1: Match inicial
+    const step1 = await this.userModel.aggregate([bairrosPipeline[0]]).exec();
+    console.log(`✅ Passo 1 - Match usuários: ${step1.length} encontrados`);
 
-    if (bairrosAgregados.length === 0) {
-      console.log('⚠️ Nenhum bairro encontrado para esta cidade/estado');
+    // Passo 2: Após lookup palpites
+    const step2 = await this.userModel.aggregate([bairrosPipeline[0], bairrosPipeline[1]]).exec();
+    console.log(`✅ Passo 2 - Após lookup palpites: ${step2.length} documentos`);
+
+    // Passo 3: Após unwind palpites
+    const step3 = await this.userModel
+      .aggregate([bairrosPipeline[0], bairrosPipeline[1], bairrosPipeline[2]])
+      .exec();
+    console.log(`✅ Passo 3 - Após unwind palpites: ${step3.length} documentos`);
+
+    // Passo 4: Após lookup jogos
+    const step4 = await this.userModel
+      .aggregate([bairrosPipeline[0], bairrosPipeline[1], bairrosPipeline[2], bairrosPipeline[3]])
+      .exec();
+    console.log(`✅ Passo 4 - Após lookup jogos: ${step4.length} documentos`);
+
+    // Debug: Verificar tipos de IDs
+    if (step4.length > 0) {
+      const sample = step4[0];
+      console.log('🔍 Sample após lookup jogos:', {
+        userId: sample._id,
+        userIdType: typeof sample._id,
+        palpiteJogoId: sample.palpites?.jogoId,
+        palpiteJogoIdType: typeof sample.palpites?.jogoId,
+        jogoArray: sample.jogo,
+        jogoArrayLength: sample.jogo?.length || 'undefined',
+      });
+
+      // Buscar um jogo diretamente para comparar
+      const umJogo = await this.jogoModel.findOne().exec();
+      console.log('🔍 Sample de jogo direto:', {
+        jogoId: umJogo?._id,
+        jogoIdType: typeof umJogo?._id,
+        jogoCampeonato: umJogo?.campeonato,
+      });
+
+      // Verificar se existem palpites com jogoId que bate com jogos
+      const palpitesSample = await this.userModel
+        .aggregate([
+          {
+            $lookup: {
+              from: 'palpites',
+              localField: '_id',
+              foreignField: 'userId',
+              as: 'palpites',
+            },
+          },
+          { $unwind: '$palpites' },
+          { $limit: 3 },
+          { $project: { 'palpites.jogoId': 1, 'palpites.pontos': 1 } },
+        ])
+        .exec();
+      console.log('🔍 Sample palpites:', palpitesSample);
+    }
+
+    // Passo 5: Após unwind jogos
+    const step5 = await this.userModel
+      .aggregate([
+        bairrosPipeline[0],
+        bairrosPipeline[1],
+        bairrosPipeline[2],
+        bairrosPipeline[3],
+        bairrosPipeline[4],
+      ])
+      .exec();
+    console.log(`✅ Passo 5 - Após unwind jogos: ${step5.length} documentos`);
+
+    // Passo 6: Após match campeonato
+    const step6 = await this.userModel
+      .aggregate([
+        bairrosPipeline[0],
+        bairrosPipeline[1],
+        bairrosPipeline[2],
+        bairrosPipeline[3],
+        bairrosPipeline[4],
+        bairrosPipeline[5],
+      ])
+      .exec();
+    console.log(`✅ Passo 6 - Após match campeonato: ${step6.length} documentos`);
+
+    if (step6.length > 0) {
+      console.log(
+        '🔍 Exemplo de documento após match campeonato:',
+        JSON.stringify(step6[0], null, 2)
+      );
+    }
+
+    const bairrosData = await this.userModel.aggregate(bairrosPipeline).exec();
+
+    console.log(
+      `📊 Encontrados ${bairrosData.length} bairros em ${cidade}/${estado} para ${campeonato}`
+    );
+
+    if (bairrosData.length === 0) {
       return {
         data: [],
         pagination: {
@@ -337,31 +672,29 @@ export class RankingService {
       };
     }
 
-    // Definir posições e formatar dados
-    const rankingBairros: RankingBairro[] = bairrosAgregados.map((bairro, index) => {
-      return {
-        _id: bairro._id || bairro.nome, // Usar nome do bairro como ID se não houver _id
-        nome: bairro.nome,
-        cidade: bairro.cidade,
-        estado: bairro.estado,
-        pontos_totais: bairro.pontos_totais || 0,
-        usuarios_ativos: bairro.usuarios_ativos || 0,
-        media_pontuacao: Math.round((bairro.media_pontuacao || 0) * 100) / 100, // 2 casas decimais
-        total_usuarios: bairro.usuarios_ativos || 0,
-        posicao: index + 1,
-      };
-    });
+    // Mapear dados para o formato esperado
+    const rankingBairros: RankingBairro[] = bairrosData.map((bairro, index) => ({
+      _id: bairro._id,
+      nome: bairro.nome || bairro._id,
+      cidade: bairro.cidade,
+      estado: bairro.estado,
+      pontos_totais: bairro.pontos_totais || 0,
+      usuarios_ativos: bairro.usuarios_ativos || 0,
+      total_usuarios: bairro.usuarios_ativos || 0,
+      media_pontuacao: Math.round((bairro.media_pontuacao || 0) * 100) / 100,
+      posicao: params.offset + index + 1,
+    }));
 
-    // Aplicar paginação
-    const paginatedBairros = rankingBairros.slice(params.offset, params.offset + params.limit);
+    // Contar total para paginação (simplificado)
+    const totalBairros = rankingBairros.length;
 
     return {
-      data: paginatedBairros,
+      data: rankingBairros,
       pagination: {
-        total: rankingBairros.length,
+        total: totalBairros,
         limit: params.limit,
         offset: params.offset,
-        hasNext: params.offset + params.limit < rankingBairros.length,
+        hasNext: params.offset + params.limit < totalBairros,
         hasPrev: params.offset > 0,
       },
       cidade: cidade,
@@ -369,27 +702,92 @@ export class RankingService {
     };
   }
 
-  async getRankingTopUsuariosPorBairro(cidade: string, estado: string) {
-    console.log('🔍 Iniciando getRankingTopUsuariosPorBairro:', { cidade, estado });
+  async getRankingTopUsuariosPorBairro(cidade: string, estado: string, campeonato?: string) {
+    console.log('🔍 Iniciando getRankingTopUsuariosPorBairro:', { cidade, estado, campeonato });
 
-    // Verificar se cidade e estado são válidos
     if (!cidade || !estado) {
       throw new Error('Cidade e estado são obrigatórios');
     }
 
-    console.log('🔍 Buscando todos os usuários da cidade:', { cidade, estado });
+    console.log(`🏆 Buscando ranking de usuários para o campeonato: ${campeonato}`);
 
-    // Buscar todos os usuários da cidade ordenados por pontuação
-    const todosUsuarios = await this.userModel
-      .find({
-        cidade: cidade,
-        estado: estado,
-        bairro: { $exists: true, $ne: null, $nin: [''] },
-      })
-      .sort({ totalPoints: -1 })
-      .exec();
+    // Pipeline com joins: users → palpites → jogos
+    const aggregationPipeline: any[] = [
+      // 1. Filtrar usuários por cidade/estado e que tenham bairro
+      {
+        $match: {
+          cidade: cidade,
+          estado: estado,
+          bairro: { $exists: true, $ne: null, $nin: [''] },
+        },
+      },
+      // 2. Join com palpites do usuário
+      {
+        $lookup: {
+          from: 'palpites',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'palpites',
+        },
+      },
+      // 3. Unwind palpites
+      {
+        $unwind: {
+          path: '$palpites',
+          preserveNullAndEmptyArrays: false, // Só usuários com palpites
+        },
+      },
+      // 4. Join palpite → jogo para pegar dados do jogo
+      {
+        $lookup: {
+          from: 'jogos',
+          localField: 'palpites.jogoId',
+          foreignField: '_id',
+          as: 'jogo',
+        },
+      },
+      // 5. Unwind jogo
+      {
+        $unwind: {
+          path: '$jogo',
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      // 6. Filtrar apenas jogos do campeonato específico
+      {
+        $match: {
+          'jogo.campeonato': campeonato,
+        },
+      },
+      // 7. Agrupar por usuário e somar pontos do campeonato
+      {
+        $group: {
+          _id: '$_id',
+          nome: { $first: '$nome' },
+          avatarUrl: { $first: '$avatarUrl' },
+          bairro: { $first: '$bairro' },
+          cidade: { $first: '$cidade' },
+          estado: { $first: '$estado' },
+          totalPointsCampeonato: { $sum: '$palpites.pontos' },
+          totalPalpitesCampeonato: { $sum: 1 },
+          palpitesCorretos: {
+            $sum: {
+              $cond: [{ $gt: ['$palpites.pontos', 0] }, 1, 0],
+            },
+          },
+        },
+      },
+      // 8. Ordenar por pontos do campeonato
+      {
+        $sort: { totalPointsCampeonato: -1 },
+      },
+    ];
 
-    console.log(`📊 Encontrados ${todosUsuarios.length} usuários em ${cidade}/${estado}`);
+    const todosUsuarios = await this.userModel.aggregate(aggregationPipeline).exec();
+
+    console.log(
+      `📊 Encontrados ${todosUsuarios.length} usuários em ${cidade}/${estado} para o campeonato ${campeonato}`
+    );
 
     if (todosUsuarios.length === 0) {
       return {
@@ -402,6 +800,11 @@ export class RankingService {
 
     // Formatar todos os usuários para o ranking
     const usuariosFormatados: RankingUsuario[] = todosUsuarios.map((user, index) => {
+      const pontos = user.totalPointsCampeonato || 0;
+      const totalPalpites = user.totalPalpitesCampeonato || 0;
+      const palpitesCorretos = user.palpitesCorretos || 0;
+      const taxaAcerto = totalPalpites > 0 ? (palpitesCorretos / totalPalpites) * 100 : 0;
+
       return {
         _id: user._id.toString(),
         nome: user.nome,
@@ -410,12 +813,12 @@ export class RankingService {
         bairro: user.bairro || '',
         cidade: user.cidade || '',
         estado: user.estado || '',
-        totalPoints: user.totalPoints || 0,
-        pontos: user.totalPoints || 0,
-        palpites_corretos: 0, // Valor padrão
-        total_palpites: 0, // Valor padrão
-        taxa_acerto: 0, // Valor padrão
-        sequencia_atual: 0, // Valor padrão
+        totalPoints: pontos,
+        pontos: pontos,
+        palpites_corretos: palpitesCorretos,
+        total_palpites: totalPalpites,
+        taxa_acerto: taxaAcerto,
+        sequencia_atual: 0, // TODO: Implementar lógica de sequência
         posicao: index + 1,
         isCurrentUser: false,
       };

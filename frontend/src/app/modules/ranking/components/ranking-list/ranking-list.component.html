@@ -182,7 +182,9 @@
 
     <!-- Tab Usuários -->
     <div *ngIf="activeTab === 'usuarios'" class="tab-panel">
-      <app-user-ranking [selectedBairro]="selectedBairroForUserRanking || rankingBairros[0]"></app-user-ranking>
+      <app-user-ranking
+        [selectedBairro]="selectedBairroForUserRanking || rankingBairros[0]"
+        [campeonatoNome]="campeonatoNome"></app-user-ranking>
     </div>
   </div>
 </div>

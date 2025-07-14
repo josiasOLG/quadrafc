@@ -58,13 +58,23 @@ export class RankingService extends BaseApiService<RankingUsuario, any> {
   getRankingUsuariosCidade(
     cidade: string,
     estado: string,
-    params?: PaginationParams
+    params?: PaginationParams,
+    campeonatoNome?: string | null
   ): Observable<{ data: RankingUsuario[]; pagination: any }> {
-    const queryParams = {
+    const queryParams: any = {
       cidade,
       estado,
-      ...params,
+      ...(campeonatoNome && { campeonato: campeonatoNome }),
     };
+
+    if (params) {
+      if (params.limit) queryParams.limit = params.limit;
+      if (params.page) queryParams.offset = (params.page - 1) * (params.limit || 50);
+      if (params.sortBy) queryParams.sortBy = params.sortBy;
+      if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
+      if (params.search) queryParams.search = params.search;
+    }
+
     return this.getPaginated<RankingUsuario>('usuarios-cidade', queryParams);
   }
 
@@ -72,13 +82,23 @@ export class RankingService extends BaseApiService<RankingUsuario, any> {
   getRankingBairrosCidade(
     cidade: string,
     estado: string,
-    params?: PaginationParams
+    params?: PaginationParams,
+    campeonatoNome?: string | null
   ): Observable<{ data: RankingBairro[]; pagination: any }> {
-    const queryParams = {
+    const queryParams: any = {
       cidade,
       estado,
-      ...params,
+      ...(campeonatoNome && { campeonato: campeonatoNome }),
     };
+
+    if (params) {
+      if (params.limit) queryParams.limit = params.limit;
+      if (params.page) queryParams.offset = (params.page - 1) * (params.limit || 50);
+      if (params.sortBy) queryParams.sortBy = params.sortBy;
+      if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
+      if (params.search) queryParams.search = params.search;
+    }
+
     return this.getPaginated<RankingBairro>('bairros-cidade', queryParams);
   }
 
@@ -191,11 +211,13 @@ export class RankingService extends BaseApiService<RankingUsuario, any> {
   // Top 5 usuários por bairro
   getTopUsuariosPorBairro(
     cidade: string,
-    estado: string
+    estado: string,
+    campeonatoNome?: string | null
   ): Observable<{ podio: any[]; outros: any[]; cidade: string; estado: string }> {
     const queryParams = {
       cidade,
       estado,
+      ...(campeonatoNome && { campeonato: campeonatoNome }),
     };
     return this.get<{ podio: any[]; outros: any[]; cidade: string; estado: string }>(
       'top-usuarios-por-bairro',

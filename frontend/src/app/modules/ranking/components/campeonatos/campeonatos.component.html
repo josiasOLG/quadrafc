@@ -58,7 +58,13 @@
       <div
         *ngFor="let campeonato of campeonatos; trackBy: trackByCampeonato; let i = index"
         class="campeonato-card neumorphic-card mb-3 p-2 border-round-xl"
-        [style.--i]="i">
+        [style.--i]="i"
+        (click)="onCampeonatoClick(campeonato)"
+        (keyup.enter)="onCampeonatoClick(campeonato)"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'Ver ranking do campeonato ' + campeonato.nome"
+        style="cursor: pointer">
         <div class="flex align-items-center gap-3">
           <!-- Position Badge -->
           <div class="position-badge flex align-items-center justify-content-center">

@@ -17,20 +17,27 @@ export class RankingController {
   @ApiQuery({ name: 'estado', required: true, description: 'Sigla do estado (ex: SP, RJ)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Limite de resultados (padrão: 50)' })
   @ApiQuery({ name: 'offset', required: false, description: 'Offset para paginação (padrão: 0)' })
+  @ApiQuery({ name: 'campeonato', required: false, description: 'Nome do campeonato para filtrar' })
   async getRankingUsuariosCidade(
     @Query('cidade') cidade: string,
     @Query('estado') estado: string,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
+    @Query('campeonato') campeonato?: string
   ) {
     if (!cidade || !estado) {
       throw new BadRequestException('Cidade e estado são obrigatórios');
     }
 
-    return this.rankingService.getRankingUsuariosCidade(cidade, estado, {
-      limit: limit || 50,
-      offset: offset || 0,
-    });
+    return this.rankingService.getRankingUsuariosCidade(
+      cidade,
+      estado,
+      {
+        limit: limit || 50,
+        offset: offset || 0,
+      },
+      campeonato
+    );
   }
 
   @Get('bairros-cidade')
@@ -41,20 +48,27 @@ export class RankingController {
   @ApiQuery({ name: 'estado', required: true, description: 'Sigla do estado (ex: SP, RJ)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Limite de resultados (padrão: 50)' })
   @ApiQuery({ name: 'offset', required: false, description: 'Offset para paginação (padrão: 0)' })
+  @ApiQuery({ name: 'campeonato', required: false, description: 'Nome do campeonato para filtrar' })
   async getRankingBairrosCidade(
     @Query('cidade') cidade: string,
     @Query('estado') estado: string,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('offset') offset?: number,
+    @Query('campeonato') campeonato?: string
   ) {
     if (!cidade || !estado) {
       throw new BadRequestException('Cidade e estado são obrigatórios');
     }
 
-    return this.rankingService.getRankingBairrosCidade(cidade, estado, {
-      limit: limit || 50,
-      offset: offset || 0,
-    });
+    return this.rankingService.getRankingBairrosCidade(
+      cidade,
+      estado,
+      {
+        limit: limit || 50,
+        offset: offset || 0,
+      },
+      campeonato
+    );
   }
 
   @Get('top-usuarios-por-bairro')
@@ -63,43 +77,18 @@ export class RankingController {
   @ApiOperation({ summary: 'Buscar os 5 melhores usuários de cada bairro em uma cidade' })
   @ApiQuery({ name: 'cidade', required: true, description: 'Nome da cidade' })
   @ApiQuery({ name: 'estado', required: true, description: 'Sigla do estado (ex: SP, RJ)' })
-  async getTopUsuariosPorBairro(@Query('cidade') cidade: string, @Query('estado') estado: string) {
+  @ApiQuery({ name: 'campeonato', required: false, description: 'Nome do campeonato para filtrar' })
+  async getTopUsuariosPorBairro(
+    @Query('cidade') cidade: string,
+    @Query('estado') estado: string,
+    @Query('campeonato') campeonato?: string
+  ) {
     if (!cidade || !estado) {
       throw new BadRequestException('Cidade e estado são obrigatórios');
     }
 
-    return this.rankingService.getRankingTopUsuariosPorBairro(cidade, estado);
+    return this.rankingService.getRankingTopUsuariosPorBairro(cidade, estado, campeonato);
   }
-
-  /**
-   * Exemplo de como usar o endpoint de top usuários por bairro:
-   *
-   * Endpoint: GET /ranking/top-usuarios-por-bairro?cidade=Petrópolis&estado=RJ
-   *
-   * Resposta:
-   * {
-   *   "data": [
-   *     {
-   *       "bairro": "Centro",
-   *       "cidade": "Petrópolis",
-   *       "estado": "RJ",
-   *       "pontos_totais": 450,
-   *       "total_usuarios": 8,
-   *       "usuarios": [
-   *         { "_id": "...", "nome": "João Silva", "totalPoints": 100, ... },
-   *         { "_id": "...", "nome": "Maria Souza", "totalPoints": 95, ... },
-   *         ...
-   *       ]
-   *     },
-   *     {
-   *       "bairro": "Quitandinha",
-   *       ...
-   *     }
-   *   ],
-   *   "cidade": "Petrópolis",
-   *   "estado": "RJ"
-   * }
-   */
 
   @Get('filtros-disponiveis')
   @Public()
