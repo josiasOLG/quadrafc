@@ -18,6 +18,7 @@ import { RolesGuard } from '../../shared/guards/roles.guard';
 import { ResponseUtil } from '../../shared/utils/response.util';
 import { UpdateLimitePalpitesDto } from './dto/update-limite-palpites.dto';
 import { UpdateProfileVisibilityDto } from './dto/update-profile-visibility.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserSearchDto } from './dto/user-search.dto';
 import { UsersService } from './users.service';
 
@@ -153,6 +154,15 @@ export class UsersController {
   })
   async migrarLimitePalpites() {
     return this.usersService.migrarUsuariosComLimitePalpites();
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ResponseMessage('Perfil atualizado com sucesso')
+  @ApiOperation({ summary: 'Atualizar perfil do usuário logado' })
+  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.usersService.updateProfile(req.user.id, updateProfileDto);
   }
 
   @Patch('profile-visibility')

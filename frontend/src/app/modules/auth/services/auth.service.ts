@@ -231,6 +231,17 @@ export class AuthService {
   }
 
   /**
+   * Define o usuário atual e atualiza o estado
+   */
+  setCurrentUser(user: User): void {
+    this._currentUser.set(user);
+    this.updateUserInCookie(user);
+
+    // Atualizar também o BehaviorSubject para compatibilidade
+    this.currentUserSubject.next(user);
+  }
+
+  /**
    * Updates user profile data
    */
   updateProfile(userData: Partial<User>): Observable<User> {

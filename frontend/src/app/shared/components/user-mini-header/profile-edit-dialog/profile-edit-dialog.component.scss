@@ -1,0 +1,333 @@
+// ===================================
+// PROFILE EDIT DIALOG STYLES
+// ===================================
+
+::ng-deep {
+  .p-dialog:not(.p-dialog-maximized) {
+    width: 100vw !important;
+  }
+
+  .profile-edit-dialog {
+    margin: 0 !important;
+
+    .p-dialog {
+      border-radius: var(--qfc-radius-xl) var(--qfc-radius-xl) 0 0 !important;
+      box-shadow: var(--qfc-shadow-xl) !important;
+      border: none !important;
+      margin: 0 !important;
+      animation: slideUpProfile 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
+      overflow: hidden !important;
+      z-index: 11000 !important;
+      position: fixed !important;
+    }
+
+    .p-dialog-content {
+      padding: 0 !important;
+      border-radius: var(--qfc-radius-xl) var(--qfc-radius-xl) 0 0 !important;
+      overflow: hidden !important;
+    }
+
+    .p-dialog-mask {
+      background: var(--qfc-bg-overlay) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      z-index: 10900 !important;
+      position: fixed !important;
+    }
+  }
+}
+
+.profile-edit-content {
+  background: var(--qfc-bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+// ===================================
+// HEADER SECTION
+// ===================================
+.profile-edit-header {
+  position: relative;
+  text-align: center;
+  padding: var(--qfc-spacing-2xl) var(--qfc-spacing-lg) var(--qfc-spacing-lg);
+  z-index: 1;
+  background: var(--qfc-border-primary);
+
+  .profile-edit-title {
+    font-size: var(--qfc-font-size-2xl);
+    font-weight: var(--qfc-font-weight-bold);
+    color: var(--qfc-text-primary);
+    margin: 0 0 var(--qfc-spacing-sm) 0;
+    font-family: var(--qfc-font-family);
+  }
+
+  .profile-edit-subtitle {
+    font-size: var(--qfc-font-size-lg);
+    font-weight: var(--qfc-font-weight-medium);
+    color: var(--qfc-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+// ===================================
+// BODY CONTENT
+// ===================================
+.profile-edit-body {
+  padding: var(--qfc-spacing-lg);
+  position: relative;
+  z-index: 1;
+}
+
+// ===================================
+// AVATAR SECTION
+// ===================================
+.avatar-section {
+  margin-bottom: var(--qfc-spacing-xl);
+  text-align: center;
+}
+
+.avatar-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--qfc-spacing-md);
+}
+
+.avatar-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--qfc-border-primary);
+  overflow: hidden;
+  position: relative;
+  background: var(--qfc-bg-secondary);
+  box-shadow: var(--qfc-shadow-md);
+
+  &.has-image {
+    border-color: var(--qfc-primary);
+  }
+
+  .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--qfc-bg-tertiary);
+    color: var(--qfc-text-secondary);
+
+    i {
+      font-size: 3rem;
+    }
+  }
+}
+
+.avatar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qfc-spacing-sm);
+  justify-content: center;
+
+  ::ng-deep .avatar-upload-btn {
+    .p-fileupload-choose {
+      background: var(--qfc-primary) !important;
+      border: none !important;
+      padding: var(--qfc-spacing-sm) var(--qfc-spacing-md) !important;
+      border-radius: var(--qfc-radius-md) !important;
+      font-size: var(--qfc-font-size-sm) !important;
+      font-weight: var(--qfc-font-weight-medium) !important;
+
+      &:hover {
+        background: var(--qfc-primary-dark) !important;
+      }
+    }
+  }
+
+  .remove-avatar-btn {
+    background: var(--qfc-danger) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+
+    &:hover {
+      background: var(--qfc-danger-dark) !important;
+    }
+  }
+}
+
+// ===================================
+// FORM FIELDS
+// ===================================
+.form-field {
+  margin-bottom: var(--qfc-spacing-lg);
+
+  .field-label {
+    display: block;
+    font-size: var(--qfc-font-size-sm);
+    font-weight: var(--qfc-font-weight-semibold);
+    color: var(--qfc-text-primary);
+    margin-bottom: var(--qfc-spacing-xs);
+  }
+
+  .field-input {
+    width: 100% !important;
+    padding: var(--qfc-spacing-md) !important;
+    border: 1px solid var(--qfc-border-primary) !important;
+    border-radius: var(--qfc-radius-md) !important;
+    font-size: var(--qfc-font-size-md) !important;
+    background: var(--qfc-bg-primary) !important;
+    color: var(--qfc-text-primary) !important;
+    transition: all 0.2s ease !important;
+
+    &:focus {
+      border-color: var(--qfc-primary) !important;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+    }
+
+    &.p-invalid {
+      border-color: var(--qfc-danger) !important;
+    }
+
+    &::placeholder {
+      color: var(--qfc-text-secondary) !important;
+    }
+  }
+
+  .field-error {
+    margin-top: var(--qfc-spacing-xs);
+    font-size: var(--qfc-font-size-xs);
+    color: var(--qfc-danger);
+    font-weight: var(--qfc-font-weight-medium);
+  }
+}
+
+// ===================================
+// FOOTER SECTION
+// ===================================
+.profile-edit-footer {
+  padding: var(--qfc-spacing-lg);
+  border-top: 1px solid var(--qfc-border-primary);
+  background: var(--qfc-bg-secondary);
+  position: relative;
+  z-index: 1;
+  padding-bottom: calc(var(--qfc-spacing-lg) + env(safe-area-inset-bottom, 20px));
+}
+
+.button-group {
+  display: flex;
+  gap: var(--qfc-spacing-md);
+  width: 100%;
+
+  .cancel-button {
+    flex: 1;
+    background: var(--qfc-bg-tertiary) !important;
+    border: 1px solid var(--qfc-border-secondary) !important;
+    color: var(--qfc-text-secondary) !important;
+    padding: var(--qfc-spacing-md) var(--qfc-spacing-lg) !important;
+    border-radius: var(--qfc-radius-lg) !important;
+    font-weight: var(--qfc-font-weight-medium) !important;
+    transition: all 0.2s ease !important;
+
+    &:hover:not(:disabled) {
+      background: var(--qfc-border-primary) !important;
+      color: var(--qfc-text-primary) !important;
+    }
+  }
+
+  .save-button {
+    flex: 1;
+    background: var(--qfc-gradient-primary) !important;
+    border: none !important;
+    color: var(--qfc-text-inverse) !important;
+    padding: var(--qfc-spacing-md) var(--qfc-spacing-lg) !important;
+    border-radius: var(--qfc-radius-lg) !important;
+    font-weight: var(--qfc-font-weight-semibold) !important;
+    box-shadow: var(--qfc-shadow-md) !important;
+    transition: all 0.3s ease !important;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px) !important;
+      box-shadow: var(--qfc-shadow-lg) !important;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0) !important;
+    }
+
+    &:disabled {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+    }
+  }
+}
+
+// ===================================
+// ANIMATIONS
+// ===================================
+@keyframes slideUpProfile {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ===================================
+// RESPONSIVIDADE
+// ===================================
+@media screen and (max-width: 375px) {
+  .profile-edit-header {
+    padding: var(--qfc-spacing-lg) var(--qfc-spacing-md);
+
+    .profile-edit-title {
+      font-size: var(--qfc-font-size-xl);
+    }
+
+    .profile-edit-subtitle {
+      font-size: var(--qfc-font-size-md);
+    }
+  }
+
+  .profile-edit-body {
+    padding: var(--qfc-spacing-md);
+  }
+
+  .avatar-container {
+    width: 100px;
+    height: 100px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+}
+
+// ===================================
+// TEMA ESCURO
+// ===================================
+[data-theme='dark'] {
+  .profile-edit-content {
+    background: var(--qfc-bg-primary);
+  }
+
+  .profile-edit-header {
+    background: var(--qfc-border-primary);
+  }
+
+  .profile-edit-footer {
+    background: var(--qfc-bg-secondary);
+    border-top-color: var(--qfc-border-primary);
+  }
+}

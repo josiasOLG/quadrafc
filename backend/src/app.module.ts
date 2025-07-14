@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
+import { PayloadSizeMiddleware } from './shared/middleware/payload-size.middleware';
 import { PremiumAccessModule } from './shared/modules/premium-access.module';
 
 // Modules
@@ -75,4 +76,8 @@ import { UsersModule } from './modules/users/users.module';
     // SeedService, // Reativado para criar bairros e usuários iniciais para ranking
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(PayloadSizeMiddleware).forRoutes('users/profile');
+  }
+}

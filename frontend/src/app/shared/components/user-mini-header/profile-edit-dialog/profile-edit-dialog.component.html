@@ -1,0 +1,101 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="profile-edit-dialog"
+  position="bottom"
+  [showHeader]="false"
+  (onHide)="onDialogHide()"
+  [breakpoints]="{ '960px': '100vw' }"
+  [style]="{ width: '100vw !important', 'max-width': '500px' }"
+  appendTo="body">
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <div class="profile-edit-content">
+      <!-- Header com título -->
+      <div class="profile-edit-header">
+        <h2 class="profile-edit-title">Editar Perfil</h2>
+        <p class="profile-edit-subtitle">Atualize suas informações pessoais</p>
+      </div>
+
+      <!-- Conteúdo principal -->
+      <div class="profile-edit-body">
+        <!-- Upload de Avatar -->
+        <div class="avatar-section">
+          <div class="avatar-preview">
+            <div class="avatar-container" [class.has-image]="previewUrl">
+              <img *ngIf="previewUrl" [src]="previewUrl" alt="Avatar" class="avatar-image" />
+              <div *ngIf="!previewUrl" class="avatar-placeholder">
+                <i class="pi pi-user"></i>
+              </div>
+            </div>
+
+            <div class="avatar-actions">
+              <p-fileUpload
+                mode="basic"
+                accept="image/*"
+                [maxFileSize]="3145728"
+                chooseLabel="Escolher foto"
+                chooseIcon="pi pi-camera"
+                [customUpload]="true"
+                (onSelect)="onFileSelect($event)"
+                styleClass="avatar-upload-btn"></p-fileUpload>
+
+              <button
+                *ngIf="previewUrl"
+                type="button"
+                class="remove-avatar-btn"
+                (click)="onFileRemove()"
+                pButton
+                icon="pi pi-times"
+                severity="secondary"
+                size="small"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campo Nome -->
+        <div class="form-field">
+          <label for="nome" class="field-label">Nome completo</label>
+          <input
+            id="nome"
+            type="text"
+            pInputText
+            formControlName="nome"
+            placeholder="Digite seu nome completo"
+            class="field-input"
+            [class.p-invalid]="nomeControl?.invalid && nomeControl?.touched" />
+          <div *ngIf="nomeControl?.invalid && nomeControl?.touched" class="field-error">
+            <span *ngIf="nomeControl?.errors?.['required']">Nome é obrigatório</span>
+            <span *ngIf="nomeControl?.errors?.['minlength']">Nome deve ter pelo menos 2 caracteres</span>
+            <span *ngIf="nomeControl?.errors?.['maxlength']">Nome deve ter no máximo 50 caracteres</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer com botões -->
+      <div class="profile-edit-footer">
+        <div class="button-group">
+          <button
+            type="button"
+            pButton
+            label="Cancelar"
+            severity="secondary"
+            class="cancel-button"
+            (click)="closeDialog()"
+            [disabled]="isLoading"></button>
+
+          <button
+            type="submit"
+            pButton
+            label="Salvar alterações"
+            icon="pi pi-check"
+            class="save-button"
+            [disabled]="!isFormValid || isLoading"
+            [loading]="isLoading"></button>
+        </div>
+      </div>
+    </div>
+  </form>
+</p-dialog>

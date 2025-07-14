@@ -21,12 +21,50 @@
 }
 
 // ===================================
-// AVATAR
+// AVATAR CUSTOMIZADO
 // ===================================
 .user-mini-header__avatar {
   flex-shrink: 0;
 }
 
+.avatar-container {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--qfc-border-primary);
+  overflow: hidden;
+  position: relative;
+  background: var(--qfc-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.has-image {
+    border-color: var(--qfc-primary);
+  }
+
+  .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--qfc-bg-tertiary);
+    color: var(--qfc-text-primary);
+    font-size: 0.875rem;
+    font-weight: var(--qfc-font-weight-semibold);
+    text-transform: uppercase;
+  }
+}
+
+// Manter compatibilidade com PrimeNG se necessário
 .user-mini-header__avatar-img {
   border: 2px solid var(--qfc-border-primary) !important;
   background: var(--qfc-bg-secondary) !important;
@@ -35,7 +73,7 @@
 }
 
 // ===================================
-// INFORMAÇÕES
+// INFORMAÇÕES E AÇÕES
 // ===================================
 .user-mini-header__info {
   flex: 1;
@@ -63,6 +101,38 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+// ===================================
+// AÇÕES E PONTUAÇÃO
+// ===================================
+.user-mini-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qfc-spacing-xs);
+  flex-shrink: 0;
+}
+
+.edit-profile-btn {
+  background: var(--qfc-bg-tertiary) !important;
+  border: 1px solid var(--qfc-border-secondary) !important;
+  color: var(--qfc-text-secondary) !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background: var(--qfc-primary) !important;
+    border-color: var(--qfc-primary) !important;
+    color: var(--qfc-text-inverse) !important;
+    transform: scale(1.05) !important;
+  }
+
+  .p-button-icon {
+    font-size: 0.75rem !important;
+  }
 }
 
 // ===================================

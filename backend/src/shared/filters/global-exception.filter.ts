@@ -1,7 +1,7 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
   Logger,
@@ -31,7 +31,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       } else if (typeof exceptionResponse === 'object') {
         const responseObj = exceptionResponse as any;
         message = responseObj.message || responseObj.error || message;
-        
+
         // Capturar erros de validação
         if (Array.isArray(responseObj.message)) {
           errors = responseObj.message;
@@ -39,18 +39,25 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         }
       }
     } else if (exception instanceof Error) {
-      message = exception.message;
+      // Tratamento específico para PayloadTooLargeError
+      if (
+        exception.message.includes('request entity too large') ||
+        exception.name === 'PayloadTooLargeError'
+      ) {
+        status = HttpStatus.PAYLOAD_TOO_LARGE;
+        message = 'Arquivo muito grande. O tamanho máximo permitido é 10MB.';
+      } else {
+        message = exception.message;
+      }
       this.logger.error(`Erro não tratado: ${exception.message}`, exception.stack);
     }
 
     // Log do erro para debugging
-    this.logger.error(
-      `${request.method} ${request.url} - Status: ${status} - ${message}`,
-    );
+    this.logger.error(`${request.method} ${request.url} - Status: ${status} - ${message}`);
 
     // Determinar o tipo de erro e retornar resposta padronizada
     let errorResponse;
-    
+
     switch (status) {
       case HttpStatus.BAD_REQUEST:
         errorResponse = ResponseUtil.badRequest(message, errors, request.url);
@@ -69,6 +76,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         break;
       case HttpStatus.UNPROCESSABLE_ENTITY:
         errorResponse = ResponseUtil.validationError(message, errors, request.url);
+        break;
+      case HttpStatus.PAYLOAD_TOO_LARGE:
+        errorResponse = ResponseUtil.error(message, status, ['Arquivo muito grande'], request.url);
         break;
       default:
         errorResponse = ResponseUtil.error(message, status, errors, request.url);
