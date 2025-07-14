@@ -36,7 +36,7 @@ export class SincronizacaoService {
   }
 
   // Executa de 3 em 3 horas (8 vezes por dia) para economizar requisições à API
-  @Cron('0 */3 * * *', {
+  @Cron('0 */2 * * *', {
     name: 'verificar-jogos-finalizados',
     timeZone: 'America/Sao_Paulo',
   })
