@@ -50,11 +50,6 @@ export function preservarDataOriginalAPI(dataUTC: string | Date): string {
   return dataUTC.toISOString();
 }
 
-export function formatarDataOriginalAPI(dataUTC: string | Date): string {
-  const data = typeof dataUTC === 'string' ? new Date(dataUTC) : dataUTC;
-  return format(data, 'yyyy-MM-dd HH:mm:ss');
-}
-
 export function obterTimestampBrasil(): number {
   return fromZonedTime(new Date(), TIMEZONE_BRASIL).getTime();
 }

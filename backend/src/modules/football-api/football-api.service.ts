@@ -127,7 +127,6 @@ export class FootballApiService {
           escudo: jogo.awayTeam.crest || '',
         },
         data: preservarDataOriginalAPI(jogo.utcDate),
-        dataOriginalUTC: jogo.utcDate,
         campeonato: jogo.competition?.name || 'Sem Campeonato',
         status: statusDetalhes.jogoFinalizado ? 'encerrado' : 'aberto',
         _statusOriginalAPI: statusOriginal,
@@ -149,9 +148,8 @@ export class FootballApiService {
     });
   }
 
-  // Lista de times brasileiros conhecidos (principais clubes)
+  // Lista simplificada de times brasileiros (principais clubes)
   private timesBrasileiros = [
-    // Times do Brasileirão Serie A
     'Flamengo',
     'Palmeiras',
     'São Paulo',
@@ -166,71 +164,16 @@ export class FootballApiService {
     'Vasco da Gama',
     'Athletico Paranaense',
     'Bahia',
-    'Sport Recife',
-    'Ceará',
     'Fortaleza',
-    'Goiás',
-    'Coritiba',
-    'Avaí',
-    'Juventude',
-    'América Mineiro',
-    'Atlético Goianiense',
     'Bragantino',
-    'Cuiabá',
-    'Chapecoense',
-
-    // Times históricos e outros importantes
-    'Atlético-MG',
-    'Atlético Mineiro',
-    'Atlético-PR',
-    'Athletico-PR',
-    'Internacional',
-    'Inter',
-    'Grêmio FBPA',
-    'Sport Club do Recife',
-    'Clube de Regatas do Flamengo',
-    'Sociedade Esportiva Palmeiras',
-    'São Paulo FC',
-    'Sport Club Corinthians Paulista',
-
-    // Variações de nomes que podem aparecer na API
-    'CR Flamengo',
-    'SE Palmeiras',
-    'Sao Paulo',
-    'SC Corinthians Paulista',
-    'Santos FC',
-    'Gremio',
-    'SC Internacional',
-    'Fluminense FC',
-    'Atletico Mineiro',
-    'Cruzeiro EC',
-    'Botafogo FR',
-    'CR Vasco da Gama',
   ];
 
   private isTimeBrasileiro(nomeTime: string): boolean {
     if (!nomeTime) return false;
-
-    // Converte para lowercase para comparação mais flexível
     const nomeNormalizado = nomeTime.toLowerCase();
-
-    // Verifica se o nome do time está na lista ou contém palavras-chave brasileiras
-    return (
-      this.timesBrasileiros.some(
-        (time) =>
-          nomeNormalizado.includes(time.toLowerCase()) ||
-          time.toLowerCase().includes(nomeNormalizado)
-      ) ||
-      // Verifica palavras-chave que indicam times brasileiros
-      nomeNormalizado.includes('brasil') ||
-      nomeNormalizado.includes('brazil') ||
-      nomeNormalizado.includes('rio') ||
-      nomeNormalizado.includes('são paulo') ||
-      nomeNormalizado.includes('sao paulo') ||
-      nomeNormalizado.includes('minas') ||
-      nomeNormalizado.includes('bahia') ||
-      nomeNormalizado.includes('ceará') ||
-      nomeNormalizado.includes('goiás')
+    return this.timesBrasileiros.some(
+      (time) =>
+        nomeNormalizado.includes(time.toLowerCase()) || time.toLowerCase().includes(nomeNormalizado)
     );
   }
 
@@ -296,24 +239,14 @@ export class FootballApiService {
     }
   }
 
-  // Método para buscar jogos de times brasileiros em competições específicas
+  // Método simplificado para buscar jogos de times brasileiros em competições específicas
   async buscarJogosCompeticoesBrasileiras(data: string) {
     try {
-      // IDs de competições que frequentemente têm times brasileiros
-      const competicoesBrasileiras = [
-        'BSA', // Brasileirão Serie A
-        'CL', // Champions League (times brasileiros às vezes participam de amistosos)
-        'CLI', // Copa Libertadores (se disponível)
-        'CSA', // Copa Sul-Americana (se disponível)
-        'WC', // Copa do Mundo de Clubes
-      ];
-
+      const competicoesBrasileiras = ['BSA', 'CLI', 'CSA'];
       let todosJogos = [];
 
       for (const competicao of competicoesBrasileiras) {
         try {
-          this.logger.log(`Buscando jogos na competição: ${competicao}`);
-
           const response = await axios.get(`${this.apiUrl}/competitions/${competicao}/matches`, {
             headers: {
               'X-Auth-Token': this.apiKey,
@@ -325,12 +258,9 @@ export class FootballApiService {
           });
 
           const jogosCompetição = response.data.matches || [];
-          this.logger.log(`Jogos encontrados em ${competicao}: ${jogosCompetição.length}`);
-
           todosJogos = [...todosJogos, ...jogosCompetição];
         } catch (error) {
           this.logger.warn(`Erro ao buscar competição ${competicao}:`, error.message);
-          // Continua com as outras competições
         }
       }
 
@@ -340,8 +270,6 @@ export class FootballApiService {
         const timeVisitanteBrasileiro = this.isTimeBrasileiro(jogo.awayTeam?.name);
         return timeCasaBrasileiro || timeVisitanteBrasileiro;
       });
-
-      this.logger.log(`Total de jogos brasileiros encontrados: ${jogosBrasileiros.length}`);
 
       return {
         filters: { dateFrom: data, dateTo: data },
@@ -518,284 +446,6 @@ export class FootballApiService {
     };
   }
 
-  // Método para buscar jogos separados por campeonatos específicos
-  async buscarJogosPorCampeonatos(dataInicial: string, diasNoFuturo: number = 30) {
-    const campeonatosEspecificos = {
-      'Mundial de Clubes FIFA': ['CWC', 'FWC', 'CLUB_WORLD_CUP'],
-      'Copa do Mundo FIFA': ['WC', 'WORLD_CUP'],
-      'Brasileirão Serie A': ['BSA', 'BRA', 'BRASIL_SERIE_A'],
-      'Copa Libertadores': ['CLI', 'CL', 'LIBERTADORES'],
-      'Copa Sul-Americana': ['CSA', 'SUDAMERICANA'],
-      'Copa América': ['CA', 'COPA_AMERICA'],
-      'Campeonato Carioca': ['CARIOCA', 'RJ'],
-      'Copa do Brasil': ['CDB', 'COPA_BRASIL'],
-      'Campeonato Paulista': ['PAULISTA', 'SP'],
-      'Campeonato Mineiro': ['MINEIRO', 'MG'],
-      'Campeonato Gaúcho': ['GAUCHO', 'RS'],
-      'Liga dos Campeões UEFA': ['CL', 'UCL', 'CHAMPIONS_LEAGUE'],
-      'Liga Europa UEFA': ['UEL', 'EUROPA_LEAGUE'],
-      'Premier League': ['PL', 'PREMIER_LEAGUE'],
-      'La Liga': ['PD', 'PRIMERA_DIVISION'],
-      'Serie A Italiana': ['SA', 'SERIE_A'],
-      Bundesliga: ['BL1', 'BUNDESLIGA'],
-      'Ligue 1': ['FL1', 'LIGUE_1'],
-      Eurocopa: ['EC', 'EUROS', 'EUROPEAN_CHAMPIONSHIP'],
-      'Nations League': ['UNL', 'NATIONS_LEAGUE'],
-    };
-
-    const jogosPorCampeonato = {};
-
-    this.logger.log(
-      `Buscando jogos por campeonatos de ${dataInicial} até ${diasNoFuturo} dias no futuro`
-    );
-
-    // Primeiro, busca todos os jogos usando o método de range
-    const todosJogos = await this.buscarJogosEmRange(dataInicial, diasNoFuturo);
-
-    // Categoriza os jogos por campeonato
-    for (const jogo of todosJogos.matches) {
-      const nomeCampeonato = jogo.competition?.name || 'Outros';
-      const categorizacao = this.categorizarCampeonato(nomeCampeonato);
-
-      if (!jogosPorCampeonato[categorizacao]) {
-        jogosPorCampeonato[categorizacao] = {
-          nome: categorizacao,
-          jogos: [],
-          total: 0,
-        };
-      }
-
-      jogosPorCampeonato[categorizacao].jogos.push(jogo);
-      jogosPorCampeonato[categorizacao].total++;
-    }
-
-    // Também busca em competições específicas que podem não ter aparecido na busca geral
-    for (const [nomeCampeonato, codigosAPI] of Object.entries(campeonatosEspecificos)) {
-      for (const codigoAPI of codigosAPI) {
-        try {
-          const jogosCompetição = await this.buscarJogosCompetição(
-            codigoAPI,
-            dataInicial,
-            diasNoFuturo
-          );
-
-          if (jogosCompetição.length > 0) {
-            if (!jogosPorCampeonato[nomeCampeonato]) {
-              jogosPorCampeonato[nomeCampeonato] = {
-                nome: nomeCampeonato,
-                jogos: [],
-                total: 0,
-              };
-            }
-
-            // Evita duplicatas verificando se o jogo já existe
-            for (const jogo of jogosCompetição) {
-              const jaExiste = jogosPorCampeonato[nomeCampeonato].jogos.some(
-                (jogoExistente) => jogoExistente.id === jogo.id
-              );
-
-              if (!jaExiste) {
-                jogosPorCampeonato[nomeCampeonato].jogos.push(jogo);
-                jogosPorCampeonato[nomeCampeonato].total++;
-              }
-            }
-          }
-        } catch (error) {
-          this.logger.warn(
-            `Erro ao buscar competição ${codigoAPI} (${nomeCampeonato}):`,
-            error.message
-          );
-        }
-      }
-    }
-
-    // Filtra apenas campeonatos com jogos
-    const campeonatosComJogos = Object.values(jogosPorCampeonato).filter(
-      (campeonato: any) => campeonato.total > 0
-    );
-
-    // Ordena por relevância (campeonatos brasileiros primeiro)
-    campeonatosComJogos.sort((a: any, b: any) => {
-      const prioridadeBrasileiros = [
-        'Brasileirão Serie A',
-        'Copa do Brasil',
-        'Campeonato Carioca',
-        'Copa Libertadores',
-      ];
-      const prioridadeA = prioridadeBrasileiros.indexOf(a.nome);
-      const prioridadeB = prioridadeBrasileiros.indexOf(b.nome);
-
-      if (prioridadeA !== -1 && prioridadeB !== -1) {
-        return prioridadeA - prioridadeB;
-      }
-      if (prioridadeA !== -1) return -1;
-      if (prioridadeB !== -1) return 1;
-
-      return a.nome.localeCompare(b.nome);
-    });
-
-    this.logger.log(`Jogos categorizados em ${campeonatosComJogos.length} campeonatos`);
-    campeonatosComJogos.forEach((campeonato: any) => {
-      this.logger.log(`- ${campeonato.nome}: ${campeonato.total} jogos`);
-    });
-
-    return {
-      totalCampeonatos: campeonatosComJogos.length,
-      totalJogos: campeonatosComJogos.reduce((acc: number, c: any) => acc + c.total, 0),
-      campeonatos: campeonatosComJogos,
-      periodo: {
-        dataInicial,
-        dataFinal: new Date(new Date(dataInicial).getTime() + diasNoFuturo * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0],
-      },
-    };
-  }
-
-  // Método auxiliar para categorizar campeonatos
-  private categorizarCampeonato(nomeCampeonato: string): string {
-    const nome = nomeCampeonato.toLowerCase();
-
-    // Mundial e Copa do Mundo
-    if (
-      nome.includes('fifa world cup') ||
-      nome.includes('world cup') ||
-      nome.includes('copa do mundo')
-    ) {
-      return 'Copa do Mundo FIFA';
-    }
-    if (
-      nome.includes('fifa club world cup') ||
-      nome.includes('club world cup') ||
-      nome.includes('mundial de clubes') ||
-      nome.includes('mundial club')
-    ) {
-      return 'Mundial de Clubes FIFA';
-    }
-
-    // Campeonatos brasileiros
-    if (nome.includes('brasileirão') || nome.includes('brasileiro') || nome.includes('serie a')) {
-      return 'Brasileirão Serie A';
-    }
-    if (nome.includes('carioca') || nome.includes('rio de janeiro')) {
-      return 'Campeonato Carioca';
-    }
-    if (nome.includes('paulista') || nome.includes('são paulo')) {
-      return 'Campeonato Paulista';
-    }
-    if (nome.includes('mineiro') || nome.includes('minas gerais')) {
-      return 'Campeonato Mineiro';
-    }
-    if (nome.includes('gaúcho') || nome.includes('rio grande do sul')) {
-      return 'Campeonato Gaúcho';
-    }
-    if (nome.includes('copa do brasil')) {
-      return 'Copa do Brasil';
-    }
-
-    // Competições sul-americanas
-    if (nome.includes('libertadores')) {
-      return 'Copa Libertadores';
-    }
-    if (nome.includes('sul-americana') || nome.includes('sudamericana')) {
-      return 'Copa Sul-Americana';
-    }
-    if (nome.includes('copa america') || nome.includes('copa américa')) {
-      return 'Copa América';
-    }
-
-    // Competições europeias
-    if (nome.includes('champions league') || nome.includes('liga dos campeões')) {
-      return 'Liga dos Campeões UEFA';
-    }
-    if (nome.includes('europa league') || nome.includes('liga europa')) {
-      return 'Liga Europa UEFA';
-    }
-    if (
-      nome.includes('european championship') ||
-      nome.includes('euros') ||
-      nome.includes('eurocopa')
-    ) {
-      return 'Eurocopa';
-    }
-    if (nome.includes('nations league')) {
-      return 'Nations League UEFA';
-    }
-
-    // Ligas nacionais importantes
-    if (nome.includes('premier league')) {
-      return 'Premier League';
-    }
-    if (nome.includes('la liga') || nome.includes('primera división')) {
-      return 'La Liga';
-    }
-    if (nome.includes('serie a') && nome.includes('ita')) {
-      return 'Serie A Italiana';
-    }
-    if (nome.includes('bundesliga')) {
-      return 'Bundesliga';
-    }
-    if (nome.includes('ligue 1')) {
-      return 'Ligue 1';
-    }
-
-    // Se não conseguir categorizar, retorna o nome original
-    return nomeCampeonato;
-  }
-
-  // Método auxiliar para buscar jogos de uma competição específica
-  private async buscarJogosCompetição(
-    codigoCompetição: string,
-    dataInicial: string,
-    diasNoFuturo: number
-  ): Promise<any[]> {
-    const LIMITE_DIAS_POR_REQUEST = 10;
-    const todosJogos = [];
-    let dataAtual = new Date(dataInicial);
-    const dataFinal = new Date(dataInicial);
-    dataFinal.setDate(dataFinal.getDate() + diasNoFuturo);
-
-    while (dataAtual < dataFinal) {
-      const dataFimPedaco = new Date(dataAtual);
-      dataFimPedaco.setDate(dataAtual.getDate() + LIMITE_DIAS_POR_REQUEST - 1);
-
-      if (dataFimPedaco > dataFinal) {
-        dataFimPedaco.setTime(dataFinal.getTime() - 24 * 60 * 60 * 1000);
-      }
-
-      const dataInicioStr = dataAtual.toISOString().split('T')[0];
-      const dataFimStr = dataFimPedaco.toISOString().split('T')[0];
-
-      try {
-        const response = await axios.get(
-          `${this.apiUrl}/competitions/${codigoCompetição}/matches`,
-          {
-            headers: {
-              'X-Auth-Token': this.apiKey,
-            },
-            params: {
-              dateFrom: dataInicioStr,
-              dateTo: dataFimStr,
-            },
-          }
-        );
-
-        const jogosEncontrados = response.data.matches || [];
-        todosJogos.push(...jogosEncontrados);
-
-        // Pausa entre requests
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      } catch (error) {
-        // Ignora erros de competições específicas para não quebrar a busca geral
-        break;
-      }
-
-      dataAtual.setDate(dataAtual.getDate() + LIMITE_DIAS_POR_REQUEST);
-    }
-
-    return todosJogos;
-  }
-
   // Método melhorado para buscar jogos por data com opção de organizar por campeonatos
   async getJogosPorDataComCampeonatos(
     data: string,
@@ -826,7 +476,7 @@ export class FootballApiService {
 
       if (organizarPorCampeonatos) {
         // Retorna jogos organizados por campeonatos
-        return await this.buscarJogosPorCampeonatos(data, diasNoFuturo);
+        return await this.buscarJogosEmRange(data, diasNoFuturo);
       } else {
         // Comportamento original
         let resultado = await this.buscarJogosEmRange(data, diasNoFuturo);
