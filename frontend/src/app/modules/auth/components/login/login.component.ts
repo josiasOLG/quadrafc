@@ -6,10 +6,9 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { ToastModule } from 'primeng/toast';
 
 import { LoginDto, LoginSchema } from '../../../../shared/schemas/user.schema';
-import { ToastService } from '../../../../shared/services/toast.service';
+import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -22,7 +21,6 @@ import { AuthService } from '../../services/auth.service';
     InputTextModule,
     PasswordModule,
     CardModule,
-    ToastModule,
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
@@ -34,7 +32,7 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     public authService: AuthService,
-    private toastService: ToastService,
+    private globalDialogService: GlobalDialogService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -52,7 +50,7 @@ export class LoginComponent {
       // Validate with Zod
       const validation = LoginSchema.safeParse(loginData);
       if (!validation.success) {
-        this.toastService.error('Dados inválidos');
+        this.globalDialogService.showError('Dados inválidos', 'Verifique os dados informados');
         this.isLoading = false;
         return;
       }
@@ -70,12 +68,15 @@ export class LoginComponent {
           this.isLoading = false;
         },
         error: () => {
-          this.toastService.error('Erro ao fazer login. Verifique suas credenciais.');
+          this.globalDialogService.showError('Erro ao fazer login', 'Verifique suas credenciais');
           this.isLoading = false;
         },
       });
     } else {
-      this.toastService.warn('Preencha todos os campos obrigatórios');
+      this.globalDialogService.showWarning(
+        'Campos obrigatórios',
+        'Preencha todos os campos obrigatórios'
+      );
     }
   }
 

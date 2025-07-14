@@ -10,13 +10,13 @@ import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../modules/auth/services/auth.service';
-import { ToastService } from '../../shared/services/toast.service';
+import { GlobalDialogService } from '../../shared/services/global-dialog.service';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
   constructor(
     private router: Router,
-    private toastService: ToastService,
+    private globalDialogService: GlobalDialogService,
     private authService: AuthService
   ) {}
 
@@ -63,8 +63,8 @@ export class ErrorInterceptor implements HttpInterceptor {
             errorMessage = error.error?.message || `Erro ${error.status}`;
         }
 
-        // Mostra toast para todos os erros
-        this.toastService.error('Erro', errorMessage);
+        // Mostra dialog de erro para todos os erros
+        this.globalDialogService.showError('Erro', errorMessage);
 
         return throwError(() => new Error(errorMessage));
       })

@@ -8,7 +8,7 @@ import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
 import { firstValueFrom } from 'rxjs';
 
-import { ToastService } from '../../../../shared/services/toast.service';
+import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -33,7 +33,7 @@ export class RegisterComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private toastService: ToastService
+    private globalDialogService: GlobalDialogService
   ) {
     this.registerForm = this.fb.group(
       {
@@ -75,7 +75,10 @@ export class RegisterComponent implements OnInit {
       // Chama o método register do AuthService
       await firstValueFrom(this.authService.register(formData));
 
-      this.toastService.success('Cadastro realizado com sucesso!', 'Vamos configurar seu perfil');
+      this.globalDialogService.showSuccess(
+        'Cadastro realizado com sucesso!',
+        'Vamos configurar seu perfil'
+      );
 
       this.router.navigate(['/onboarding']);
     } catch (error: any) {
@@ -90,7 +93,7 @@ export class RegisterComponent implements OnInit {
         errorMessage = 'Dados inválidos: ' + error.issues?.map((i: any) => i.message).join(', ');
       }
 
-      this.toastService.error('Erro', errorMessage);
+      this.globalDialogService.showError('Erro no cadastro', errorMessage);
     } finally {
       this.isLoading = false;
     }

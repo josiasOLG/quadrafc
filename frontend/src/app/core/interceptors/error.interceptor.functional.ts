@@ -2,10 +2,10 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ToastService } from '../../shared/services/toast.service';
+import { GlobalDialogService } from '../../shared/services/global-dialog.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const toastService = inject(ToastService);
+  const globalDialogService = inject(GlobalDialogService);
 
   return next(req).pipe(
     catchError((error: any) => {
@@ -25,7 +25,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         errorMessage = error.error.message;
       }
 
-      toastService.error('Erro', errorMessage);
+      globalDialogService.showError('Erro', errorMessage);
       return throwError(() => error);
     })
   );

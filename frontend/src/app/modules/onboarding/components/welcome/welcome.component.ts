@@ -1,7 +1,7 @@
-import {CommonModule} from '@angular/common';
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Router} from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   catchError,
   debounceTime,
@@ -13,22 +13,22 @@ import {
   takeUntil,
 } from 'rxjs';
 
-import {AutoCompleteModule} from 'primeng/autocomplete';
-import {ButtonModule} from 'primeng/button';
-import {CalendarModule} from 'primeng/calendar';
-import {CardModule} from 'primeng/card';
-import {DropdownModule} from 'primeng/dropdown';
-import {InputGroupModule} from 'primeng/inputgroup';
-import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
-import {InputMaskModule} from 'primeng/inputmask';
-import {InputTextModule} from 'primeng/inputtext';
-import {StepsModule} from 'primeng/steps';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { ButtonModule } from 'primeng/button';
+import { CalendarModule } from 'primeng/calendar';
+import { CardModule } from 'primeng/card';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { InputMaskModule } from 'primeng/inputmask';
+import { InputTextModule } from 'primeng/inputtext';
+import { StepsModule } from 'primeng/steps';
 
-import {CepResponse, CepService} from '../../../../core/services/cep.service';
-import {Bairro} from '../../../../shared/schemas/bairro.schema';
-import {ToastService} from '../../../../shared/services/toast.service';
-import {AuthService} from '../../../auth/services/auth.service';
-import {BairrosService} from '../../../bairros/services/bairros.service';
+import { CepResponse, CepService } from '../../../../core/services/cep.service';
+import { Bairro } from '../../../../shared/schemas/bairro.schema';
+import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
+import { AuthService } from '../../../auth/services/auth.service';
+import { BairrosService } from '../../../bairros/services/bairros.service';
 
 interface OnboardingStep {
   label: string;
@@ -84,7 +84,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private toastService: ToastService,
+    private globalDialogService: GlobalDialogService,
     private authService: AuthService,
     private bairrosService: BairrosService,
     private cepService: CepService
@@ -169,19 +169,19 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         bairro: response.bairro.trim(),
       });
 
-      this.toastService.show({
-        detail: `Endereço encontrado: ${response.bairro}, ${response.localidade}/${response.uf}`,
-        severity: 'success',
-      });
+      this.globalDialogService.showSuccess(
+        'Endereço encontrado',
+        `${response.bairro}, ${response.localidade}/${response.uf}`
+      );
     }
     // Se não tem bairro no CEP, habilitar input para digitação
     else {
       this.onboardingForm.patchValue({ bairro: '' }); // Limpar o campo
 
-      this.toastService.show({
-        detail: `Endereço encontrado em ${response.localidade}/${response.uf}. Digite o nome do seu bairro.`,
-        severity: 'info',
-      });
+      this.globalDialogService.showInfo(
+        'Endereço encontrado',
+        `${response.localidade}/${response.uf}. Digite o nome do seu bairro.`
+      );
     }
   }
 
@@ -190,16 +190,10 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
     if (error.status === 404) {
       this.cepError = 'CEP não encontrado';
-      this.toastService.show({
-        detail: 'CEP não encontrado. Verifique se digitou corretamente',
-        severity: 'error',
-      });
+      this.globalDialogService.showError('CEP não encontrado', 'Verifique se digitou corretamente');
     } else {
       this.cepError = 'Erro ao buscar CEP';
-      this.toastService.show({
-        detail: 'Erro ao buscar CEP. Tente novamente',
-        severity: 'error',
-      });
+      this.globalDialogService.showError('Erro ao buscar CEP', 'Tente novamente');
     }
   }
 
@@ -225,17 +219,17 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         const telefoneControl = this.onboardingForm.get('telefone');
 
         if (!dataControl?.valid) {
-          this.toastService.show({
-            detail: 'Por favor, insira sua data de nascimento',
-            severity: 'warn',
-          });
+          this.globalDialogService.showWarning(
+            'Campo obrigatório',
+            'Por favor, insira sua data de nascimento'
+          );
           return false;
         }
         if (!telefoneControl?.valid) {
-          this.toastService.show({
-            detail: 'Por favor, insira um telefone válido',
-            severity: 'warn',
-          });
+          this.globalDialogService.showWarning(
+            'Campo obrigatório',
+            'Por favor, insira um telefone válido'
+          );
           return false;
         }
         break;
@@ -244,18 +238,18 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         const bairroControl = this.onboardingForm.get('bairro');
 
         if (!cepControl?.valid) {
-          this.toastService.show({
-            detail: 'Por favor, insira um CEP válido',
-            severity: 'warn',
-          });
+          this.globalDialogService.showWarning(
+            'Campo obrigatório',
+            'Por favor, insira um CEP válido'
+          );
           return false;
         }
 
         if (!this.cepData) {
-          this.toastService.show({
-            detail: 'Por favor, aguarde a validação do CEP',
-            severity: 'warn',
-          });
+          this.globalDialogService.showWarning(
+            'Aguarde validação',
+            'Por favor, aguarde a validação do CEP'
+          );
           return false;
         }
 
@@ -266,10 +260,10 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
         // Se não tem bairro direto do CEP, precisa ter digitado um válido
         if (!bairroControl?.value || bairroControl.value.trim().length < 2) {
-          this.toastService.show({
-            detail: 'Por favor, digite o nome do seu bairro (mínimo 2 caracteres)',
-            severity: 'warn',
-          });
+          this.globalDialogService.showWarning(
+            'Campo obrigatório',
+            'Por favor, digite o nome do seu bairro (mínimo 2 caracteres)'
+          );
           return false;
         }
         break;
@@ -297,20 +291,17 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
         await firstValueFrom(this.authService.updateProfile(updateData));
 
-        this.toastService.show({
-          detail: 'Bem-vindo ao QuadraFC!',
-          severity: 'success',
-        });
+        this.globalDialogService.showSuccess(
+          'Bem-vindo ao QuadraFC!',
+          'Seu perfil foi configurado com sucesso'
+        );
 
         // Aguardar um pouco para garantir que o estado foi atualizado
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         this.router.navigate(['/jogos']);
       } catch {
-        this.toastService.show({
-          detail: 'Erro ao completar cadastro',
-          severity: 'error',
-        });
+        this.globalDialogService.showError('Erro no cadastro', 'Erro ao completar cadastro');
       } finally {
         this.isLoading = false;
       }
@@ -459,12 +450,10 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         this.bairroError = `Bairros similares encontrados: ${validation.sugestoes.join(
           ', '
         )}. Use um deles ou confirme se está correto.`;
-        this.toastService.show({
-          detail: `Encontramos bairros similares. Verifique se não é um deles: ${validation.sugestoes.join(
-            ', '
-          )}`,
-          severity: 'warn',
-        });
+        this.globalDialogService.showWarning(
+          'Bairros similares encontrados',
+          `Verifique se não é um deles: ${validation.sugestoes.join(', ')}`
+        );
       }
     } catch {
       // Não bloquear se der erro na validação
