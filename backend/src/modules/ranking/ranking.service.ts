@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Bairro, BairroDocument } from '../../shared/schemas/bairro.schema';
+import { Jogo, JogoDocument } from '../../shared/schemas/jogo.schema';
 import { User, UserDocument } from '../../shared/schemas/user.schema';
 import { PremiumAccessService } from '../../shared/services/premium-access.service';
 
@@ -48,11 +49,22 @@ export interface PaginationParams {
   offset: number;
 }
 
+export interface CampeonatoResumo {
+  id: string;
+  nome: string;
+  logo?: string;
+  dataInicio: Date;
+  dataFim: Date;
+  quantidadeDeJogos: number;
+  status: string;
+}
+
 @Injectable()
 export class RankingService {
   constructor(
     @InjectModel(User.name) public userModel: Model<UserDocument>,
     @InjectModel(Bairro.name) private bairroModel: Model<BairroDocument>,
+    @InjectModel(Jogo.name) private jogoModel: Model<JogoDocument>,
     private premiumAccessService: PremiumAccessService
   ) {}
 
@@ -421,5 +433,106 @@ export class RankingService {
       cidade: cidade,
       estado: estado,
     };
+  }
+  async getCampeonatosMesAtual(): Promise<CampeonatoResumo[]> {
+    const agora = new Date();
+    const inicioMes = new Date(Date.UTC(agora.getFullYear(), agora.getMonth(), 1));
+    const fimMes = new Date(
+      Date.UTC(agora.getFullYear(), agora.getMonth() + 1, 0, 23, 59, 59, 999)
+    );
+
+    const jogosPorString = await this.jogoModel
+      .find({
+        data: {
+          $gte: inicioMes.toISOString(),
+          $lte: fimMes.toISOString(),
+        },
+      })
+      .limit(2)
+      .exec();
+    const jogosPorDate = await this.jogoModel
+      .find({
+        data: {
+          $gte: inicioMes,
+          $lte: fimMes,
+        },
+      })
+      .limit(2)
+      .exec();
+
+    const jogosPorRegex = await this.jogoModel
+      .find({
+        data: {
+          $regex: /^2025-07/,
+        },
+      })
+      .limit(2)
+      .exec();
+
+    let filtroData = {};
+    if (jogosPorDate.length > 0) {
+      filtroData = {
+        data: {
+          $gte: inicioMes,
+          $lte: fimMes,
+        },
+      };
+    } else if (jogosPorString.length > 0) {
+      filtroData = {
+        data: {
+          $gte: inicioMes.toISOString(),
+          $lte: fimMes.toISOString(),
+        },
+      };
+    } else if (jogosPorRegex.length > 0) {
+      filtroData = {
+        data: {
+          $regex: new RegExp(
+            `^${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`
+          ),
+        },
+      };
+    }
+
+    // Fazer o aggregate usando o filtro que funcionou
+    const campeonatos = await this.jogoModel.aggregate([
+      {
+        $match: filtroData,
+      },
+      {
+        $group: {
+          _id: '$campeonato',
+          nome: { $first: '$campeonato' },
+          quantidadeDeJogos: { $sum: 1 },
+          dataInicio: { $min: '$data' },
+          dataFim: { $max: '$data' },
+        },
+      },
+      {
+        $sort: { quantidadeDeJogos: -1 },
+      },
+    ]);
+
+    return campeonatos.map((camp, index) => ({
+      id: `${index + 1}`,
+      nome: camp.nome || 'Outros',
+      logo: `https://via.placeholder.com/60x60/007bff/ffffff?text=${encodeURIComponent((camp.nome || 'O').charAt(0))}`,
+      dataInicio: camp.dataInicio,
+      dataFim: camp.dataFim,
+      quantidadeDeJogos: camp.quantidadeDeJogos,
+      status: this.determinarStatusCampeonato(camp.dataInicio, camp.dataFim),
+    }));
+  }
+
+  private determinarStatusCampeonato(dataInicio: Date, dataFim: Date): string {
+    const agora = new Date();
+
+    if (agora < dataInicio) {
+      return 'agendado';
+    } else if (agora > dataFim) {
+      return 'finalizado';
+    } else {
+      return 'em_andamento';
+    }
   }
 }

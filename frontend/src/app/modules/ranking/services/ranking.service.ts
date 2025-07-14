@@ -32,6 +32,16 @@ export interface RankingBairro {
   posicao: number;
 }
 
+export interface CampeonatoResumo {
+  id: string;
+  nome: string;
+  logo?: string;
+  dataInicio: Date;
+  dataFim: Date;
+  quantidadeDeJogos: number;
+  status: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -233,5 +243,10 @@ export class RankingService extends BaseApiService<RankingUsuario, any> {
   // Teste de autenticação
   testeAuth(): Observable<{ userInfo: any; userId: string; message: string }> {
     return this.get('teste-auth');
+  }
+
+  // Campeonatos do mês atual
+  getCampeonatosMesAtual(): Observable<CampeonatoResumo[]> {
+    return this.get<CampeonatoResumo[]>('campeonatos');
   }
 }

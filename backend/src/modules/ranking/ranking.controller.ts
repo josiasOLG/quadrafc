@@ -129,4 +129,12 @@ export class RankingController {
       },
     };
   }
+
+  @Get('campeonatos')
+  @Public()
+  @ResponseMessage('Campeonatos do mês atual recuperados')
+  @ApiOperation({ summary: 'Buscar campeonatos do mês atual' })
+  async getCampeonatosMesAtual() {
+    return this.rankingService.getCampeonatosMesAtual();
+  }
 }

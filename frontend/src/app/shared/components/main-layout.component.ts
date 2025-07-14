@@ -70,7 +70,7 @@ export class MainLayoutComponent implements OnInit {
     {
       icon: 'pi pi-trophy',
       label: 'Ranking',
-      routerLink: '/ranking',
+      routerLink: '/ranking/campeonatos',
     },
     {
       icon: 'pi pi-cog',

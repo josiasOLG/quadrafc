@@ -1,0 +1,193 @@
+@import '../../../../shared/styles/mixins';
+
+// Keyframes para animações (versão otimizada)
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Página de Campeonatos
+.ranking-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  // background: var(--surface-ground);
+  padding-bottom: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+// Cards estilizados
+.glass-card {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.neumorphic-card {
+  background: var(--surface-a);
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.03), -5px -5px 10px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s forwards;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-left: 2px solid var(--primary-color);
+  }
+}
+
+// Header Container
+.header-container {
+  margin-bottom: 20px !important;
+  ::ng-deep {
+    .header-container__button {
+      color: #fff;
+    }
+  }
+}
+
+// Lista de Campeonatos
+.campeonatos-list {
+  // Cards dos campeonatos
+  .campeonato-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 2px solid transparent;
+    animation: fadeIn 0.5s forwards;
+    animation-delay: calc(0.1s * var(--i, 0));
+
+    &:hover {
+      transform: translateX(4px);
+      border-left: 2px solid var(--primary-color);
+    }
+
+    .position-badge {
+      min-width: 2.5rem;
+      height: 2.5rem;
+      background: var(--surface-card);
+      border-radius: 50%;
+      color: var(--primary-color);
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+      transition: all 0.3s ease;
+    }
+
+    &:hover .position-badge {
+      transform: scale(1.1);
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .campeonato-avatar {
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover .campeonato-avatar {
+      transform: scale(1.05);
+    }
+
+    .campeonato-card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-color);
+      transition: color 0.3s ease;
+    }
+
+    &:hover .campeonato-card-name {
+      color: var(--primary-color);
+    }
+
+    .campeonato-card-info {
+      font-size: 0.6rem;
+      color: var(--text-color-secondary);
+
+      .info-icon {
+        font-size: 0.8rem;
+        margin-right: 0.25rem;
+        color: var(--primary-color);
+      }
+    }
+
+    .campeonato-card-status {
+      text-align: center;
+
+      .status-tag {
+        font-size: 0.75rem;
+      }
+    }
+
+    .campeonato-status-indicators {
+      .status-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        color: var(--text-color-secondary);
+        background: var(--surface-ground);
+
+        .status-icon {
+          font-size: 0.7rem;
+          color: var(--primary-color);
+        }
+      }
+
+      .games-chip {
+        background: rgba(var(--primary-color-rgb), 0.1);
+      }
+    }
+  }
+}
+
+// Loading state
+.ranking-loading {
+  .list-skeleton {
+    animation: pulse 1.5s infinite alternate;
+  }
+}
+
+// Empty state
+.empty-state {
+  .empty-icon {
+    i {
+      color: var(--text-color-secondary);
+    }
+  }
+}
+
+// Responsividade mobile
+@media (max-width: 576px) {
+  .campeonato-info .flex {
+    flex-direction: column;
+    gap: 0.5rem !important;
+    align-items: flex-start !important;
+  }
+
+  .campeonato-nome {
+    font-size: 1rem !important;
+    line-height: 1.3;
+  }
+}
