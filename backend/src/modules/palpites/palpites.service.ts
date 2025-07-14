@@ -9,15 +9,26 @@ import { Model } from 'mongoose';
 import { CreatePalpiteDto } from '../../shared/dto/create-palpite.dto';
 import { Palpite, PalpiteDocument } from '../../shared/schemas/palpite.schema';
 import { JogosService } from '../jogos/jogos.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class PalpitesService {
   constructor(
     @InjectModel(Palpite.name) private palpiteModel: Model<PalpiteDocument>,
-    private jogosService: JogosService
+    private jogosService: JogosService,
+    private usersService: UsersService
   ) {}
 
   async create(userId: string, createPalpiteDto: CreatePalpiteDto): Promise<Palpite> {
+    // Verificar limite de palpites diários
+    const podePalpitar = await this.usersService.verificarLimitePalpites(userId);
+    if (!podePalpitar) {
+      const status = await this.usersService.obterStatusPalpites(userId);
+      throw new BadRequestException(
+        `Limite diário de palpites atingido. Você já fez ${status.palpitesHoje} de ${status.limiteDiario} palpites hoje.`
+      );
+    }
+
     // Verificar se o jogo existe
     const jogo = await this.jogosService.findById(createPalpiteDto.jogoId);
     if (!jogo) {
@@ -50,11 +61,16 @@ export class PalpitesService {
     });
 
     const savedPalpite = await createdPalpite.save();
+
+    // Incrementar contador de palpites do usuário
+    await this.usersService.incrementarContadorPalpites(userId);
+
     // Adiciona o palpite ao array de palpites do jogo
     await this.jogosService.addPalpiteToJogo(
       createPalpiteDto.jogoId.toString(),
       savedPalpite._id.toString()
     );
+
     return savedPalpite;
   }
 
@@ -112,5 +128,14 @@ export class PalpitesService {
     if (timeA > timeB) return 'vitoria_a';
     if (timeA < timeB) return 'vitoria_b';
     return 'empate';
+  }
+
+  async obterStatusPalpitesUsuario(userId: string): Promise<{
+    palpitesHoje: number;
+    limiteDiario: number;
+    podesPalpitar: boolean;
+    restantes: number;
+  }> {
+    return this.usersService.obterStatusPalpites(userId);
   }
 }

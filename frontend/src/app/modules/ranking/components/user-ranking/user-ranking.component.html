@@ -90,7 +90,7 @@
               <div class="podium-user-info">
                 <h4 class="user-name">{{ user.user.nome }}</h4>
                 <div class="user-points">{{ formatNumber(user.pontos_totais) }} pts</div>
-                <div class="user-stats">{{ user.palpites_corretos || 0 }} acertos</div>
+                <!-- <div class="user-stats">{{ user.palpites_corretos || 0 }} acertos</div> -->
               </div>
             </div>
           </div>
@@ -124,15 +124,15 @@
             <div class="flex-1">
               <h4 class="user-card-name m-0 mb-1">{{ user.user.nome }}</h4>
               <div class="user-card-location">
-                <i class="pi pi-user location-icon"></i>
-                <span>{{ formatNumber(user.pontos_totais) }} pontos</span>
+                <!-- <i class="pi pi-user location-icon"></i> -->
+                <span>{{ user.user.bairro }}</span>
               </div>
             </div>
 
             <!-- Pontuação -->
-            <div class="user-card-score mr-2">
-              <div class="score-value">{{ user.palpites_corretos || 0 }}</div>
-              <div class="score-label">acertos</div>
+            <div class="bairro-card-score mr-2">
+              <div class="score-value">{{ formatNumber(user.pontos_totais) }}</div>
+              <div class="score-label">pontos</div>
             </div>
           </div>
 

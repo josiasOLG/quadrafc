@@ -259,4 +259,175 @@ export class UsersService {
       throw error;
     }
   }
+
+  async verificarLimitePalpites(userId: string): Promise<boolean> {
+    const user = await this.userModel.findById(userId).exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    // Verificar se precisa resetar o contador diário
+    const hoje = new Date();
+    const ultimoReset = new Date(user.ultimoResetPalpites);
+
+    // Se é um dia diferente, resetar contador
+    if (hoje.toDateString() !== ultimoReset.toDateString()) {
+      await this.resetarContadorPalpitesDiario(userId);
+      return true; // Pode palpitar após reset
+    }
+
+    // Determinar limite baseado na assinatura
+    const limiteDiario = this.obterLimitePalpitesDiario(user);
+
+    // Verificar se ainda pode palpitar
+    return user.palpitesHoje < limiteDiario;
+  }
+
+  async incrementarContadorPalpites(userId: string): Promise<void> {
+    const user = await this.userModel.findById(userId).exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    // Verificar se precisa resetar o contador diário
+    const hoje = new Date();
+    const ultimoReset = new Date(user.ultimoResetPalpites);
+
+    if (hoje.toDateString() !== ultimoReset.toDateString()) {
+      await this.resetarContadorPalpitesDiario(userId);
+    }
+
+    await this.userModel
+      .findByIdAndUpdate(userId, { $inc: { palpitesHoje: 1 } }, { new: true })
+      .exec();
+  }
+
+  async obterStatusPalpites(userId: string): Promise<{
+    palpitesHoje: number;
+    limiteDiario: number;
+    podesPalpitar: boolean;
+    restantes: number;
+  }> {
+    const user = await this.userModel.findById(userId).exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    // Verificar se precisa resetar o contador diário
+    const hoje = new Date();
+    const ultimoReset = new Date(user.ultimoResetPalpites);
+
+    let palpitesHoje = user.palpitesHoje;
+
+    if (hoje.toDateString() !== ultimoReset.toDateString()) {
+      palpitesHoje = 0; // Reset virtual para cálculo
+    }
+
+    const limiteDiario = this.obterLimitePalpitesDiario(user);
+    const restantes = Math.max(0, limiteDiario - palpitesHoje);
+    const podesPalpitar = restantes > 0;
+
+    return {
+      palpitesHoje,
+      limiteDiario,
+      podesPalpitar,
+      restantes,
+    };
+  }
+
+  private async resetarContadorPalpitesDiario(userId: string): Promise<void> {
+    await this.userModel
+      .findByIdAndUpdate(
+        userId,
+        {
+          palpitesHoje: 0,
+          ultimoResetPalpites: new Date(),
+        },
+        { new: true }
+      )
+      .exec();
+  }
+
+  private obterLimitePalpitesDiario(user: UserDocument): number {
+    // Se tem assinatura premium ativa
+    if (this.temAssinaturaPremiumAtiva(user)) {
+      return 15; // Premium pode fazer 15 palpites por dia
+    }
+
+    // Usar o limite personalizado do usuário ou padrão
+    return user.limitePalpitesDia || 5;
+  }
+
+  private temAssinaturaPremiumAtiva(user: UserDocument): boolean {
+    // Se tem premium vitalício
+    if (user.assinaturaPremium) {
+      return true;
+    }
+
+    // Se tem premium temporário e ainda está válido
+    if (user.dataVencimentoPremium) {
+      return new Date() <= new Date(user.dataVencimentoPremium);
+    }
+
+    return false;
+  }
+
+  async atualizarLimitePalpites(userId: string, novoLimite: number): Promise<UserDocument> {
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { limitePalpitesDia: novoLimite }, { new: true })
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return user;
+  }
+
+  async migrarUsuariosComLimitePalpites(): Promise<{
+    atualizados: number;
+    total: number;
+    message: string;
+  }> {
+    const usuarios = await this.userModel.find({
+      $or: [
+        { limitePalpitesDia: { $exists: false } },
+        { palpitesHoje: { $exists: false } },
+        { ultimoResetPalpites: { $exists: false } },
+      ],
+    });
+
+    let atualizados = 0;
+    const dataAtual = new Date();
+
+    for (const user of usuarios) {
+      const updates: any = {};
+
+      if (!user.limitePalpitesDia) {
+        updates.limitePalpitesDia = 5;
+      }
+
+      if (!user.palpitesHoje) {
+        updates.palpitesHoje = 0;
+      }
+
+      if (!user.ultimoResetPalpites) {
+        updates.ultimoResetPalpites = dataAtual;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await this.userModel.findByIdAndUpdate(user._id, updates);
+        atualizados++;
+      }
+    }
+
+    return {
+      atualizados,
+      total: usuarios.length,
+      message: `Migração concluída: ${atualizados} usuários atualizados de ${usuarios.length} encontrados`,
+    };
+  }
 }

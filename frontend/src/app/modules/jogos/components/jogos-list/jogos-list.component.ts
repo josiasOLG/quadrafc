@@ -143,9 +143,8 @@ export class JogosListComponent implements OnInit {
     const hoje = new Date().toISOString().split('T')[0];
 
     // Primeiro tenta buscar via endpoint de campeonatos (limite de 50 jogos)
-    this.jogosService.getJogosPorCampeonatos(hoje, 12).subscribe({
+    this.jogosService.getJogosPorCampeonatos(hoje, 900).subscribe({
       next: (response: any) => {
-        // A resposta já vem diretamente com os dados (sem wrapper success/data)
         if (response && response.campeonatos) {
           this.campeonatos = response.campeonatos.map((campeonato: any) => ({
             nome: campeonato.nome,
@@ -153,7 +152,6 @@ export class JogosListComponent implements OnInit {
             total: campeonato.total || campeonato.jogos?.length || 0,
           }));
 
-          // Limpa a lista de jogos já que agora estamos usando campeonatos
           this.jogos = [];
         } else {
           this.campeonatos = [];
@@ -252,10 +250,10 @@ export class JogosListComponent implements OnInit {
       this.closePalpiteDialog();
       this.loadJogos();
     } catch {
-      this.globalDialogService.showError(
-        'Erro',
-        'Não foi possível enviar o palpite. Tente novamente.'
-      );
+      // this.globalDialogService.showError(
+      //   'Erro',
+      //   'Não foi possível enviar o palpite. Tente novamente.'
+      // );
     } finally {
       this.isSubmittingPalpite = false;
     }

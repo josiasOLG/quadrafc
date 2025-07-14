@@ -21,6 +21,7 @@ interface RankingUsuario {
     nome: string;
     avatar?: string;
     email: string;
+    bairro: string;
   };
   pontos_totais: number;
   palpites_corretos: number;
@@ -179,6 +180,7 @@ export class UserRankingComponent implements OnInit {
         nome: usuario.nome,
         email: usuario.email || '',
         avatar: usuario.avatarUrl || usuario.avatar || '',
+        bairro: usuario.bairro || '',
       },
       pontos_totais: usuario.totalPoints || usuario.pontos || 0,
       palpites_corretos: usuario.palpites_corretos || 0,

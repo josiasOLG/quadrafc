@@ -77,6 +77,18 @@ export class User {
   @Prop({ required: false })
   dataVencimentoPremium?: Date;
 
+  @ApiProperty({ description: 'Limite de palpites por dia para este usuário' })
+  @Prop({ default: 5 })
+  limitePalpitesDia: number;
+
+  @ApiProperty({ description: 'Contador de palpites feitos hoje' })
+  @Prop({ default: 0 })
+  palpitesHoje: number;
+
+  @ApiProperty({ description: 'Data do último reset do contador de palpites' })
+  @Prop({ default: Date.now })
+  ultimoResetPalpites: Date;
+
   @ApiProperty({ description: 'Data de criação' })
   createdAt: Date;
 

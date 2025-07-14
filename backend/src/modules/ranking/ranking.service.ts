@@ -731,19 +731,15 @@ export class RankingService {
       .find({
         data: {
           $gte: inicioMes.toISOString(),
-          $lte: fimMes.toISOString(),
         },
       })
-      .limit(2)
       .exec();
     const jogosPorDate = await this.jogoModel
       .find({
         data: {
           $gte: inicioMes,
-          $lte: fimMes,
         },
       })
-      .limit(2)
       .exec();
 
     const jogosPorRegex = await this.jogoModel
@@ -752,7 +748,6 @@ export class RankingService {
           $regex: /^2025-07/,
         },
       })
-      .limit(2)
       .exec();
 
     let filtroData = {};
@@ -760,14 +755,12 @@ export class RankingService {
       filtroData = {
         data: {
           $gte: inicioMes,
-          $lte: fimMes,
         },
       };
     } else if (jogosPorString.length > 0) {
       filtroData = {
         data: {
           $gte: inicioMes.toISOString(),
-          $lte: fimMes.toISOString(),
         },
       };
     } else if (jogosPorRegex.length > 0) {

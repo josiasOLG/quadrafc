@@ -62,7 +62,7 @@ export class LoginComponent {
           // this.toastService.success('Login realizado com sucesso!');
           const user = response.user;
           if (user.bairro && user.cidade && user.estado) {
-            this.router.navigate(['/ranking']);
+            this.router.navigate(['/jogos']);
           } else {
             this.router.navigate(['/onboarding']);
           }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
 import { Roles } from '../../shared/decorators/roles.decorator';
@@ -6,6 +6,7 @@ import { PaginationDto } from '../../shared/dto/pagination.dto';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../shared/guards/roles.guard';
 import { ResponseUtil } from '../../shared/utils/response.util';
+import { UpdateLimitePalpitesDto } from './dto/update-limite-palpites.dto';
 import { UserSearchDto } from './dto/user-search.dto';
 import { UsersService } from './users.service';
 
@@ -116,5 +117,30 @@ export class UsersController {
       total,
       'Busca de usuários realizada com sucesso'
     );
+  }
+
+  @Post(':id/limite-palpites')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ResponseMessage('Limite de palpites atualizado com sucesso')
+  @ApiOperation({ summary: 'Atualizar limite diário de palpites de um usuário (apenas admin)' })
+  async atualizarLimitePalpites(
+    @Param('id') userId: string,
+    @Body() updateDto: UpdateLimitePalpitesDto
+  ) {
+    return this.usersService.atualizarLimitePalpites(userId, updateDto.novoLimite);
+  }
+
+  @Post('migrar-limite-palpites')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ResponseMessage('Migração de limite de palpites executada com sucesso')
+  @ApiOperation({
+    summary: 'Migrar usuários existentes com campos de limite de palpites (apenas admin)',
+  })
+  async migrarLimitePalpites() {
+    return this.usersService.migrarUsuariosComLimitePalpites();
   }
 }

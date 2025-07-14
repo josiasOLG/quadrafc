@@ -250,27 +250,6 @@
 }
 
 // ===================================
-// TEMA ESCURO MODERNO
-// ===================================
-[data-theme='dark'] {
-  .pwa-layout {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  }
-
-  .pwa-layout__nav {
-    background: rgba(30, 41, 59, 0.85);
-    border-color: rgba(255, 255, 255, 0.1);
-
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
-  }
-
-  .pwa-layout__nav-icon {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
-
-// ===================================
 // RESPONSIVIDADE MODERNA
 // ===================================
 @media screen and (max-width: 360px) {
@@ -335,7 +314,7 @@
 ::ng-deep {
   .pwa-layout__nav-btn {
     .p-ripple {
-      background: radial-gradient(circle, rgba(var(--qfc-primary-rgb), 0.2) 0%, transparent 70%) !important;
+      // background: radial-gradient(circle, rgba(var(--qfc-primary-rgb), 0.2) 0%, transparent 70%) !important;
     }
   }
 

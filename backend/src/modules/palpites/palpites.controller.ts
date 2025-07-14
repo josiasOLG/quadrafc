@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { PalpitesService } from './palpites.service';
+import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
 import { CreatePalpiteDto } from '../../shared/dto/create-palpite.dto';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
-import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
+import { PalpitesService } from './palpites.service';
 
 @ApiTags('palpites')
 @Controller('palpites')
@@ -17,6 +17,13 @@ export class PalpitesController {
   @ApiOperation({ summary: 'Criar um novo palpite' })
   async create(@Body() createPalpiteDto: CreatePalpiteDto, @Request() req) {
     return this.palpitesService.create(req.user._id, createPalpiteDto);
+  }
+
+  @Get('status')
+  @ResponseMessage('Status de palpites recuperado com sucesso')
+  @ApiOperation({ summary: 'Obter status de palpites do usuário (limite diário, restantes, etc.)' })
+  async getStatusPalpites(@Request() req) {
+    return this.palpitesService.obterStatusPalpitesUsuario(req.user._id);
   }
 
   @Get('meus')

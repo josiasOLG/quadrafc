@@ -39,10 +39,6 @@
     border-radius: 1rem;
     box-shadow: var(--shadow-6);
 
-    @include dark-mode {
-      background: var(--surface-800);
-    }
-
     @include tablet-up {
       max-width: 600px;
     }
@@ -54,10 +50,6 @@
     border-bottom: 1px solid var(--surface-200);
     width: 100%;
     overflow-x: scroll;
-    @include dark-mode {
-      background: var(--surface-700);
-      border-bottom-color: var(--surface-600);
-    }
   }
 
   &__steps {
@@ -156,9 +148,6 @@
           height: 2.2rem;
           line-height: 2.2rem;
           margin: 0 auto;
-          @include dark-mode {
-            // background: var(--surface-600);
-          }
         }
         &.p-highlight {
           .p-steps-number {
@@ -228,10 +217,7 @@
         background: var(--surface-50);
         border-radius: 0.5rem;
         border: 1px solid var(--surface-200);
-        @include dark-mode {
-          background: var(--surface-700);
-          border-color: var(--surface-600);
-        }
+
         i {
           font-size: 1.5rem;
           color: var(--primary-color);
@@ -348,11 +334,6 @@
     background: var(--surface-50);
     border-top: 1px solid var(--surface-200);
 
-    @include dark-mode {
-      background: var(--surface-700);
-      border-top-color: var(--surface-600);
-    }
-
     ::ng-deep {
       .p-button {
         height: 3rem;
@@ -363,19 +344,9 @@
           border-color: var(--surface-300);
           color: var(--text-color);
 
-          @include dark-mode {
-            background: var(--surface-600);
-            border-color: var(--surface-500);
-          }
-
           &:hover {
             background: var(--surface-300);
             border-color: var(--surface-400);
-
-            @include dark-mode {
-              background: var(--surface-500);
-              border-color: var(--surface-400);
-            }
           }
         }
 

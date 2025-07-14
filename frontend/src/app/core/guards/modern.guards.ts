@@ -14,14 +14,12 @@ async function waitForAuthServiceReady(
     // Criar uma Promise de timeout
     const timeoutPromise = new Promise<boolean>((resolve) => {
       setTimeout(() => {
-        console.warn('AuthService timeout reached, assuming ready');
         resolve(true); // Em caso de timeout, assumir que está pronto
       }, timeoutMs);
     });
 
     // Aguardar a Promise interna do AuthService OU o timeout
     const readyPromise = authService.waitUntilReady().then(() => {
-      console.log('AuthService ready promise resolved');
       return true;
     });
 
@@ -30,8 +28,6 @@ async function waitForAuthServiceReady(
     // Verificação adicional para garantir que o estado não é transitório
     const authState = authService.authState();
     const isInitialized = authService.isInitialized();
-
-    console.log('AuthService state check:', { authState, isInitialized });
 
     return isInitialized && authState !== 'INITIAL' && authState !== 'LOADING';
   } catch (error) {
@@ -49,7 +45,6 @@ export const authCanMatchGuard: CanMatchFn = async () => {
   const router = inject(Router);
 
   const isReady = await waitForAuthServiceReady(authService);
-  console.log('AuthService is ready:', isReady);
 
   if (!isReady) {
     router.navigate(['/auth/login']);
@@ -57,7 +52,6 @@ export const authCanMatchGuard: CanMatchFn = async () => {
   }
 
   const authState = authService.authState();
-  console.log('authState:', authState);
 
   // Se usuário está autenticado, permitir acesso
   if (authState === 'AUTHENTICATED') {

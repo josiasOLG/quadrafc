@@ -1,15 +1,15 @@
 .configuracoes {
   min-height: 100vh;
-  background: var(--qfc-bg-secondary);
+  // background: var(--qfc-bg-secondary);
   color: var(--qfc-text-primary);
-  
+
   // Título da página
   &__title-container {
     padding: 1.5rem var(--qfc-spacing-lg);
     position: relative;
     z-index: 1;
   }
-  
+
   &__title {
     font-size: var(--qfc-font-size-xl);
     font-weight: var(--qfc-font-weight-bold);
@@ -17,32 +17,32 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    
+
     i {
       font-size: 1.25rem;
       color: var(--qfc-primary);
     }
   }
-  
+
   &__subtitle {
     font-size: var(--qfc-font-size-sm);
     color: var(--qfc-text-secondary);
     margin: 0;
   }
-  
+
   // Conteúdo principal
   &__content {
     padding: 0 var(--qfc-spacing-lg) var(--qfc-spacing-lg);
   }
-  
+
   &__category {
     margin-bottom: var(--qfc-spacing-md);
-    
+
     &:last-child {
       margin-bottom: 0;
     }
   }
-  
+
   // Cards de configurações
   .settings-card {
     background: var(--qfc-bg-primary);
@@ -50,14 +50,14 @@
     padding: var(--qfc-spacing-lg);
     box-shadow: var(--qfc-shadow-sm);
   }
-  
+
   .category-title {
     font-size: var(--qfc-font-size-lg);
     font-weight: var(--qfc-font-weight-bold);
     color: var(--qfc-text-primary);
     margin: 0 0 var(--qfc-spacing-md) 0;
     position: relative;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -69,13 +69,13 @@
       border-radius: var(--qfc-radius-full);
     }
   }
-  
+
   // Lista de itens de configuração
   .settings-list {
     display: flex;
     flex-direction: column;
   }
-  
+
   .setting-item {
     display: flex;
     align-items: center;
@@ -83,24 +83,24 @@
     padding: var(--qfc-spacing-md) 0;
     border-bottom: 1px solid var(--qfc-border);
     transition: all 0.2s ease;
-    
+
     &:last-child {
       border-bottom: none;
     }
-    
+
     &:hover {
       transform: translateX(4px);
     }
-    
+
     &--button {
       cursor: pointer;
-      
+
       &:hover {
         color: var(--qfc-primary);
       }
     }
   }
-  
+
   // Informações do item
   .setting-info {
     display: flex;
@@ -109,7 +109,7 @@
     flex: 1;
     min-width: 0;
   }
-  
+
   .setting-icon {
     width: 2.5rem;
     height: 2.5rem;
@@ -120,39 +120,39 @@
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.2s ease;
-    
+
     i {
       font-size: 1rem;
       color: var(--qfc-primary);
     }
   }
-  
+
   .setting-item:hover .setting-icon {
     background: var(--qfc-primary);
-    
+
     i {
       color: white;
     }
   }
-  
+
   .setting-content {
     flex: 1;
     min-width: 0;
   }
-  
+
   .setting-title {
     font-size: var(--qfc-font-size-base);
     font-weight: var(--qfc-font-weight-semibold);
     color: var(--qfc-text-primary);
     margin: 0 0 0.25rem 0;
   }
-  
+
   .setting-description {
     font-size: var(--qfc-font-size-sm);
     color: var(--qfc-text-secondary);
     margin: 0;
   }
-  
+
   // Controles
   .setting-control {
     flex-shrink: 0;
@@ -166,15 +166,15 @@
     &__title-container {
       padding: var(--qfc-spacing-md) var(--qfc-spacing-md);
     }
-    
+
     &__content {
       padding: 0 var(--qfc-spacing-md) var(--qfc-spacing-md);
     }
-    
+
     .settings-card {
       padding: var(--qfc-spacing-md);
     }
-    
+
     .setting-info {
       gap: var(--qfc-spacing-sm);
     }
@@ -188,13 +188,13 @@
     background: var(--qfc-bg-primary);
     border-bottom: 1px solid var(--qfc-border);
     border-radius: var(--qfc-radius-lg) var(--qfc-radius-lg) 0 0;
-    
+
     .p-dialog-title {
       font-size: var(--qfc-font-size-lg);
       font-weight: var(--qfc-font-weight-bold);
     }
   }
-  
+
   .p-dialog-content {
     padding: var(--qfc-spacing-lg);
     background: var(--qfc-bg-primary);
@@ -213,16 +213,16 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--qfc-spacing-md);
-  
+
   .form-field {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    
+
     &.full-width {
       grid-column: 1 / -1;
     }
-    
+
     label {
       font-size: var(--qfc-font-size-sm);
       font-weight: var(--qfc-font-weight-medium);

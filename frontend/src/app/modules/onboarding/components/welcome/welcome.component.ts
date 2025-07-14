@@ -1,7 +1,7 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Router} from '@angular/router';
 import {
   catchError,
   debounceTime,
@@ -13,22 +13,22 @@ import {
   takeUntil,
 } from 'rxjs';
 
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ButtonModule } from 'primeng/button';
-import { CalendarModule } from 'primeng/calendar';
-import { CardModule } from 'primeng/card';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { InputMaskModule } from 'primeng/inputmask';
-import { InputTextModule } from 'primeng/inputtext';
-import { StepsModule } from 'primeng/steps';
+import {AutoCompleteModule} from 'primeng/autocomplete';
+import {ButtonModule} from 'primeng/button';
+import {CalendarModule} from 'primeng/calendar';
+import {CardModule} from 'primeng/card';
+import {DropdownModule} from 'primeng/dropdown';
+import {InputGroupModule} from 'primeng/inputgroup';
+import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
+import {InputMaskModule} from 'primeng/inputmask';
+import {InputTextModule} from 'primeng/inputtext';
+import {StepsModule} from 'primeng/steps';
 
-import { CepResponse, CepService } from '../../../../core/services/cep.service';
-import { Bairro } from '../../../../shared/schemas/bairro.schema';
-import { ToastService } from '../../../../shared/services/toast.service';
-import { AuthService } from '../../../auth/services/auth.service';
-import { BairrosService } from '../../../bairros/services/bairros.service';
+import {CepResponse, CepService} from '../../../../core/services/cep.service';
+import {Bairro} from '../../../../shared/schemas/bairro.schema';
+import {ToastService} from '../../../../shared/services/toast.service';
+import {AuthService} from '../../../auth/services/auth.service';
+import {BairrosService} from '../../../bairros/services/bairros.service';
 
 interface OnboardingStep {
   label: string;
@@ -101,7 +101,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     // Se já tem informações completas, redireciona para ranking
     const user = this.authService.currentUser();
     if (user && user.bairro && user.cidade && user.estado) {
-      this.router.navigate(['/ranking']);
+      this.router.navigate(['/jogos']);
       return;
     }
 
