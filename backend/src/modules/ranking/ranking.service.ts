@@ -602,12 +602,13 @@ export class RankingService {
 
     // Pipeline com joins: users → palpites → jogos
     const aggregationPipeline: any[] = [
-      // 1. Filtrar usuários por cidade/estado e que tenham bairro
+      // 1. Filtrar usuários por cidade/estado, que tenham bairro e perfil público
       {
         $match: {
           cidade: cidade,
           estado: estado,
           bairro: { $exists: true, $ne: null, $nin: [''] },
+          isPublicProfile: { $ne: false },
         },
       },
       // 2. Join com palpites do usuário
