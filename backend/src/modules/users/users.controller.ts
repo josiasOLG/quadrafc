@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
 import { Roles } from '../../shared/decorators/roles.decorator';
@@ -7,6 +17,7 @@ import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../shared/guards/roles.guard';
 import { ResponseUtil } from '../../shared/utils/response.util';
 import { UpdateLimitePalpitesDto } from './dto/update-limite-palpites.dto';
+import { UpdateProfileVisibilityDto } from './dto/update-profile-visibility.dto';
 import { UserSearchDto } from './dto/user-search.dto';
 import { UsersService } from './users.service';
 
@@ -21,7 +32,7 @@ export class UsersController {
   @ResponseMessage('Perfil do usuário recuperado com sucesso')
   @ApiOperation({ summary: 'Obter perfil do usuário logado' })
   async getProfile(@Request() req) {
-    return req.user;
+    return this.usersService.findById(req.user.id);
   }
 
   @Get('ranking')
@@ -142,5 +153,14 @@ export class UsersController {
   })
   async migrarLimitePalpites() {
     return this.usersService.migrarUsuariosComLimitePalpites();
+  }
+
+  @Patch('profile-visibility')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ResponseMessage('Visibilidade do perfil atualizada com sucesso')
+  @ApiOperation({ summary: 'Alterar visibilidade do perfil (público/privado)' })
+  async updateProfileVisibility(@Request() req, @Body() updateDto: UpdateProfileVisibilityDto) {
+    return this.usersService.updateProfileVisibility(req.user.id, updateDto.isPublicProfile);
   }
 }

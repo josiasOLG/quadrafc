@@ -89,6 +89,10 @@ export class User {
   @Prop({ default: Date.now })
   ultimoResetPalpites: Date;
 
+  @ApiProperty({ description: 'Se o perfil é público ou privado' })
+  @Prop({ default: true })
+  isPublicProfile: boolean;
+
   @ApiProperty({ description: 'Data de criação' })
   createdAt: Date;
 

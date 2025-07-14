@@ -1,8 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { User } from '../../../../shared/schemas/user.schema';
-import { ToastService } from '../../../../shared/services/toast.service';
+import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { AuthService } from '../../../auth/services/auth.service';
 
 interface ConfiguracaoItem {
@@ -23,8 +23,9 @@ interface ConfiguracaoItem {
 })
 export class ConfiguracoesComponent implements OnInit {
   private readonly authService = inject(AuthService);
-  private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly globalDialogService = inject(GlobalDialogService);
+  private cdr = inject(ChangeDetectorRef);
 
   user: User | null = null;
   configuracoes: ConfiguracaoItem[] = [];
@@ -78,7 +79,6 @@ export class ConfiguracoesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUser();
-    this.initConfiguracoes();
   }
 
   private loadUser(): void {
@@ -92,88 +92,25 @@ export class ConfiguracoesComponent implements OnInit {
           estado: '',
           bairro: user.bairro || '',
         };
+
+        // Reinicializar configurações quando o usuário mudar
+        this.initConfiguracoes();
       }
     });
   }
 
   private initConfiguracoes(): void {
     this.configuracoes = [
-      // Perfil
-      // {
-      //   id: 'edit-profile',
-      //   titulo: 'Editar Perfil',
-      //   descricao: 'Altere suas informações pessoais',
-      //   tipo: 'button',
-      //   icone: 'pi pi-user-edit',
-      //   categoria: 'Perfil',
-      // },
-      // {
-      //   id: 'change-password',
-      //   titulo: 'Alterar Senha',
-      //   descricao: 'Modifique sua senha de acesso',
-      //   tipo: 'button',
-      //   icone: 'pi pi-key',
-      //   categoria: 'Perfil',
-      // },
-
-      // Loja Premium
-      // {
-      //   id: 'premium-store',
-      //   titulo: 'Loja Premium',
-      //   descricao: 'Compre acesso a rankings de cidades, estados ou assine o Premium',
-      //   tipo: 'button',
-      //   icone: 'pi pi-star',
-      //   categoria: 'Premium',
-      // },
-
-      // Notificações
-      // {
-      //   id: 'notif-jogos',
-      //   titulo: 'Notificações de Jogos',
-      //   descricao: 'Receba alertas sobre novos jogos',
-      //   tipo: 'switch',
-      //   valor: true,
-      //   icone: 'pi pi-bell',
-      //   categoria: 'Notificações',
-      // },
-      // {
-      //   id: 'notif-ranking',
-      //   titulo: 'Notificações de Ranking',
-      //   descricao: 'Alertas sobre mudanças no ranking',
-      //   tipo: 'switch',
-      //   valor: true,
-      //   icone: 'pi pi-trophy',
-      //   categoria: 'Notificações',
-      // },
-      // {
-      //   id: 'notif-email',
-      //   titulo: 'Notificações por Email',
-      //   descricao: 'Receba resumos por email',
-      //   tipo: 'switch',
-      //   valor: false,
-      //   icone: 'pi pi-envelope',
-      //   categoria: 'Notificações',
-      // },
-
       // Privacidade
-      // {
-      //   id: 'perfil-publico',
-      //   titulo: 'Perfil Público',
-      //   descricao: 'Permitir que outros vejam seu perfil',
-      //   tipo: 'switch',
-      //   valor: true,
-      //   icone: 'pi pi-eye',
-      //   categoria: 'Privacidade',
-      // },
-      // {
-      //   id: 'mostrar-estatisticas',
-      //   titulo: 'Mostrar Estatísticas',
-      //   descricao: 'Exibir suas estatísticas no ranking',
-      //   tipo: 'switch',
-      //   valor: true,
-      //   icone: 'pi pi-chart-bar',
-      //   categoria: 'Privacidade',
-      // },
+      {
+        id: 'profile-visibility',
+        titulo: 'Perfil Público',
+        descricao: 'Aparecer no ranking público de usuários',
+        tipo: 'switch',
+        valor: this.user?.isPublicProfile ?? true,
+        icone: 'pi pi-eye',
+        categoria: 'Privacidade',
+      },
 
       // Conta
       {
@@ -199,14 +136,9 @@ export class ConfiguracoesComponent implements OnInit {
     item.valor = valor;
 
     switch (item.id) {
-      case 'tema':
-        this.aplicarTema(valor as string);
+      case 'profile-visibility':
+        this.handleProfileVisibilityChange(valor as boolean);
         break;
-      case 'idioma':
-        this.alterarIdioma(valor as string);
-        break;
-      default:
-        this.salvarConfiguracao(item.id, valor);
     }
   }
 
@@ -231,30 +163,47 @@ export class ConfiguracoesComponent implements OnInit {
   }
 
   private aplicarTema(tema: string): void {
-    // Implementar mudança de tema
-    this.toastService.show({
-      detail: `Tema alterado para ${tema}`,
-      severity: 'success',
+    this.globalDialogService.show({
+      type: 'success',
+      title: 'Tema alterado',
+      message: `Tema alterado para ${tema}`,
+      actions: [
+        {
+          label: 'OK',
+          severity: 'primary',
+          action: () => this.globalDialogService.hide(),
+        },
+      ],
     });
   }
 
   private alterarIdioma(idioma: string): void {
-    // Implementar mudança de idioma
-    this.toastService.show({
-      detail: `Idioma alterado para ${idioma}`,
-      severity: 'success',
+    this.globalDialogService.show({
+      type: 'success',
+      title: 'Idioma alterado',
+      message: `Idioma alterado para ${idioma}`,
+      actions: [
+        {
+          label: 'OK',
+          severity: 'primary',
+          action: () => this.globalDialogService.hide(),
+        },
+      ],
     });
   }
 
-  private salvarConfiguracao(_id: string, _valor: string | boolean | number): void {
-    // TODO: Implementar salvamento de configurações
-  }
-
   private downloadDados(): void {
-    // Implementar download dos dados
-    this.toastService.show({
-      detail: 'Download dos dados iniciado',
-      severity: 'info',
+    this.globalDialogService.show({
+      type: 'info',
+      title: 'Download iniciado',
+      message: 'Download dos dados iniciado',
+      actions: [
+        {
+          label: 'OK',
+          severity: 'primary',
+          action: () => this.globalDialogService.hide(),
+        },
+      ],
     });
   }
 
@@ -278,27 +227,49 @@ export class ConfiguracoesComponent implements OnInit {
 
   // Métodos dos modais
   saveProfile(): void {
-    // Implementar salvamento do perfil
-    this.toastService.show({
-      detail: 'Perfil atualizado com sucesso',
-      severity: 'success',
+    this.globalDialogService.show({
+      type: 'success',
+      title: 'Perfil atualizado',
+      message: 'Perfil atualizado com sucesso',
+      actions: [
+        {
+          label: 'OK',
+          severity: 'primary',
+          action: () => this.globalDialogService.hide(),
+        },
+      ],
     });
     this.showEditProfileModal = false;
   }
 
   changePassword(): void {
     if (this.changePasswordForm.novaSenha !== this.changePasswordForm.confirmarSenha) {
-      this.toastService.show({
-        detail: 'As senhas não coincidem',
-        severity: 'error',
+      this.globalDialogService.show({
+        type: 'error',
+        title: 'Erro',
+        message: 'As senhas não coincidem',
+        actions: [
+          {
+            label: 'OK',
+            severity: 'primary',
+            action: () => this.globalDialogService.hide(),
+          },
+        ],
       });
       return;
     }
 
-    // Implementar mudança de senha
-    this.toastService.show({
-      detail: 'Senha alterada com sucesso',
-      severity: 'success',
+    this.globalDialogService.show({
+      type: 'success',
+      title: 'Senha alterada',
+      message: 'Senha alterada com sucesso',
+      actions: [
+        {
+          label: 'OK',
+          severity: 'primary',
+          action: () => this.globalDialogService.hide(),
+        },
+      ],
     });
     this.showChangePasswordModal = false;
     this.changePasswordForm = {
@@ -310,5 +281,87 @@ export class ConfiguracoesComponent implements OnInit {
 
   getAvatarLabel(nome: string): string {
     return nome ? nome.charAt(0).toUpperCase() : 'U';
+  }
+
+  private handleProfileVisibilityChange(isPublicProfile: boolean): void {
+    if (!isPublicProfile) {
+      this.globalDialogService.show({
+        type: 'warning',
+        title: 'Confirmar alteração',
+        message:
+          'Tem certeza que deseja tornar seu perfil privado? Perfis privados não aparecem no ranking, mas continuam somando pontos no bairro normalmente.',
+        actions: [
+          {
+            label: 'Cancelar',
+            severity: 'secondary',
+            action: () => {
+              const profileVisibilityConfig = this.configuracoes.find(
+                (c) => c.id === 'profile-visibility'
+              );
+              if (profileVisibilityConfig) {
+                profileVisibilityConfig.valor = true;
+              }
+              this.globalDialogService.hide();
+            },
+          },
+          {
+            label: 'Confirmar',
+            severity: 'primary',
+            action: () => {
+              this.updateProfileVisibility(false);
+              this.globalDialogService.hide();
+            },
+          },
+        ],
+      });
+    } else {
+      this.updateProfileVisibility(true);
+    }
+  }
+
+  private updateProfileVisibility(isPublicProfile: boolean): void {
+    this.authService.updateProfileVisibility(isPublicProfile).subscribe({
+      next: () => {
+        const message = isPublicProfile
+          ? 'Perfil alterado para público com sucesso! Você precisará fazer login novamente.'
+          : 'Perfil alterado para privado com sucesso! Você precisará fazer login novamente.';
+
+        this.globalDialogService.show({
+          type: 'success',
+          title: 'Perfil atualizado',
+          message,
+          actions: [
+            {
+              label: 'OK',
+              severity: 'primary',
+              action: () => {
+                this.globalDialogService.hide();
+                this.logout();
+              },
+            },
+          ],
+        });
+      },
+      error: () => {
+        const profileVisibilityConfig = this.configuracoes.find(
+          (c) => c.id === 'profile-visibility'
+        );
+        if (profileVisibilityConfig) {
+          profileVisibilityConfig.valor = !isPublicProfile;
+        }
+        this.globalDialogService.show({
+          type: 'error',
+          title: 'Erro',
+          message: 'Erro ao alterar visibilidade do perfil',
+          actions: [
+            {
+              label: 'OK',
+              severity: 'primary',
+              action: () => this.globalDialogService.hide(),
+            },
+          ],
+        });
+      },
+    });
   }
 }

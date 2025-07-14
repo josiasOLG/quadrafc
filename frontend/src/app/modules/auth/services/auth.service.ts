@@ -392,4 +392,34 @@ export class AuthService {
       }
     }, 12 * 60 * 60 * 1000); // 12 horas
   }
+
+  updateProfileVisibility(isPublicProfile: boolean): Observable<User> {
+    return this.httpService.patch<User>('users/profile-visibility', { isPublicProfile }).pipe(
+      tap((updatedUser) => {
+        // NÃO atualizar o currentUser aqui para evitar conflitos com JWT
+        // Apenas retornar o usuário atualizado para o componente
+        console.log('Usuario atualizado via API:', updatedUser);
+      }),
+      catchError((error) => throwError(() => error))
+    );
+  }
+
+  loadUserProfile(): Observable<User> {
+    return this.httpService.get<User>('users/profile').pipe(
+      tap((userProfile) => {
+        this._currentUser.set(userProfile);
+        this.currentUserSubject.next(userProfile);
+        if (typeof window !== 'undefined') {
+          const encodedUserData = btoa(JSON.stringify(userProfile));
+          localStorage.setItem('quadrafc_user_data', encodedUserData);
+          this.cookieService.set('quadrafc_user_data', encodedUserData, {
+            expires: 30,
+            secure: true,
+            sameSite: 'Lax',
+          });
+        }
+      }),
+      catchError((error) => throwError(() => error))
+    );
+  }
 }

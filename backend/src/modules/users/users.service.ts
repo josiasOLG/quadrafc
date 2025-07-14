@@ -25,7 +25,7 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<UserDocument | null> {
-    return this.userModel.findById(id).exec();
+    return this.userModel.findById(id).select('-passwordHash').exec();
   }
 
   async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
@@ -429,5 +429,40 @@ export class UsersService {
       total: usuarios.length,
       message: `Migração concluída: ${atualizados} usuários atualizados de ${usuarios.length} encontrados`,
     };
+  }
+
+  async migrarUsuariosComIsPublicProfile(): Promise<{
+    atualizados: number;
+    total: number;
+    message: string;
+  }> {
+    const usuariosParaAtualizar = await this.userModel
+      .find({ isPublicProfile: { $exists: false } })
+      .exec();
+
+    let atualizados = 0;
+    for (const user of usuariosParaAtualizar) {
+      await this.userModel.findByIdAndUpdate(user._id, { isPublicProfile: true });
+      atualizados++;
+    }
+
+    return {
+      atualizados,
+      total: usuariosParaAtualizar.length,
+      message: `Migração concluída. ${atualizados} usuários atualizados com isPublicProfile: true.`,
+    };
+  }
+
+  async updateProfileVisibility(userId: string, isPublicProfile: boolean): Promise<UserDocument> {
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { isPublicProfile }, { new: true })
+      .select('-passwordHash')
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return user;
   }
 }
