@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { isStatusValido, obterDetalhesStatus } from '../../shared/enums/jogo-status.enum';
-import { formatarDataBrasil, preservarDataOriginalAPI } from '../../shared/utils/timezone.util';
+import { formatarDataBrasil } from '../../shared/utils/timezone.util';
 
 @Injectable()
 export class FootballApiService {
@@ -116,6 +116,9 @@ export class FootballApiService {
         );
       }
 
+      const dataOriginal = new Date(jogo.utcDate);
+      const dataAjustada = new Date(dataOriginal.getTime() - 60 * 60 * 1000);
+
       return {
         codigoAPI: jogo.id,
         timeA: {
@@ -126,7 +129,7 @@ export class FootballApiService {
           nome: jogo.awayTeam.name,
           escudo: jogo.awayTeam.crest || '',
         },
-        data: preservarDataOriginalAPI(jogo.utcDate),
+        data: dataAjustada.toISOString(),
         campeonato: jogo.competition?.name || 'Sem Campeonato',
         status: statusDetalhes.jogoFinalizado ? 'encerrado' : 'aberto',
         _statusOriginalAPI: statusOriginal,
