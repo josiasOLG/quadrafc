@@ -394,11 +394,22 @@ export class JogosService {
             nome: campeonato,
             jogos: [],
             total: 0,
+            campeonatoStartDate: jogo.campeonatoStartDate || null,
+            campeonatoEndDate: jogo.campeonatoEndDate || null,
           };
         }
 
         jogosPorCampeonato[campeonato].jogos.push(jogo);
         jogosPorCampeonato[campeonato].total++;
+
+        // Atualizar as datas se encontrar datas válidas nos jogos
+        if (jogo.campeonatoStartDate && !jogosPorCampeonato[campeonato].campeonatoStartDate) {
+          jogosPorCampeonato[campeonato].campeonatoStartDate = jogo.campeonatoStartDate;
+        }
+
+        if (jogo.campeonatoEndDate && !jogosPorCampeonato[campeonato].campeonatoEndDate) {
+          jogosPorCampeonato[campeonato].campeonatoEndDate = jogo.campeonatoEndDate;
+        }
       }
 
       // Converte para array

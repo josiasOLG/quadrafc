@@ -143,7 +143,7 @@ export class JogosListComponent implements OnInit {
     const hoje = new Date().toISOString().split('T')[0];
 
     // Primeiro tenta buscar via endpoint de campeonatos (limite de 50 jogos)
-    this.jogosService.getJogosPorCampeonatos(hoje, 30).subscribe({
+    this.jogosService.getJogosPorCampeonatos(hoje, 900).subscribe({
       next: (response: any) => {
         if (response && response.campeonatos) {
           this.campeonatos = response.campeonatos.map((campeonato: any) => ({
