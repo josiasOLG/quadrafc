@@ -526,28 +526,6 @@ export class RankingService {
       },
     ];
 
-    const step5 = await this.userModel
-      .aggregate([
-        bairrosPipeline[0],
-        bairrosPipeline[1],
-        bairrosPipeline[2],
-        bairrosPipeline[3],
-        bairrosPipeline[4],
-      ])
-      .exec();
-
-    // Passo 6: Após match campeonato
-    const step6 = await this.userModel
-      .aggregate([
-        bairrosPipeline[0],
-        bairrosPipeline[1],
-        bairrosPipeline[2],
-        bairrosPipeline[3],
-        bairrosPipeline[4],
-        bairrosPipeline[5],
-      ])
-      .exec();
-
     const bairrosData = await this.userModel.aggregate(bairrosPipeline).exec();
 
     if (bairrosData.length === 0) {
