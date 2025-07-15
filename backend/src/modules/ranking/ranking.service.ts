@@ -693,8 +693,8 @@ export class RankingService {
           _id: '$campeonato',
           nome: { $first: '$campeonato' },
           quantidadeDeJogos: { $sum: 1 },
-          dataInicio: { $min: '$data' },
-          dataFim: { $max: '$data' },
+          campeonatoStartDate: { $first: '$campeonatoStartDate' },
+          campeonatoEndDate: { $first: '$campeonatoEndDate' },
         },
       },
       {
@@ -706,19 +706,25 @@ export class RankingService {
       id: `${index + 1}`,
       nome: camp.nome || 'Outros',
       logo: `https://via.placeholder.com/60x60/007bff/ffffff?text=${encodeURIComponent((camp.nome || 'O').charAt(0))}`,
-      dataInicio: camp.dataInicio,
-      dataFim: camp.dataFim,
+      dataInicio: camp.campeonatoStartDate,
+      dataFim: camp.campeonatoEndDate,
       quantidadeDeJogos: camp.quantidadeDeJogos,
-      status: this.determinarStatusCampeonato(camp.dataInicio, camp.dataFim),
+      status: this.determinarStatusCampeonato(camp.campeonatoStartDate, camp.campeonatoEndDate),
     }));
   }
 
-  private determinarStatusCampeonato(dataInicio: Date, dataFim: Date): string {
-    const agora = new Date();
+  private determinarStatusCampeonato(dataInicio: string, dataFim: string): string {
+    if (!dataInicio || !dataFim) {
+      return 'indefinido';
+    }
 
-    if (agora < dataInicio) {
+    const agora = new Date();
+    const inicio = new Date(dataInicio);
+    const fim = new Date(dataFim);
+
+    if (agora < inicio) {
       return 'agendado';
-    } else if (agora > dataFim) {
+    } else if (agora > fim) {
       return 'finalizado';
     } else {
       return 'em_andamento';
