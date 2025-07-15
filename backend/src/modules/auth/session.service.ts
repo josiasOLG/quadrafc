@@ -47,9 +47,6 @@ export class SessionService {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 dias
     const now = new Date();
 
-    console.log('🔍 SessionService - Criando/atualizando sessão para userId:', userId);
-    console.log('🔍 SessionService - Token JWT:', jwtToken.substring(0, 20) + '...');
-
     // Atualizar ou criar sessão (apenas uma por usuário) com o JWT token
     const result = await this.sessionModel.findOneAndUpdate(
       { userId },
@@ -66,31 +63,17 @@ export class SessionService {
       { upsert: true, new: true }
     );
 
-    console.log('✅ SessionService - Sessão salva:', result ? 'Sucesso' : 'Falha');
-    console.log('🔍 SessionService - ID da sessão:', result?._id);
-
     return jwtToken;
   }
 
   async validateSession(sessionToken: string): Promise<string | null> {
-    console.log('🔍 SessionService - Validando token:', sessionToken.substring(0, 20) + '...');
-
     const session = await this.sessionModel.findOne({
       sessionToken,
       isActive: true,
       expiresAt: { $gt: new Date() },
     });
 
-    console.log('🔍 SessionService - Sessão encontrada:', session ? 'Sim' : 'Não');
-
-    if (session) {
-      console.log('🔍 SessionService - UserId da sessão:', session.userId);
-      console.log('🔍 SessionService - Sessão ativa:', session.isActive);
-      console.log('🔍 SessionService - Expira em:', session.expiresAt);
-    }
-
     if (!session) {
-      console.error('❌ SessionService - Sessão não encontrada ou expirada');
       return null;
     }
 

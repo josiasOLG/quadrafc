@@ -13,7 +13,6 @@ export class EmailVerificationService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private configService: ConfigService
   ) {
-    console.log('EMAIL_USER', this.configService.get('EMAIL_USER'));
     this.transporter = nodemailer.createTransport({
       host: this.configService.get('EMAIL_HOST', 'smtp.gmail.com'),
       port: this.configService.get('EMAIL_PORT', 587),
@@ -98,15 +97,6 @@ export class EmailVerificationService {
         </div>
       `,
     };
-
-    logger.debug('Configurações SMTP:', {
-      host: this.configService.get('EMAIL_HOST'),
-      port: this.configService.get('EMAIL_PORT'),
-      secure: this.configService.get('EMAIL_PORT') === '465',
-      user: this.configService.get('EMAIL_USER'),
-      from: this.configService.get('EMAIL_FROM', 'oliveroliveira222@gmail.com'),
-      to: email,
-    });
 
     try {
       logger.debug('Enviando email...');
