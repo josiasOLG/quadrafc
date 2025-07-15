@@ -211,18 +211,10 @@ export class RankingService {
     params: PaginationParams,
     campeonato?: string
   ) {
-    console.log('🔍 Iniciando getRankingUsuariosCidade:', { cidade, estado, params, campeonato });
-
     // Verificar se cidade e estado são válidos
     if (!cidade || !estado) {
       throw new Error('Cidade e estado são obrigatórios');
     }
-
-    console.log('🔍 Buscando usuários da cidade diretamente na tabela users:', {
-      cidade,
-      estado,
-      campeonato,
-    });
 
     let usuarios: any[] = [];
     let totalUsuarios = 0;
@@ -246,7 +238,7 @@ export class RankingService {
             as: 'palpites',
           },
         },
-        // Unwind palpites
+        // Unwind palpites (preservando usuários sem palpites)
         {
           $unwind: {
             path: '$palpites',
@@ -269,12 +261,6 @@ export class RankingService {
             preserveNullAndEmptyArrays: true,
           },
         },
-        // Filtrar apenas jogos do campeonato especificado
-        {
-          $match: {
-            'jogo.campeonato': campeonato,
-          },
-        },
         // Agrupar de volta por usuário
         {
           $group: {
@@ -284,18 +270,44 @@ export class RankingService {
             bairro: { $first: '$bairro' },
             cidade: { $first: '$cidade' },
             estado: { $first: '$estado' },
-            totalPointsCampeonato: { $sum: '$palpites.pontos' },
-            totalPalpitesCampeonato: { $sum: 1 },
+            totalPoints: { $first: '$totalPoints' }, // Usar totalPoints da tabela users
+            totalPalpitesCampeonato: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
             palpitesCorretos: {
               $sum: {
-                $cond: [{ $gt: ['$palpites.pontos', 0] }, 1, 0],
+                $cond: [
+                  {
+                    $and: [
+                      { $ne: ['$palpites', null] },
+                      { $eq: ['$jogo.campeonato', campeonato] },
+                      { $gt: ['$palpites.pontos', 0] },
+                    ],
+                  },
+                  1,
+                  0,
+                ],
               },
             },
           },
         },
-        // Ordenar por pontos do campeonato
+        // Filtrar apenas usuários que fizeram pelo menos um palpite neste campeonato
         {
-          $sort: { totalPointsCampeonato: -1 },
+          $match: {
+            totalPalpitesCampeonato: { $gt: 0 },
+          },
+        },
+        // Ordenar por pontos totais do usuário (totalPoints da tabela users)
+        {
+          $sort: { totalPoints: -1 },
         },
         // Paginação
         {
@@ -345,13 +357,24 @@ export class RankingService {
           },
         },
         {
-          $match: {
-            'jogo.campeonato': campeonato,
+          $group: {
+            _id: '$_id',
+            totalPalpitesCampeonato: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
           },
         },
         {
-          $group: {
-            _id: '$_id',
+          $match: {
+            totalPalpitesCampeonato: { $gt: 0 },
           },
         },
         {
@@ -378,15 +401,9 @@ export class RankingService {
       totalUsuarios = await this.userModel.countDocuments(userFilter);
     }
 
-    console.log(
-      `� Encontrados ${usuarios.length} usuários na cidade ${cidade}/${estado} ${campeonato ? `para o campeonato ${campeonato}` : ''}`
-    );
-
-    console.log(`�📊 Total de usuários na cidade: ${totalUsuarios}`);
-
     // Formatar dados para o ranking
     const rankingData: RankingUsuario[] = usuarios.map((user, index) => {
-      const pontos = campeonato ? user.totalPointsCampeonato || 0 : user.totalPoints || 0;
+      const pontos = campeonato ? user.totalPoints || 0 : user.totalPoints || 0;
       const totalPalpites = campeonato ? user.totalPalpitesCampeonato || 0 : 0;
       const palpitesCorretos = campeonato ? user.palpitesCorretos || 0 : 0;
       const taxaAcerto = totalPalpites > 0 ? (palpitesCorretos / totalPalpites) * 100 : 0;
@@ -453,11 +470,11 @@ export class RankingService {
           as: 'palpites',
         },
       },
-      // 3. Unwind palpites
+      // 3. Unwind palpites (preservando usuários sem palpites)
       {
         $unwind: {
           path: '$palpites',
-          preserveNullAndEmptyArrays: false, // Só usuários com palpites
+          preserveNullAndEmptyArrays: true,
         },
       },
       // 4. Join palpite → jogo para pegar dados do jogo
@@ -473,13 +490,16 @@ export class RankingService {
       {
         $unwind: {
           path: '$jogo',
-          preserveNullAndEmptyArrays: false,
+          preserveNullAndEmptyArrays: true,
         },
       },
-      // 6. Filtrar apenas jogos do campeonato específico
+      // 6. Filtrar apenas jogos do campeonato específico OU usuários sem palpites neste campeonato
       {
         $match: {
-          'jogo.campeonato': campeonato,
+          $or: [
+            { 'jogo.campeonato': campeonato },
+            { jogo: { $exists: false } }, // Usuários sem palpites neste campeonato
+          ],
         },
       },
       // 7. Agrupar por bairro e somar pontos do campeonato
@@ -489,12 +509,47 @@ export class RankingService {
           nome: { $first: '$bairro' },
           cidade: { $first: '$cidade' },
           estado: { $first: '$estado' },
-          pontos_totais: { $sum: '$palpites.pontos' },
-          usuarios_ativos: { $addToSet: '$_id' }, // Usuários únicos que fizeram palpites neste campeonato
-          total_palpites: { $sum: 1 },
+          pontos_totais: {
+            $sum: {
+              $cond: [
+                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
+                '$palpites.pontos',
+                0,
+              ],
+            },
+          },
+          usuarios_ativos: {
+            $addToSet: {
+              $cond: [
+                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
+                '$_id',
+                null,
+              ],
+            },
+          },
+          total_palpites: {
+            $sum: {
+              $cond: [
+                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
+                1,
+                0,
+              ],
+            },
+          },
         },
       },
-      // 8. Calcular estatísticas
+      // 8. Limpar array de usuários ativos (remover nulls)
+      {
+        $addFields: {
+          usuarios_ativos: {
+            $filter: {
+              input: '$usuarios_ativos',
+              cond: { $ne: ['$$this', null] },
+            },
+          },
+        },
+      },
+      // 9. Calcular estatísticas
       {
         $addFields: {
           usuarios_ativos_count: { $size: '$usuarios_ativos' },
@@ -507,17 +562,23 @@ export class RankingService {
           },
         },
       },
-      // 9. Renomear campo
+      // 10. Renomear campo
       {
         $addFields: {
           usuarios_ativos: '$usuarios_ativos_count',
         },
       },
-      // 9. Ordenar por pontos totais
+      // 11. Filtrar apenas bairros que têm usuários que fizeram palpites neste campeonato
+      {
+        $match: {
+          usuarios_ativos: { $gt: 0 },
+        },
+      },
+      // 12. Ordenar por pontos totais
       {
         $sort: { pontos_totais: -1 },
       },
-      // 10. Paginação
+      // 13. Paginação
       {
         $skip: params.offset,
       },
@@ -598,11 +659,11 @@ export class RankingService {
           as: 'palpites',
         },
       },
-      // 3. Unwind palpites
+      // 3. Unwind palpites (preservando usuários sem palpites)
       {
         $unwind: {
           path: '$palpites',
-          preserveNullAndEmptyArrays: false, // Só usuários com palpites
+          preserveNullAndEmptyArrays: true,
         },
       },
       // 4. Join palpite → jogo para pegar dados do jogo
@@ -618,13 +679,16 @@ export class RankingService {
       {
         $unwind: {
           path: '$jogo',
-          preserveNullAndEmptyArrays: false,
+          preserveNullAndEmptyArrays: true,
         },
       },
-      // 6. Filtrar apenas jogos do campeonato específico
+      // 6. Filtrar apenas jogos do campeonato específico OU usuários sem palpites neste campeonato
       {
         $match: {
-          'jogo.campeonato': campeonato,
+          $or: [
+            { 'jogo.campeonato': campeonato },
+            { jogo: { $exists: false } }, // Usuários sem palpites neste campeonato
+          ],
         },
       },
       // 7. Agrupar por usuário e somar pontos do campeonato
@@ -636,18 +700,42 @@ export class RankingService {
           bairro: { $first: '$bairro' },
           cidade: { $first: '$cidade' },
           estado: { $first: '$estado' },
-          totalPointsCampeonato: { $sum: '$palpites.pontos' },
-          totalPalpitesCampeonato: { $sum: 1 },
+          totalPoints: { $first: '$totalPoints' }, // Usar totalPoints da tabela users
+          totalPalpitesCampeonato: {
+            $sum: {
+              $cond: [
+                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
+                1,
+                0,
+              ],
+            },
+          },
           palpitesCorretos: {
             $sum: {
-              $cond: [{ $gt: ['$palpites.pontos', 0] }, 1, 0],
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ['$palpites', null] },
+                    { $eq: ['$jogo.campeonato', campeonato] },
+                    { $gt: ['$palpites.pontos', 0] },
+                  ],
+                },
+                1,
+                0,
+              ],
             },
           },
         },
       },
-      // 8. Ordenar por pontos do campeonato
+      // 8. Filtrar apenas usuários que fizeram pelo menos um palpite neste campeonato
       {
-        $sort: { totalPointsCampeonato: -1 },
+        $match: {
+          totalPalpitesCampeonato: { $gt: 0 },
+        },
+      },
+      // 9. Ordenar por pontos totais do usuário (não específicos do campeonato)
+      {
+        $sort: { totalPoints: -1 },
       },
     ];
 
@@ -664,7 +752,7 @@ export class RankingService {
 
     // Formatar todos os usuários para o ranking
     const usuariosFormatados: RankingUsuario[] = todosUsuarios.map((user, index) => {
-      const pontos = user.totalPointsCampeonato || 0;
+      const pontos = user.totalPoints || 0; // Usar totalPoints da tabela users
       const totalPalpites = user.totalPalpitesCampeonato || 0;
       const palpitesCorretos = user.palpitesCorretos || 0;
       const taxaAcerto = totalPalpites > 0 ? (palpitesCorretos / totalPalpites) * 100 : 0;
