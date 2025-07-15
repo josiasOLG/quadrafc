@@ -451,7 +451,11 @@ export class RankingService {
       throw new Error('Cidade e estado são obrigatórios');
     }
 
-    // Pipeline com joins: users → palpites → jogos
+    if (!campeonato) {
+      throw new Error('Campeonato é obrigatório');
+    }
+
+    // Pipeline: users → jogos (sem usar tabela palpites)
     const bairrosPipeline: any[] = [
       // 1. Filtrar usuários da cidade/estado com bairro
       {
@@ -461,124 +465,56 @@ export class RankingService {
           bairro: { $exists: true, $ne: null, $nin: [''] },
         },
       },
-      // 2. Join com palpites do usuário
-      {
-        $lookup: {
-          from: 'palpites',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'palpites',
-        },
-      },
-      // 3. Unwind palpites (preservando usuários sem palpites)
-      {
-        $unwind: {
-          path: '$palpites',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 4. Join palpite → jogo para pegar dados do jogo
+      // 2. Join com jogos para filtrar por campeonato
       {
         $lookup: {
           from: 'jogos',
-          localField: 'palpites.jogoId',
-          foreignField: '_id',
-          as: 'jogo',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                campeonato: campeonato,
+              },
+            },
+          ],
+          as: 'jogos',
         },
       },
-      // 5. Unwind jogo
-      {
-        $unwind: {
-          path: '$jogo',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      // 6. Filtrar apenas jogos do campeonato específico OU usuários sem palpites neste campeonato
+      // 3. Filtrar apenas usuários que têm jogos do campeonato
       {
         $match: {
-          $or: [
-            { 'jogo.campeonato': campeonato },
-            { jogo: { $exists: false } }, // Usuários sem palpites neste campeonato
-          ],
+          'jogos.0': { $exists: true },
         },
       },
-      // 7. Agrupar por bairro e somar pontos do campeonato
+      // 4. Agrupar por bairro e somar totalPoints dos usuários
       {
         $group: {
           _id: '$bairro',
           nome: { $first: '$bairro' },
           cidade: { $first: '$cidade' },
           estado: { $first: '$estado' },
-          pontos_totais: {
-            $sum: {
-              $cond: [
-                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
-                '$palpites.pontos',
-                0,
-              ],
-            },
-          },
-          usuarios_ativos: {
-            $addToSet: {
-              $cond: [
-                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
-                '$_id',
-                null,
-              ],
-            },
-          },
-          total_palpites: {
-            $sum: {
-              $cond: [
-                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
-                1,
-                0,
-              ],
-            },
-          },
+          pontos_totais: { $sum: '$totalPoints' },
+          usuarios_ativos: { $sum: 1 },
+          total_usuarios: { $sum: 1 },
         },
       },
-      // 8. Limpar array de usuários ativos (remover nulls)
+      // 5. Calcular média de pontuação
       {
         $addFields: {
-          usuarios_ativos: {
-            $filter: {
-              input: '$usuarios_ativos',
-              cond: { $ne: ['$$this', null] },
-            },
-          },
-        },
-      },
-      // 9. Calcular estatísticas
-      {
-        $addFields: {
-          usuarios_ativos_count: { $size: '$usuarios_ativos' },
           media_pontuacao: {
             $cond: [
-              { $gt: [{ $size: '$usuarios_ativos' }, 0] },
-              { $divide: ['$pontos_totais', { $size: '$usuarios_ativos' }] },
+              { $gt: ['$usuarios_ativos', 0] },
+              { $divide: ['$pontos_totais', '$usuarios_ativos'] },
               0,
             ],
           },
         },
       },
-      // 10. Renomear campo
-      {
-        $addFields: {
-          usuarios_ativos: '$usuarios_ativos_count',
-        },
-      },
-      // 11. Filtrar apenas bairros que têm usuários que fizeram palpites neste campeonato
-      {
-        $match: {
-          usuarios_ativos: { $gt: 0 },
-        },
-      },
-      // 12. Ordenar por pontos totais
+      // 6. Ordenar por pontos totais
       {
         $sort: { pontos_totais: -1 },
       },
-      // 13. Paginação
+      // 7. Paginação
       {
         $skip: params.offset,
       },
@@ -612,21 +548,25 @@ export class RankingService {
       estado: bairro.estado,
       pontos_totais: bairro.pontos_totais || 0,
       usuarios_ativos: bairro.usuarios_ativos || 0,
-      total_usuarios: bairro.usuarios_ativos || 0,
+      total_usuarios: bairro.total_usuarios || 0,
       media_pontuacao: Math.round((bairro.media_pontuacao || 0) * 100) / 100,
       posicao: params.offset + index + 1,
     }));
 
-    // Contar total para paginação (simplificado)
-    const totalBairros = rankingBairros.length;
+    // Contar total para paginação - usar pipeline similar sem paginação
+    const countPipeline = bairrosPipeline.slice(0, -2); // Remove skip e limit
+    countPipeline.push({ $count: 'total' });
+
+    const totalBairros = await this.userModel.aggregate(countPipeline).exec();
+    const total = totalBairros.length > 0 ? totalBairros[0].total : bairrosData.length;
 
     return {
       data: rankingBairros,
       pagination: {
-        total: totalBairros,
+        total: total,
         limit: params.limit,
         offset: params.offset,
-        hasNext: params.offset + params.limit < totalBairros,
+        hasNext: params.offset + params.limit < total,
         hasPrev: params.offset > 0,
       },
       cidade: cidade,
@@ -639,17 +579,47 @@ export class RankingService {
       throw new Error('Cidade e estado são obrigatórios');
     }
 
-    // Pipeline simples: apenas filtrar usuários e ordenar por totalPoints
+    if (!campeonato) {
+      throw new Error('Campeonato é obrigatório');
+    }
+
+    // Pipeline: users → jogos (sem usar tabela palpites)
     const aggregationPipeline: any[] = [
-      // 1. Filtrar usuários por cidade/estado e que tenham bairro
+      // 1. Filtrar usuários por cidade/estado e que tenham bairro e perfil público
       {
         $match: {
           cidade: cidade,
           estado: estado,
           bairro: { $exists: true, $ne: null, $nin: [''] },
+          $or: [
+            { isPublicProfile: true },
+            { isPublicProfile: { $exists: false } },
+            { isPublicProfile: null },
+          ],
         },
       },
-      // 2. Ordenar por pontos totais do usuário (totalPoints da tabela users)
+      // 2. Join com jogos para filtrar por campeonato
+      {
+        $lookup: {
+          from: 'jogos',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                campeonato: campeonato,
+              },
+            },
+          ],
+          as: 'jogos',
+        },
+      },
+      // 3. Filtrar apenas usuários que têm jogos do campeonato
+      {
+        $match: {
+          'jogos.0': { $exists: true },
+        },
+      },
+      // 4. Ordenar por pontos totais do usuário
       {
         $sort: { totalPoints: -1 },
       },
