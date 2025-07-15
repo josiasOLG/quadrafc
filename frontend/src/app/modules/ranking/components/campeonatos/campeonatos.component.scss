@@ -159,6 +159,30 @@
         background: rgba(var(--primary-color-rgb), 0.1);
       }
     }
+
+    // Estilo para campeonatos bloqueados (que ainda não iniciaram)
+    &.campeonato-bloqueado {
+      opacity: 0.5 !important;
+      pointer-events: none;
+      cursor: default !important;
+
+      &:hover {
+        transform: none;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.03), -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+
+      .campeonato-avatar {
+        &:hover {
+          transform: none;
+        }
+      }
+
+      .campeonato-card-name {
+        &:hover {
+          color: var(--text-color);
+        }
+      }
+    }
   }
 }
 

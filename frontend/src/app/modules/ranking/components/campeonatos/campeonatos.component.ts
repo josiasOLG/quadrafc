@@ -36,8 +36,21 @@ export class CampeonatosComponent implements OnInit {
   campeonatos: CampeonatoResumo[] = [];
   loading = true;
   mesAtual = '';
-
   private readonly USER_COOKIE_KEY = 'quadrafc_user';
+
+  campeonatoJaIniciou(campeonato: CampeonatoResumo): boolean {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const dataInicio = new Date(campeonato.dataInicio);
+    dataInicio.setHours(0, 0, 0, 0);
+
+    return hoje >= dataInicio;
+  }
+
+  campeonatoPodeSerClicado(campeonato: CampeonatoResumo): boolean {
+    return this.campeonatoJaIniciou(campeonato);
+  }
 
   constructor(
     private rankingService: RankingService,
@@ -164,6 +177,10 @@ export class CampeonatosComponent implements OnInit {
   }
 
   onCampeonatoClick(campeonato: CampeonatoResumo): void {
+    if (!this.campeonatoPodeSerClicado(campeonato)) {
+      return;
+    }
+
     this.router.navigate(['/ranking'], {
       queryParams: {
         campeonatoNome: campeonato.nome,

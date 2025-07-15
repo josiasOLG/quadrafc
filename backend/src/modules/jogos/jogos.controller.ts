@@ -61,39 +61,6 @@ export class JogosController {
     return this.footballApiService.getJogosPorDataComCampeonatos(data, true);
   }
 
-  @Get('test/brasileiros')
-  @Public()
-  @ResponseMessage('Teste de jogos brasileiros executado')
-  @ApiOperation({ summary: 'Testar busca de jogos com times brasileiros' })
-  async testJogosBrasileiros() {
-    return this.jogosService.testarJogosBrasileiros();
-  }
-
-  @Get('test/todas-competicoes/:data')
-  @Public()
-  @ResponseMessage('Teste de todas as competições executado')
-  @ApiOperation({ summary: 'Testar busca de jogos em todas as competições' })
-  async testTodasCompeticoes(@Param('data') data: string) {
-    return this.footballApiService.buscarJogosTodasCompeticoes(data, 10);
-  }
-
-  // Endpoint removido para segurança - não permitimos mais criação de jogos fictícios
-  // @Get('test/criar-exemplos')
-  // @Public()
-  // @ResponseMessage('Jogos de exemplo criados')
-  // @ApiOperation({ summary: 'Criar jogos de exemplo para teste' })
-  // async criarJogosExemplo() {
-  //   return this.jogosService.criarJogosExemplo();
-  // }
-
-  @Get('debug/todos')
-  @Public()
-  @ResponseMessage('Todos os jogos no banco')
-  @ApiOperation({ summary: 'Debug - listar todos os jogos' })
-  async debugTodosJogos() {
-    return this.jogosService.findAll();
-  }
-
   @Get(':id')
   @Public()
   @ResponseMessage('Jogo recuperado com sucesso')
@@ -253,14 +220,6 @@ export class JogosController {
     return resultado;
   }
 
-  @Get('debug/competicoes-disponiveis')
-  @Public()
-  @ResponseMessage('Competições disponíveis na API')
-  @ApiOperation({ summary: 'Listar todas as competições disponíveis na API externa' })
-  async debugCompeticoesDisponiveis() {
-    return this.footballApiService.listarCompeticoes();
-  }
-
   // Executa uma vez por dia às 04:00 para sincronizar jogos dos próximos 60 dias
   @Cron('0 4 * * *', {
     name: 'sincronizar-global-60-dias',
@@ -301,37 +260,5 @@ export class JogosController {
       this.logger.error('❌ Erro na sincronização global de 60 dias:', error);
       throw new BadRequestException(`Erro na sincronização global: ${error.message}`);
     }
-  }
-
-  @Get('debug/datas/:dataInicial/:dias')
-  @Public()
-  @ResponseMessage('Debug de processamento de datas')
-  @ApiOperation({ summary: 'Debug - mostrar como as datas estão sendo processadas' })
-  async debugDatas(@Param('dataInicial') dataInicial: string, @Param('dias') dias: string) {
-    const diasNumber = parseInt(dias, 10);
-
-    // Simular o processamento de datas como no findByDataComCampeonatos (CORRIGIDO)
-    const startDate = new Date(dataInicial + 'T00:00:00');
-
-    const endDate = new Date(dataInicial + 'T00:00:00');
-    endDate.setDate(endDate.getDate() + diasNumber);
-    endDate.setHours(23, 59, 59, 999);
-
-    return {
-      entrada: {
-        dataInicial,
-        dias: diasNumber,
-      },
-      processamento: {
-        startDate: startDate.toISOString(),
-        startDateLocal: startDate.toString(),
-        endDate: endDate.toISOString(),
-        endDateLocal: endDate.toString(),
-      },
-      timezone: {
-        timezoneOffset: new Date().getTimezoneOffset(),
-        locale: Intl.DateTimeFormat().resolvedOptions(),
-      },
-    };
   }
 }
