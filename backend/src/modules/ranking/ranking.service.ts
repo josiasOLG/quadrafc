@@ -639,9 +639,9 @@ export class RankingService {
       throw new Error('Cidade e estado são obrigatórios');
     }
 
-    // Pipeline com joins: users → palpites → jogos
+    // Pipeline simples: apenas filtrar usuários e ordenar por totalPoints
     const aggregationPipeline: any[] = [
-      // 1. Filtrar usuários por cidade/estado, que tenham bairro
+      // 1. Filtrar usuários por cidade/estado e que tenham bairro
       {
         $match: {
           cidade: cidade,
@@ -649,64 +649,7 @@ export class RankingService {
           bairro: { $exists: true, $ne: null, $nin: [''] },
         },
       },
-      // 2. Join com palpites do usuário
-      {
-        $lookup: {
-          from: 'palpites',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'palpites',
-        },
-      },
-      // 3. Unwind palpites (não preservar usuários sem palpites)
-      {
-        $unwind: {
-          path: '$palpites',
-          preserveNullAndEmptyArrays: false,
-        },
-      },
-      // 4. Join palpite → jogo para pegar dados do jogo
-      {
-        $lookup: {
-          from: 'jogos',
-          localField: 'palpites.jogoId',
-          foreignField: '_id',
-          as: 'jogo',
-        },
-      },
-      // 5. Unwind jogo
-      {
-        $unwind: {
-          path: '$jogo',
-          preserveNullAndEmptyArrays: false,
-        },
-      },
-      // 6. Filtrar apenas jogos do campeonato específico
-      {
-        $match: {
-          'jogo.campeonato': campeonato,
-        },
-      },
-      // 7. Agrupar por usuário e contar palpites do campeonato
-      {
-        $group: {
-          _id: '$_id',
-          nome: { $first: '$nome' },
-          avatarUrl: { $first: '$avatarUrl' },
-          bairro: { $first: '$bairro' },
-          cidade: { $first: '$cidade' },
-          estado: { $first: '$estado' },
-          totalPoints: { $first: '$totalPoints' },
-          totalPalpitesCampeonato: { $sum: 1 },
-        },
-      },
-      // 8. Filtrar apenas usuários que fizeram pelo menos um palpite neste campeonato
-      {
-        $match: {
-          totalPalpitesCampeonato: { $gt: 0 },
-        },
-      },
-      // 9. Ordenar por pontos totais do usuário
+      // 2. Ordenar por pontos totais do usuário (totalPoints da tabela users)
       {
         $sort: { totalPoints: -1 },
       },
@@ -726,8 +669,6 @@ export class RankingService {
     // Formatar todos os usuários para o ranking
     const usuariosFormatados: RankingUsuario[] = todosUsuarios.map((user, index) => {
       const pontos = user.totalPoints || 0;
-      const totalPalpites = user.totalPalpitesCampeonato || 0;
-      const taxaAcerto = totalPalpites > 0 ? 100 : 0;
 
       return {
         _id: user._id.toString(),
@@ -739,9 +680,9 @@ export class RankingService {
         estado: user.estado || '',
         totalPoints: pontos,
         pontos: pontos,
-        palpites_corretos: totalPalpites, // Agora conta todos os palpites como "corretos"
-        total_palpites: totalPalpites,
-        taxa_acerto: taxaAcerto,
+        palpites_corretos: 0,
+        total_palpites: 0,
+        taxa_acerto: 0,
         sequencia_atual: 0,
         posicao: index + 1,
         isCurrentUser: false,
