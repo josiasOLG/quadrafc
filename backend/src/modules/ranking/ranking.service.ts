@@ -641,13 +641,12 @@ export class RankingService {
 
     // Pipeline com joins: users → palpites → jogos
     const aggregationPipeline: any[] = [
-      // 1. Filtrar usuários por cidade/estado, que tenham bairro e perfil público
+      // 1. Filtrar usuários por cidade/estado, que tenham bairro
       {
         $match: {
           cidade: cidade,
           estado: estado,
           bairro: { $exists: true, $ne: null, $nin: [''] },
-          isPublicProfile: { $ne: false },
         },
       },
       // 2. Join com palpites do usuário
@@ -659,11 +658,11 @@ export class RankingService {
           as: 'palpites',
         },
       },
-      // 3. Unwind palpites (preservando usuários sem palpites)
+      // 3. Unwind palpites (não preservar usuários sem palpites)
       {
         $unwind: {
           path: '$palpites',
-          preserveNullAndEmptyArrays: true,
+          preserveNullAndEmptyArrays: false,
         },
       },
       // 4. Join palpite → jogo para pegar dados do jogo
@@ -679,19 +678,16 @@ export class RankingService {
       {
         $unwind: {
           path: '$jogo',
-          preserveNullAndEmptyArrays: true,
+          preserveNullAndEmptyArrays: false,
         },
       },
-      // 6. Filtrar apenas jogos do campeonato específico OU usuários sem palpites neste campeonato
+      // 6. Filtrar apenas jogos do campeonato específico
       {
         $match: {
-          $or: [
-            { 'jogo.campeonato': campeonato },
-            { jogo: { $exists: false } }, // Usuários sem palpites neste campeonato
-          ],
+          'jogo.campeonato': campeonato,
         },
       },
-      // 7. Agrupar por usuário e somar pontos do campeonato
+      // 7. Agrupar por usuário e contar palpites do campeonato
       {
         $group: {
           _id: '$_id',
@@ -700,31 +696,8 @@ export class RankingService {
           bairro: { $first: '$bairro' },
           cidade: { $first: '$cidade' },
           estado: { $first: '$estado' },
-          totalPoints: { $first: '$totalPoints' }, // Usar totalPoints da tabela users
-          totalPalpitesCampeonato: {
-            $sum: {
-              $cond: [
-                { $and: [{ $ne: ['$palpites', null] }, { $eq: ['$jogo.campeonato', campeonato] }] },
-                1,
-                0,
-              ],
-            },
-          },
-          palpitesCorretos: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $ne: ['$palpites', null] },
-                    { $eq: ['$jogo.campeonato', campeonato] },
-                    { $gt: ['$palpites.pontos', 0] },
-                  ],
-                },
-                1,
-                0,
-              ],
-            },
-          },
+          totalPoints: { $first: '$totalPoints' },
+          totalPalpitesCampeonato: { $sum: 1 },
         },
       },
       // 8. Filtrar apenas usuários que fizeram pelo menos um palpite neste campeonato
@@ -733,7 +706,7 @@ export class RankingService {
           totalPalpitesCampeonato: { $gt: 0 },
         },
       },
-      // 9. Ordenar por pontos totais do usuário (não específicos do campeonato)
+      // 9. Ordenar por pontos totais do usuário
       {
         $sort: { totalPoints: -1 },
       },
@@ -752,10 +725,9 @@ export class RankingService {
 
     // Formatar todos os usuários para o ranking
     const usuariosFormatados: RankingUsuario[] = todosUsuarios.map((user, index) => {
-      const pontos = user.totalPoints || 0; // Usar totalPoints da tabela users
+      const pontos = user.totalPoints || 0;
       const totalPalpites = user.totalPalpitesCampeonato || 0;
-      const palpitesCorretos = user.palpitesCorretos || 0;
-      const taxaAcerto = totalPalpites > 0 ? (palpitesCorretos / totalPalpites) * 100 : 0;
+      const taxaAcerto = totalPalpites > 0 ? 100 : 0;
 
       return {
         _id: user._id.toString(),
@@ -767,10 +739,10 @@ export class RankingService {
         estado: user.estado || '',
         totalPoints: pontos,
         pontos: pontos,
-        palpites_corretos: palpitesCorretos,
+        palpites_corretos: totalPalpites, // Agora conta todos os palpites como "corretos"
         total_palpites: totalPalpites,
         taxa_acerto: taxaAcerto,
-        sequencia_atual: 0, // TODO: Implementar lógica de sequência
+        sequencia_atual: 0,
         posicao: index + 1,
         isCurrentUser: false,
       };
