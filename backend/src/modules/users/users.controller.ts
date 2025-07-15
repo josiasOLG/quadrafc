@@ -144,16 +144,13 @@ export class UsersController {
     return this.usersService.atualizarLimitePalpites(userId, updateDto.novoLimite);
   }
 
-  @Post('migrar-limite-palpites')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  @ApiBearerAuth()
-  @ResponseMessage('Migração de limite de palpites executada com sucesso')
+  @Post('migrate/fix-palpites-data')
+  @ResponseMessage('Correção de dados de palpites executada com sucesso')
   @ApiOperation({
-    summary: 'Migrar usuários existentes com campos de limite de palpites (apenas admin)',
+    summary: 'Corrigir dados inconsistentes de palpites para todos os usuários (endpoint público)',
   })
-  async migrarLimitePalpites() {
-    return this.usersService.migrarUsuariosComLimitePalpites();
+  async corrigirDadosPalpites() {
+    return this.usersService.corrigirDadosInconsistentesPalpites();
   }
 
   @Patch('profile')

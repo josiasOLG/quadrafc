@@ -273,29 +273,28 @@ export class UsersService {
   }
 
   async verificarLimitePalpites(userId: string): Promise<boolean> {
-    const user = await this.userModel.findById(userId).exec();
+    let user = await this.userModel.findById(userId).exec();
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    // Verificar se precisa resetar o contador diário
-    const hoje = new Date();
-    const ultimoReset = new Date(user.ultimoResetPalpites);
+    // Garantir que os campos obrigatórios existam
+    if (!user.ultimoResetPalpites || !user.limitePalpitesDia) {
+      await this.inicializarCamposPalpites(userId);
+      // Buscar o usuário novamente após a inicialização
+      user = await this.userModel.findById(userId).exec();
+      if (!user) {
+        throw new NotFoundException('Usuário não encontrado após inicialização');
+      }
+    }
 
-    // Comparação mais robusta de datas - verificar se é um dia diferente
-    const hojeDia = hoje.getDate();
-    const hojeMes = hoje.getMonth();
-    const hojeAno = hoje.getFullYear();
-    
-    const resetDia = ultimoReset.getDate();
-    const resetMes = ultimoReset.getMonth();
-    const resetAno = ultimoReset.getFullYear();
-
-    // Se é um dia diferente, resetar contador
-    if (hojeDia !== resetDia || hojeMes !== resetMes || hojeAno !== resetAno) {
+    // Verificar se precisa resetar o contador diário (SEMPRE verificar, mesmo se atingiu limite)
+    const precisaReset = await this.verificarSeNecessarioReset(user);
+    if (precisaReset) {
       await this.resetarContadorPalpitesDiario(userId);
-      return true; // Pode palpitar após reset
+      // Após reset, pode palpitar
+      return true;
     }
 
     // Determinar limite baseado na assinatura
@@ -305,34 +304,62 @@ export class UsersService {
     return user.palpitesHoje < limiteDiario;
   }
 
+  private async verificarSeNecessarioReset(user: UserDocument): Promise<boolean> {
+    if (!user.ultimoResetPalpites) {
+      return true;
+    }
+
+    const agora = new Date();
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    const ultimoReset = new Date(user.ultimoResetPalpites);
+    const diaUltimoReset = new Date(
+      ultimoReset.getFullYear(),
+      ultimoReset.getMonth(),
+      ultimoReset.getDate()
+    );
+
+    // Retorna true se é um dia diferente
+    return hoje.getTime() !== diaUltimoReset.getTime();
+  }
+
   async incrementarContadorPalpites(userId: string): Promise<void> {
-    const user = await this.userModel.findById(userId).exec();
+    let user = await this.userModel.findById(userId).exec();
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    // Verificar se precisa resetar o contador diário
-    const hoje = new Date();
-    const ultimoReset = new Date(user.ultimoResetPalpites);
-
-    // Comparação mais robusta de datas - verificar se é um dia diferente
-    const hojeDia = hoje.getDate();
-    const hojeMes = hoje.getMonth();
-    const hojeAno = hoje.getFullYear();
-    
-    const resetDia = ultimoReset.getDate();
-    const resetMes = ultimoReset.getMonth();
-    const resetAno = ultimoReset.getFullYear();
-
-    // Se é um dia diferente, resetar contador
-    if (hojeDia !== resetDia || hojeMes !== resetMes || hojeAno !== resetAno) {
-      await this.resetarContadorPalpitesDiario(userId);
+    // Garantir que os campos obrigatórios existam
+    if (!user.ultimoResetPalpites || !user.limitePalpitesDia) {
+      await this.inicializarCamposPalpites(userId);
+      // Buscar o usuário novamente após a inicialização
+      user = await this.userModel.findById(userId).exec();
+      if (!user) {
+        throw new NotFoundException('Usuário não encontrado após inicialização');
+      }
     }
 
-    await this.userModel
-      .findByIdAndUpdate(userId, { $inc: { palpitesHoje: 1 } }, { new: true })
-      .exec();
+    // Verificar se precisa resetar o contador diário
+    const precisaReset = await this.verificarSeNecessarioReset(user);
+
+    if (precisaReset) {
+      // Se precisa reset, definir como 1 (este palpite) e atualizar data
+      await this.userModel
+        .findByIdAndUpdate(
+          userId,
+          {
+            palpitesHoje: 1,
+            ultimoResetPalpites: new Date(),
+          },
+          { new: true }
+        )
+        .exec();
+    } else {
+      // Se não precisa reset, apenas incrementar
+      await this.userModel
+        .findByIdAndUpdate(userId, { $inc: { palpitesHoje: 1 } }, { new: true })
+        .exec();
+    }
   }
 
   async obterStatusPalpites(userId: string): Promise<{
@@ -341,29 +368,26 @@ export class UsersService {
     podesPalpitar: boolean;
     restantes: number;
   }> {
-    const user = await this.userModel.findById(userId).exec();
+    let user = await this.userModel.findById(userId).exec();
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
+    // Garantir que os campos obrigatórios existam
+    if (!user.ultimoResetPalpites || !user.limitePalpitesDia) {
+      await this.inicializarCamposPalpites(userId);
+      user = await this.userModel.findById(userId).exec();
+      if (!user) {
+        throw new NotFoundException('Usuário não encontrado após inicialização');
+      }
+    }
+
     // Verificar se precisa resetar o contador diário
-    const hoje = new Date();
-    const ultimoReset = new Date(user.ultimoResetPalpites);
-
-    // Comparação mais robusta de datas - verificar se é um dia diferente
-    const hojeDia = hoje.getDate();
-    const hojeMes = hoje.getMonth();
-    const hojeAno = hoje.getFullYear();
-    
-    const resetDia = ultimoReset.getDate();
-    const resetMes = ultimoReset.getMonth();
-    const resetAno = ultimoReset.getFullYear();
-
+    const precisaReset = await this.verificarSeNecessarioReset(user);
     let palpitesHoje = user.palpitesHoje;
 
-    // Se é um dia diferente, resetar contador (virtualmente para o cálculo)
-    if (hojeDia !== resetDia || hojeMes !== resetMes || hojeAno !== resetAno) {
+    if (precisaReset) {
       palpitesHoje = 0; // Reset virtual para cálculo
     }
 
@@ -390,6 +414,34 @@ export class UsersService {
         { new: true }
       )
       .exec();
+  }
+
+  private async inicializarCamposPalpites(userId: string): Promise<void> {
+    const agora = new Date();
+    const updateFields: any = {};
+
+    // Buscar o usuário atual para verificar quais campos estão faltando
+    const user = await this.userModel.findById(userId).exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    if (!user.limitePalpitesDia) {
+      updateFields.limitePalpitesDia = 5;
+    }
+
+    if (!user.ultimoResetPalpites) {
+      updateFields.ultimoResetPalpites = agora;
+      updateFields.palpitesHoje = 0; // Resetar também os palpites se não há data de reset
+    } else if (user.palpitesHoje === undefined || user.palpitesHoje === null) {
+      updateFields.palpitesHoje = 0;
+    }
+
+    // Aplicar apenas os campos necessários
+    if (Object.keys(updateFields).length > 0) {
+      await this.userModel.findByIdAndUpdate(userId, updateFields, { new: true }).exec();
+    }
   }
 
   private obterLimitePalpitesDiario(user: UserDocument): number {
@@ -428,50 +480,6 @@ export class UsersService {
     return user;
   }
 
-  async migrarUsuariosComLimitePalpites(): Promise<{
-    atualizados: number;
-    total: number;
-    message: string;
-  }> {
-    const usuarios = await this.userModel.find({
-      $or: [
-        { limitePalpitesDia: { $exists: false } },
-        { palpitesHoje: { $exists: false } },
-        { ultimoResetPalpites: { $exists: false } },
-      ],
-    });
-
-    let atualizados = 0;
-    const dataAtual = new Date();
-
-    for (const user of usuarios) {
-      const updates: any = {};
-
-      if (!user.limitePalpitesDia) {
-        updates.limitePalpitesDia = 5;
-      }
-
-      if (!user.palpitesHoje) {
-        updates.palpitesHoje = 0;
-      }
-
-      if (!user.ultimoResetPalpites) {
-        updates.ultimoResetPalpites = dataAtual;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        await this.userModel.findByIdAndUpdate(user._id, updates);
-        atualizados++;
-      }
-    }
-
-    return {
-      atualizados,
-      total: usuarios.length,
-      message: `Migração concluída: ${atualizados} usuários atualizados de ${usuarios.length} encontrados`,
-    };
-  }
-
   async migrarUsuariosComIsPublicProfile(): Promise<{
     atualizados: number;
     total: number;
@@ -505,5 +513,85 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  async corrigirDadosInconsistentesPalpites(): Promise<{
+    usuariosCorrigidos: number;
+    totalUsuarios: number;
+    detalhes: {
+      camposInicializados: number;
+      contadoresResetados: number;
+      limitesDefinidos: number;
+    };
+    message: string;
+  }> {
+    const usuarios = await this.userModel.find({}).exec();
+
+    let usuariosCorrigidos = 0;
+    const detalhes = {
+      camposInicializados: 0,
+      contadoresResetados: 0,
+      limitesDefinidos: 0,
+    };
+
+    const agora = new Date();
+
+    for (const user of usuarios) {
+      const updates: any = {};
+      let precisaAtualizacao = false;
+
+      // 1. Verificar e corrigir limitePalpitesDia
+      if (!user.limitePalpitesDia || user.limitePalpitesDia === 0) {
+        updates.limitePalpitesDia = 5;
+        detalhes.limitesDefinidos++;
+        precisaAtualizacao = true;
+      }
+
+      // 2. Verificar e corrigir ultimoResetPalpites
+      if (!user.ultimoResetPalpites) {
+        updates.ultimoResetPalpites = agora;
+        updates.palpitesHoje = 0; // Resetar contador junto
+        detalhes.camposInicializados++;
+        precisaAtualizacao = true;
+      }
+
+      // 3. Verificar e corrigir palpitesHoje
+      if (user.palpitesHoje === undefined || user.palpitesHoje === null) {
+        updates.palpitesHoje = 0;
+        precisaAtualizacao = true;
+      }
+
+      // 4. Resetar usuários que ainda têm contador de ontem
+      if (user.ultimoResetPalpites && user.palpitesHoje > 0) {
+        const ultimoReset = new Date(user.ultimoResetPalpites);
+        const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+        const diaUltimoReset = new Date(
+          ultimoReset.getFullYear(),
+          ultimoReset.getMonth(),
+          ultimoReset.getDate()
+        );
+
+        // Se é um dia diferente e ainda tem palpites contados, resetar
+        if (hoje.getTime() !== diaUltimoReset.getTime() && user.palpitesHoje > 0) {
+          updates.palpitesHoje = 0;
+          updates.ultimoResetPalpites = agora;
+          detalhes.contadoresResetados++;
+          precisaAtualizacao = true;
+        }
+      }
+
+      // 5. Aplicar correções se necessário
+      if (precisaAtualizacao) {
+        await this.userModel.findByIdAndUpdate(user._id, updates).exec();
+        usuariosCorrigidos++;
+      }
+    }
+
+    return {
+      usuariosCorrigidos,
+      totalUsuarios: usuarios.length,
+      detalhes,
+      message: `Correção concluída! ${usuariosCorrigidos} de ${usuarios.length} usuários foram corrigidos. Detalhes: ${detalhes.limitesDefinidos} limites definidos, ${detalhes.camposInicializados} campos inicializados, ${detalhes.contadoresResetados} contadores resetados.`,
+    };
   }
 }
