@@ -65,6 +65,9 @@ export class PalpitesService {
     // Incrementar contador de palpites do usuário
     await this.usersService.incrementarContadorPalpites(userId);
 
+    // Adicionar campeonato ao array de campeonatos do usuário (único)
+    await this.usersService.addCampeonatoToUser(userId, jogo.campeonato);
+
     // Adiciona o palpite ao array de palpites do jogo
     await this.jogosService.addPalpiteToJogo(
       createPalpiteDto.jogoId.toString(),

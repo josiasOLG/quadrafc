@@ -93,6 +93,10 @@ export class User {
   @Prop({ default: true })
   isPublicProfile: boolean;
 
+  @ApiProperty({ description: 'Campeonatos favoritos do usuário' })
+  @Prop({ type: [String], default: [] })
+  campeonatos: string[];
+
   @ApiProperty({ description: 'Data de criação' })
   createdAt: Date;
 

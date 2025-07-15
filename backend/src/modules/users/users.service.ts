@@ -68,6 +68,18 @@ export class UsersService {
     return user;
   }
 
+  async addCampeonatoToUser(userId: string, campeonato: string): Promise<UserDocument> {
+    const user = await this.userModel
+      .findByIdAndUpdate(userId, { $addToSet: { campeonatos: campeonato } }, { new: true })
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return user;
+  }
+
   async getRankingIndividual(paginationDto?: {
     page: number;
     limit: number;
@@ -271,8 +283,17 @@ export class UsersService {
     const hoje = new Date();
     const ultimoReset = new Date(user.ultimoResetPalpites);
 
+    // Comparação mais robusta de datas - verificar se é um dia diferente
+    const hojeDia = hoje.getDate();
+    const hojeMes = hoje.getMonth();
+    const hojeAno = hoje.getFullYear();
+    
+    const resetDia = ultimoReset.getDate();
+    const resetMes = ultimoReset.getMonth();
+    const resetAno = ultimoReset.getFullYear();
+
     // Se é um dia diferente, resetar contador
-    if (hoje.toDateString() !== ultimoReset.toDateString()) {
+    if (hojeDia !== resetDia || hojeMes !== resetMes || hojeAno !== resetAno) {
       await this.resetarContadorPalpitesDiario(userId);
       return true; // Pode palpitar após reset
     }
@@ -295,7 +316,17 @@ export class UsersService {
     const hoje = new Date();
     const ultimoReset = new Date(user.ultimoResetPalpites);
 
-    if (hoje.toDateString() !== ultimoReset.toDateString()) {
+    // Comparação mais robusta de datas - verificar se é um dia diferente
+    const hojeDia = hoje.getDate();
+    const hojeMes = hoje.getMonth();
+    const hojeAno = hoje.getFullYear();
+    
+    const resetDia = ultimoReset.getDate();
+    const resetMes = ultimoReset.getMonth();
+    const resetAno = ultimoReset.getFullYear();
+
+    // Se é um dia diferente, resetar contador
+    if (hojeDia !== resetDia || hojeMes !== resetMes || hojeAno !== resetAno) {
       await this.resetarContadorPalpitesDiario(userId);
     }
 
@@ -320,9 +351,19 @@ export class UsersService {
     const hoje = new Date();
     const ultimoReset = new Date(user.ultimoResetPalpites);
 
+    // Comparação mais robusta de datas - verificar se é um dia diferente
+    const hojeDia = hoje.getDate();
+    const hojeMes = hoje.getMonth();
+    const hojeAno = hoje.getFullYear();
+    
+    const resetDia = ultimoReset.getDate();
+    const resetMes = ultimoReset.getMonth();
+    const resetAno = ultimoReset.getFullYear();
+
     let palpitesHoje = user.palpitesHoje;
 
-    if (hoje.toDateString() !== ultimoReset.toDateString()) {
+    // Se é um dia diferente, resetar contador (virtualmente para o cálculo)
+    if (hojeDia !== resetDia || hojeMes !== resetMes || hojeAno !== resetAno) {
       palpitesHoje = 0; // Reset virtual para cálculo
     }
 
