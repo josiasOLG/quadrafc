@@ -39,6 +39,7 @@ export const UserSchema = z.object({
   ultimo_login: z.coerce.date().optional(),
   ativo: z.boolean(),
   verificado: z.boolean(),
+  emailVerificado: z.boolean().optional().default(false),
   isPublicProfile: z.boolean().optional().default(true),
   configuracoes: UserConfiguracoesSchema.optional(),
   estatisticas: UserEstatisticasSchema.optional(),

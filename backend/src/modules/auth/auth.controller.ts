@@ -13,14 +13,22 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { Response } from 'express';
 import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
+import {
+  EnviarCodigoEmailDto,
+  VerificarCodigoEmailDto,
+} from '../../shared/dto/email-verification.dto';
 import { LoginDto } from '../../shared/dto/login.dto';
 import { RegisterDto } from '../../shared/dto/register.dto';
 import { AuthService } from './auth.service';
+import { EmailVerificationService } from './email-verification.service';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly emailVerificationService: EmailVerificationService
+  ) {}
 
   @Post('register')
   @Public()
@@ -125,5 +133,55 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   async getMe(@Request() req) {
     return this.authService.getProfile(req.user._id || req.user.sub);
+  }
+
+  @Post('enviar-codigo-email')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Código de verificação enviado')
+  @ApiOperation({ summary: 'Enviar código de verificação para email' })
+  @ApiResponse({ status: 200, description: 'Código enviado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  @ApiResponse({ status: 400, description: 'Email já verificado' })
+  async enviarCodigoEmail(@Body() enviarCodigoDto: EnviarCodigoEmailDto) {
+    return this.emailVerificationService.enviarCodigoVerificacao(enviarCodigoDto.email);
+  }
+
+  @Post('verificar-codigo-email')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Email verificado com sucesso')
+  @ApiOperation({ summary: 'Verificar código de validação do email' })
+  @ApiResponse({ status: 200, description: 'Email verificado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Código inválido ou expirado' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  async verificarCodigoEmail(@Body() verificarCodigoDto: VerificarCodigoEmailDto) {
+    return this.emailVerificationService.verificarCodigo(
+      verificarCodigoDto.email,
+      verificarCodigoDto.codigo
+    );
+  }
+
+  @Post('reenviar-codigo-email')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Código reenviado com sucesso')
+  @ApiOperation({ summary: 'Reenviar código de verificação para email' })
+  @ApiResponse({ status: 200, description: 'Código reenviado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  @ApiResponse({ status: 400, description: 'Email já verificado' })
+  async reenviarCodigoEmail(@Body() enviarCodigoDto: EnviarCodigoEmailDto) {
+    return this.emailVerificationService.reenviarCodigo(enviarCodigoDto.email);
+  }
+
+  @Post('status-email')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Status do email obtido com sucesso')
+  @ApiOperation({ summary: 'Verificar status de verificação do email' })
+  @ApiResponse({ status: 200, description: 'Status obtido com sucesso' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  async statusEmail(@Body() statusDto: EnviarCodigoEmailDto) {
+    return this.emailVerificationService.verificarStatusEmail(statusDto.email);
   }
 }

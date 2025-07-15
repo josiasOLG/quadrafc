@@ -1,5 +1,6 @@
 <!-- Main Container -->
 <ng-container *ngIf="authService.authState() === 'UNAUTHENTICATED'; else loadingOrRedirect">
+  <!-- Tela de login -->
   <div class="min-h-screen flex flex-column surface-ground">
     <!-- Header with gradient -->
     <div class="flex-1 flex flex-column align-items-center justify-content-center p-4 qfc-gradient-bg">
@@ -93,6 +94,14 @@
                 Cadastre-se
               </button>
             </p>
+            <!-- <p class="text-600 text-xs m-0 mt-2">
+              <button
+                type="button"
+                (click)="navigateToRecovery()"
+                class="qfc-text-primary font-medium cursor-pointer p-0 border-none bg-transparent hover:text-primary-emphasis transition-colors transition-duration-200">
+                Esqueceu sua senha?
+              </button>
+            </p> -->
           </div>
         </form>
       </div>
@@ -104,6 +113,13 @@
     </div>
   </div>
 </ng-container>
+
+<!-- Password Recovery Dialog -->
+<app-password-recovery-dialog
+  [(visible)]="showPasswordRecoveryDialog"
+  [email]="recoveryEmail"
+  (dialogClose)="onPasswordRecoveryDialogClose()"></app-password-recovery-dialog>
+
 <ng-template #loadingOrRedirect>
   <div class="min-h-screen flex flex-column surface-ground align-items-center justify-content-center">
     <p class="text-600 text-lg">Carregando...</p>

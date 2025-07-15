@@ -14,6 +14,7 @@ export interface User {
   ultimo_login?: Date;
   ativo: boolean;
   verificado: boolean;
+  emailVerificado: boolean;
   isPublicProfile: boolean;
   configuracoes: {
     notificacoes_push: boolean;

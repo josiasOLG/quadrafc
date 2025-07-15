@@ -10,6 +10,7 @@ import { PasswordModule } from 'primeng/password';
 import { LoginDto, LoginSchema } from '../../../../shared/schemas/user.schema';
 import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { AuthService } from '../../services/auth.service';
+import { PasswordRecoveryDialogComponent } from './password-recovery-dialog/password-recovery-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -21,6 +22,7 @@ import { AuthService } from '../../services/auth.service';
     InputTextModule,
     PasswordModule,
     CardModule,
+    PasswordRecoveryDialogComponent,
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
@@ -28,6 +30,8 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
   loginForm: FormGroup;
   isLoading = false;
+  showPasswordRecoveryDialog = false;
+  recoveryEmail = '';
 
   constructor(
     private fb: FormBuilder,
@@ -57,19 +61,30 @@ export class LoginComponent {
 
       this.authService.login(validation.data).subscribe({
         next: (response) => {
-          // this.toastService.success('Login realizado com sucesso!');
           const user = response.user;
           if (user.bairro && user.cidade && user.estado) {
             this.router.navigate(['/jogos']);
           } else {
             this.router.navigate(['/onboarding']);
           }
-
           this.isLoading = false;
         },
-        error: () => {
-          this.globalDialogService.showError('Erro ao fazer login', 'Verifique suas credenciais');
+        error: (error: any) => {
           this.isLoading = false;
+
+          // Verificar se é erro de email não verificado
+          if (error.status === 401 && error.error?.message?.includes('Email não verificado')) {
+            // Abrir dialog de recuperação/verificação com o email preenchido
+            this.recoveryEmail = validation.data.email;
+            this.showPasswordRecoveryDialog = true;
+            return;
+          }
+
+          // Outros erros
+          this.globalDialogService.showError(
+            'Erro ao fazer login',
+            error.error?.message || 'Verifique suas credenciais'
+          );
         },
       });
     } else {
@@ -112,6 +127,16 @@ export class LoginComponent {
 
   navigateToRegister(): void {
     this.router.navigate(['/auth/register']);
+  }
+
+  navigateToRecovery(): void {
+    this.recoveryEmail = this.loginForm.get('email')?.value || '';
+    this.showPasswordRecoveryDialog = true;
+  }
+
+  onPasswordRecoveryDialogClose(): void {
+    this.showPasswordRecoveryDialog = false;
+    this.recoveryEmail = '';
   }
 
   private markFormGroupTouched(): void {

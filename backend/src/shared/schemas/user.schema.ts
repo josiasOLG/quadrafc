@@ -97,6 +97,22 @@ export class User {
   @Prop({ type: [String], default: [] })
   campeonatos: string[];
 
+  @ApiProperty({ description: 'Se o email foi verificado' })
+  @Prop({ default: false })
+  emailVerificado: boolean;
+
+  @ApiProperty({ description: 'Código de verificação de email', required: false })
+  @Prop({ required: false })
+  codigoVerificacaoEmail?: string;
+
+  @ApiProperty({ description: 'Data de expiração do código de verificação', required: false })
+  @Prop({ required: false })
+  expiracaoCodigoEmail?: Date;
+
+  @ApiProperty({ description: 'Se o usuário está ativo (email verificado)' })
+  @Prop({ default: false })
+  ativo: boolean;
+
   @ApiProperty({ description: 'Data de criação' })
   createdAt: Date;
 

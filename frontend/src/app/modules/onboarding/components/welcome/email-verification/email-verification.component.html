@@ -1,0 +1,59 @@
+<div class="email-verification">
+  <div class="email-verification__container">
+    <!-- Formulário -->
+    <div class="email-verification__content">
+      <form [formGroup]="verificationForm" (ngSubmit)="verificarCodigo()" class="email-verification__form">
+        <!-- Campo do código -->
+        <div class="email-verification__field">
+          <label for="codigo" class="email-verification__label">Código de verificação</label>
+          <input
+            type="text"
+            id="codigo"
+            pInputText
+            formControlName="codigo"
+            placeholder="000000"
+            maxlength="6"
+            class="email-verification__input"
+            [class.email-verification__input--error]="
+              verificationForm.get('codigo')?.invalid && verificationForm.get('codigo')?.touched
+            "
+            [disabled]="isLoading" />
+          <small class="email-verification__error" *ngIf="getCodigoError()">
+            {{ getCodigoError() }}
+          </small>
+          <small class="email-verification__help">Digite o código de 6 dígitos enviado para seu email</small>
+        </div>
+
+        <!-- Botão de verificação -->
+        <p-button
+          type="submit"
+          label="Verificar Código"
+          icon="pi pi-check"
+          [loading]="isLoading"
+          [disabled]="verificationForm.invalid || isLoading"
+          styleClass="email-verification__verify-btn"></p-button>
+      </form>
+
+      <!-- Opções adicionais -->
+      <div class="email-verification__actions">
+        <!-- Reenviar código -->
+        <div class="email-verification__resend">
+          <p class="email-verification__resend-text">Não recebeu o código?</p>
+
+          <p-button
+            *ngIf="podeReenviar"
+            type="button"
+            label="Reenviar código"
+            icon="pi pi-refresh"
+            severity="secondary"
+            [loading]="isReenvioLoading"
+            [disabled]="isReenvioLoading"
+            (click)="reenviarCodigo()"
+            styleClass="email-verification__resend-btn"></p-button>
+
+          <span *ngIf="!podeReenviar" class="email-verification__timer">Reenviar em {{ tempoReenvio }}s</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

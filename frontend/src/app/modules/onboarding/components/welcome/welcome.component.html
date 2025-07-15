@@ -210,8 +210,19 @@
         </form>
       </div>
 
-      <!-- Etapa 3: Finalização -->
-      <div *ngIf="currentStep === 3" class="welcome__step welcome__step--final">
+      <!-- Etapa 3: Verificação de Email -->
+      <div *ngIf="currentStep === 3" class="welcome__step welcome__step--form">
+        <div class="welcome__icon">
+          <i class="pi pi-envelope" style="font-size: 2rem; color: var(--primary-color)"></i>
+        </div>
+        <h2 class="welcome__title">Verificação de Email</h2>
+        <p class="welcome__description">Para garantir a segurança da sua conta, precisamos verificar seu email.</p>
+
+        <app-email-verification (emailVerificado)="onEmailVerified()" class="w-full"></app-email-verification>
+      </div>
+
+      <!-- Etapa 4: Finalização -->
+      <div *ngIf="currentStep === 4" class="welcome__step welcome__step--final">
         <div class="welcome__icon">
           <i class="pi pi-check-circle" style="font-size: 3rem; color: var(--green-500)"></i>
         </div>

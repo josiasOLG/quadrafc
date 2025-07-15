@@ -29,6 +29,7 @@ import { Bairro } from '../../../../shared/schemas/bairro.schema';
 import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { BairrosService } from '../../../bairros/services/bairros.service';
+import { EmailVerificationComponent } from './email-verification/email-verification.component';
 
 interface OnboardingStep {
   label: string;
@@ -51,6 +52,7 @@ interface OnboardingStep {
     InputGroupModule,
     InputGroupAddonModule,
     DropdownModule,
+    EmailVerificationComponent,
   ],
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.scss'],
@@ -72,13 +74,15 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   cepError = '';
   bairroError = '';
   isValidatingBairro = false;
-  maxDate = new Date(); // Data máxima para nascimento (hoje)
+  maxDate = new Date();
+  emailVerified = false;
 
   steps: OnboardingStep[] = [
     { label: 'Bem-vindo', step: 0 },
     { label: 'Informações Pessoais', step: 1 },
     { label: 'Localização', step: 2 },
-    { label: 'Pronto!', step: 3 },
+    { label: 'Verificação de Email', step: 3 },
+    { label: 'Pronto!', step: 4 },
   ];
 
   constructor(
@@ -98,11 +102,17 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Se já tem informações completas, redireciona para ranking
     const user = this.authService.currentUser();
+
+    // Se já tem informações completas, redireciona para ranking
     if (user && user.bairro && user.cidade && user.estado) {
       this.router.navigate(['/jogos']);
       return;
+    }
+
+    // Verificar se o email já está verificado
+    if (user && user.emailVerificado) {
+      this.emailVerified = true;
     }
 
     // Listener para mudanças no CEP com debounce
@@ -253,16 +263,23 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           return false;
         }
 
-        // Se tem bairro direto do CEP, está tudo ok
         if (this.hasBairroFromCep()) {
           return true;
         }
 
-        // Se não tem bairro direto do CEP, precisa ter digitado um válido
         if (!bairroControl?.value || bairroControl.value.trim().length < 2) {
           this.globalDialogService.showWarning(
             'Campo obrigatório',
             'Por favor, digite o nome do seu bairro (mínimo 2 caracteres)'
+          );
+          return false;
+        }
+        break;
+      case 3:
+        if (!this.emailVerified) {
+          this.globalDialogService.showWarning(
+            'Verificação necessária',
+            'Por favor, verifique seu email para continuar'
           );
           return false;
         }
@@ -346,17 +363,17 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           return false;
         }
 
-        // Se tem bairro direto do CEP (campo desabilitado)
         if (this.hasBairroFromCep()) {
-          return true; // Sempre válido quando vem do CEP
+          return true;
         }
 
-        // Se não tem bairro do CEP, precisa ter digitado um válido
         return (
           bairroControl?.valid && bairroControl?.value && bairroControl.value.trim().length >= 2
         );
       case 3:
-        return this.onboardingForm.valid && this.cepData !== null;
+        return this.emailVerified;
+      case 4:
+        return this.onboardingForm.valid && this.cepData !== null && this.emailVerified;
       default:
         return false;
     }
@@ -460,5 +477,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     } finally {
       this.isValidatingBairro = false;
     }
+  }
+
+  onEmailVerified(): void {
+    this.emailVerified = true;
+    this.globalDialogService.showSuccess(
+      'Email verificado!',
+      'Seu email foi verificado com sucesso'
+    );
   }
 }
