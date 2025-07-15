@@ -74,6 +74,9 @@ interface CampeonatoOrganizado {
   nome: string;
   jogos: JogoComPalpite[];
   total: number;
+  campeonatoStartDate?: string;
+  campeonatoEndDate?: string;
+  isActive?: boolean;
 }
 
 @Component({
@@ -150,6 +153,12 @@ export class JogosListComponent implements OnInit {
             nome: campeonato.nome,
             jogos: campeonato.jogos || [],
             total: campeonato.total || campeonato.jogos?.length || 0,
+            campeonatoStartDate: campeonato.campeonatoStartDate,
+            campeonatoEndDate: campeonato.campeonatoEndDate,
+            isActive: this.isCampeonatoActive(
+              campeonato.campeonatoStartDate,
+              campeonato.campeonatoEndDate
+            ),
           }));
 
           this.jogos = [];
@@ -203,8 +212,8 @@ export class JogosListComponent implements OnInit {
     this.campeonatos = Array.from(campeonatosMap.values());
   }
 
-  openPalpiteDialog(jogo: JogoComPalpite): void {
-    if (!this.canMakePalpite(jogo)) {
+  openPalpiteDialog(jogo: JogoComPalpite, campeonato?: CampeonatoOrganizado): void {
+    if (!this.canMakePalpite(jogo, campeonato)) {
       return;
     }
 
@@ -259,9 +268,9 @@ export class JogosListComponent implements OnInit {
     }
   }
 
-  canMakePalpite(jogo: JogoComPalpite): boolean {
+  canMakePalpite(jogo: JogoComPalpite, campeonato?: CampeonatoOrganizado): boolean {
     // Usa a mesma lógica do botão para consistência
-    return this.shouldShowPalpiteButton(jogo);
+    return this.shouldShowPalpiteButton(jogo, campeonato);
   }
 
   // Verifica se o jogo já iniciou baseado na data/hora
@@ -272,9 +281,14 @@ export class JogosListComponent implements OnInit {
   }
 
   // Verifica se o botão palpitar deve ser exibido
-  shouldShowPalpiteButton(jogo: JogoComPalpite): boolean {
+  shouldShowPalpiteButton(jogo: JogoComPalpite, campeonato?: CampeonatoOrganizado): boolean {
     // Se já tem palpite, não mostra o botão
     if (jogo.palpites && jogo.palpites.length > 0) {
+      return false;
+    }
+
+    // Se o campeonato não está ativo, não mostra o botão
+    if (campeonato && !campeonato.isActive) {
       return false;
     }
 
@@ -424,5 +438,80 @@ export class JogosListComponent implements OnInit {
   onWelcomeDialogClose(): void {
     this.showWelcomeDialog = false;
     this.welcomeService.markWelcomeDialogAsSeen();
+  }
+
+  isCampeonatoActive(startDate?: string, endDate?: string): boolean {
+    if (!startDate && !endDate) {
+      return true;
+    }
+
+    const now = new Date();
+    const hoje = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (startDate) {
+      const dataInicio = new Date(startDate);
+      const inicioSemHora = new Date(
+        dataInicio.getFullYear(),
+        dataInicio.getMonth(),
+        dataInicio.getDate()
+      );
+
+      if (hoje < inicioSemHora) {
+        return false;
+      }
+    }
+
+    if (endDate) {
+      const dataFim = new Date(endDate);
+      const fimSemHora = new Date(dataFim.getFullYear(), dataFim.getMonth(), dataFim.getDate());
+
+      if (hoje > fimSemHora) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  getCampeonatoStatusMessage(campeonato: CampeonatoOrganizado): string {
+    if (campeonato.isActive) {
+      return '';
+    }
+
+    const now = new Date();
+    const hoje = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (campeonato.campeonatoStartDate) {
+      const dataInicio = new Date(campeonato.campeonatoStartDate);
+      const inicioSemHora = new Date(
+        dataInicio.getFullYear(),
+        dataInicio.getMonth(),
+        dataInicio.getDate()
+      );
+
+      if (hoje < inicioSemHora) {
+        const diasRestantes = Math.ceil(
+          (inicioSemHora.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (diasRestantes === 1) {
+          return 'Campeonato inicia amanhã';
+        } else if (diasRestantes <= 7) {
+          return `Campeonato inicia em ${diasRestantes} dias`;
+        } else {
+          return `Campeonato inicia em ${inicioSemHora.toLocaleDateString('pt-BR')}`;
+        }
+      }
+    }
+
+    if (campeonato.campeonatoEndDate) {
+      const dataFim = new Date(campeonato.campeonatoEndDate);
+      const fimSemHora = new Date(dataFim.getFullYear(), dataFim.getMonth(), dataFim.getDate());
+
+      if (hoje > fimSemHora) {
+        return 'Campeonato já encerrado';
+      }
+    }
+
+    return 'Campeonato não está ativo';
   }
 }

@@ -575,3 +575,140 @@
     transform: translateX(5px);
   }
 }
+
+// ===================================
+// INACTIVE CHAMPIONSHIP STYLES
+// ===================================
+
+// Tab header para campeonatos inativos
+::ng-deep .championship-tabs {
+  .tab-header-inactive {
+    opacity: 0.6;
+    position: relative;
+
+    &::after {
+      content: '🔒';
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+  }
+}
+
+// Championship header inativo
+.championship-header {
+  &--inactive {
+    opacity: 0.7;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 40%, rgba(158, 158, 158, 0.1) 50%, transparent 60%);
+      background-size: 20px 20px;
+      border-radius: var(--qfc-radius-lg);
+    }
+  }
+}
+
+// Status do campeonato
+.championship-status {
+  display: flex;
+  align-items: center;
+  gap: var(--qfc-spacing-xs);
+  margin-top: var(--qfc-spacing-xs);
+  padding: 6px 12px;
+  background-color: rgba(251, 146, 60, 0.1);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  border-radius: var(--qfc-radius-md);
+  font-size: var(--qfc-font-size-xs);
+  color: rgb(154, 52, 18);
+
+  i {
+    font-size: var(--qfc-font-size-xs);
+    color: rgb(251, 146, 60);
+  }
+}
+
+// Games grid inativo
+.games-grid {
+  &--inactive {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(0.5px);
+      border-radius: var(--qfc-radius-lg);
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+}
+
+// Game card inativo
+.game-card {
+  &--inactive {
+    opacity: 0.7;
+    filter: grayscale(0.3);
+    transition: all 0.3s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+// Botão de palpite desabilitado
+.palpite-button {
+  &--disabled {
+    background-color: var(--qfc-bg-tertiary) !important;
+    color: var(--qfc-text-tertiary) !important;
+    border-color: var(--qfc-border-secondary) !important;
+    cursor: not-allowed !important;
+
+    &:hover {
+      background-color: var(--qfc-bg-tertiary) !important;
+      color: var(--qfc-text-tertiary) !important;
+      border-color: var(--qfc-border-secondary) !important;
+      transform: none !important;
+    }
+
+    i {
+      color: var(--qfc-text-tertiary) !important;
+    }
+  }
+}
+
+// Mensagem de campeonato inativo
+.championship-inactive-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--qfc-spacing-xs);
+  padding: 12px;
+  background-color: rgba(156, 163, 175, 0.1);
+  border: 1px solid rgba(156, 163, 175, 0.3);
+  border-radius: var(--qfc-radius-md);
+  font-size: var(--qfc-font-size-xs);
+  color: var(--qfc-text-tertiary);
+  text-align: center;
+  margin-top: var(--qfc-spacing-sm);
+
+  i {
+    font-size: var(--qfc-font-size-sm);
+    color: rgba(156, 163, 175, 0.7);
+  }
+}

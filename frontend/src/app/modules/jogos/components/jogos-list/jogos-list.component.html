@@ -33,25 +33,32 @@
           Arraste para o lado para ver outros campeonatos
           <i class="pi pi-arrow-right"></i>
         </div>
-        <p-tabView [(activeIndex)]="activeTabIndex" styleClass="modern-tabs">
+        <p-tabView [(activeIndex)]="activeTabIndex" styleClass="modern-tabs championship-tabs">
           <p-tabPanel
             *ngFor="let campeonato of campeonatos; trackBy: trackByCampeonato"
             [header]="campeonato.nome"
-            [headerStyleClass]="'tab-header-custom'"
+            [headerStyleClass]="'tab-header-custom' + (!campeonato.isActive ? ' tab-header-inactive' : '')"
             styleClass="championship-tab">
             <!-- Championship Header -->
-            <div class="championship-header">
+            <div class="championship-header" [ngClass]="{ 'championship-header--inactive': !campeonato.isActive }">
               <div class="championship-info">
                 <h3 class="championship-title">{{ campeonato.nome }}</h3>
                 <span class="championship-count">
                   {{ campeonato.total }} jogo{{ campeonato.total !== 1 ? 's' : '' }}
                 </span>
+                <div *ngIf="!campeonato.isActive" class="championship-status">
+                  <i class="pi pi-info-circle"></i>
+                  <span>{{ getCampeonatoStatusMessage(campeonato) }}</span>
+                </div>
               </div>
             </div>
 
             <!-- Games Grid -->
-            <div class="games-grid">
-              <div *ngFor="let jogo of campeonato.jogos; trackBy: trackByJogo" class="game-card">
+            <div class="games-grid" [ngClass]="{ 'games-grid--inactive': !campeonato.isActive }">
+              <div
+                *ngFor="let jogo of campeonato.jogos; trackBy: trackByJogo"
+                class="game-card"
+                [ngClass]="{ 'game-card--inactive': !campeonato.isActive }">
                 <div class="game-card__header">
                   <span class="game-card__championship">{{ jogo.campeonato || campeonato.nome }}</span>
                   <div class="game-card__status" [ngClass]="'status-' + jogo.status">
@@ -107,13 +114,6 @@
                   <!-- Palpite Section -->
                   <div class="game-card__palpite">
                     <div *ngIf="jogo.palpites && jogo.palpites.length > 0" class="palpite-info">
-                      <!-- <div class="palpite-info__header">
-                        <div class="palpite-status" [ngClass]="'status-' + getPalpiteStatus(jogo)?.severity">
-                          <i [class]="getPalpiteStatus(jogo)?.icon"></i>
-                          <span>{{ getPalpiteStatus(jogo)?.label || '' }}</span>
-                        </div>
-                      </div> -->
-
                       <div class="palpite-info__content">
                         <div class="palpite-info__score">
                           <span class="score-label"></span>
@@ -139,13 +139,25 @@
                     </div>
 
                     <button
-                      *ngIf="shouldShowPalpiteButton(jogo)"
+                      *ngIf="shouldShowPalpiteButton(jogo, campeonato)"
                       class="palpite-button"
-                      [disabled]="jogo.status !== 'aberto' && jogo.status !== 'agendado'"
-                      (click)="openPalpiteDialog(jogo)">
+                      [class.palpite-button--disabled]="!campeonato.isActive"
+                      [disabled]="!campeonato.isActive || (jogo.status !== 'aberto' && jogo.status !== 'agendado')"
+                      (click)="openPalpiteDialog(jogo, campeonato)">
                       <i class="pi pi-plus"></i>
-                      Palpitar
+                      {{ campeonato.isActive ? 'Palpitar' : 'Indisponível' }}
                     </button>
+
+                    <div
+                      *ngIf="
+                        !campeonato.isActive &&
+                        !shouldShowPalpiteButton(jogo, campeonato) &&
+                        (!jogo.palpites || jogo.palpites.length === 0)
+                      "
+                      class="championship-inactive-message">
+                      <i class="pi pi-lock"></i>
+                      <span>{{ getCampeonatoStatusMessage(campeonato) }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
