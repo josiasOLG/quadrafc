@@ -13,10 +13,11 @@ import { UserMiniHeaderComponent } from '../../../../shared/components/user-mini
 import { User } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
-import { RankingService } from '../../services/ranking.service';
+import { RankingBairrosResolverData } from '../../resolvers/ranking-bairros.resolver';
+import { UserRankingResolverData } from '../../resolvers/user-ranking.resolver';
 import { UserRankingComponent } from '../user-ranking/user-ranking.component';
 
-interface RankingBairro {
+interface LocalRankingBairro {
   posicao: number;
   bairro: {
     id?: string;
@@ -49,168 +50,71 @@ interface RankingBairro {
 })
 export class RankingListComponent implements OnInit {
   user: User | null = null;
-  rankingBairros: RankingBairro[] = [];
+  rankingBairros: LocalRankingBairro[] = [];
   isLoading = true;
 
   // Tab system
   activeTab: 'bairros' | 'usuarios' = 'bairros';
-  selectedBairroForUserRanking: RankingBairro | null = null;
+  selectedBairroForUserRanking: LocalRankingBairro | null = null;
 
   // Parâmetros do campeonato
   campeonatoNome: string | null = null;
 
-  // Cookie key para usuário
-  private readonly USER_COOKIE_KEY = 'quadrafc_user';
+  // Dados do user ranking para repassar ao componente filho
+  userRankingData: UserRankingResolverData | null = null;
 
   constructor(
-    private rankingService: RankingService,
     private authService: AuthService,
     private toastService: ToastService,
     private route: ActivatedRoute
   ) {}
 
-  /**
-   * Carrega informações do usuário a partir do cookie
-   */
-  private loadUserFromCookie(): void {
-    try {
-      const userCookie = this.getCookie(this.USER_COOKIE_KEY);
-      if (userCookie) {
-        const userData = JSON.parse(decodeURIComponent(userCookie));
-        this.user = userData;
-
-        if (!this.rankingBairros || this.rankingBairros.length === 0) {
-          this.loadRankings();
-        }
-      } else {
-      }
-    } catch (error) {}
-  }
-
-  /**
-   * Método utilitário para ler cookies
-   */
-  private getCookie(name: string): string | null {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop()?.split(';').shift() || null;
-    }
-    return null;
-  }
-
   ngOnInit(): void {
-    this.loadUserFromCookie();
-    this.loadUser();
-    this.loadQueryParams();
-
-    setTimeout(() => {
-      this.loadRankings();
-    }, 100);
+    this.loadDataFromResolver();
   }
-
-  private loadQueryParams(): void {
-    this.route.queryParams.subscribe((params) => {
-      this.campeonatoNome = params['campeonatoNome'] || null;
-    });
-  }
-
   /**
-   * Carrega dados do usuário logado
+   * Carrega dados do resolver
    */
-  private loadUser(): void {
-    const currentUser = this.authService.currentUser();
-    if (currentUser) {
-      const wasUserNull = this.user === null;
-      this.user = currentUser;
+  private loadDataFromResolver(): void {
+    const resolverData = this.route.snapshot.data['rankingData'] as RankingBairrosResolverData;
+    const userRankingData = this.route.snapshot.data['userRankingData'] as UserRankingResolverData;
 
-      if (wasUserNull && currentUser && this.rankingBairros.length === 0) {
-        this.loadRankings();
+    if (resolverData.hasError) {
+      this.isLoading = false;
+      if (resolverData.errorMessage) {
+        this.toastService.warn(resolverData.errorMessage);
       }
-    } else {
-    }
-  }
-
-  /**
-   * Método principal para carregar os rankings
-   */
-  private loadRankings(): void {
-    if (!this.user?.cidade || !this.user?.estado) {
-      console.warn('⚠️ Dados de localização do usuário não disponíveis');
-      this.toastService.warn('Configure sua localização para ver o ranking');
-      this.isLoading = false;
       return;
     }
 
-    this.isLoading = true;
-    this.loadRankingBairros();
-  }
+    this.user = resolverData.user;
+    this.rankingBairros = resolverData.rankingBairros;
+    this.campeonatoNome = resolverData.campeonatoNome;
+    this.userRankingData = userRankingData;
+    this.isLoading = false;
 
-  /**
-   * Carrega ranking de bairros
-   */
-  private loadRankingBairros(): void {
-    if (!this.user?.cidade || !this.user?.estado) {
-      console.error('❌ Cidade ou estado não definidos para carregar ranking de bairros');
-      this.isLoading = false;
-      return;
-    }
+    // Escutar mudanças nos queryParams para recarregar quando necessário
+    this.route.queryParams.subscribe((params) => {
+      const newCampeonatoNome = params['campeonatoNome'] || null;
 
-    this.rankingService
-      .getRankingBairrosCidade(
-        this.user.cidade,
-        this.user.estado,
-        {
-          limit: 50,
-          page: 1,
-        },
-        this.campeonatoNome
-      )
-      .subscribe({
-        next: (response: any) => {
-          try {
-            if (response?.data) {
-              this.rankingBairros = response.data.map((item: any, index: number) => ({
-                posicao: index + 1,
-                bairro: {
-                  nome: item.bairro || item.nome || item._id,
-                  cidade: item.cidade || this.user?.cidade || '',
-                  estado: item.estado || this.user?.estado || '',
-                },
-                pontos_totais: item.pontos_totais || item.totalPoints || item.pontos || 0,
-                usuarios_ativos: item.usuarios_ativos || item.totalUsuarios || item.usuarios || 0,
-                media_pontuacao:
-                  item.media_pontuacao || item.pontuacaoMedia || item.mediaPoints || 0,
-              }));
-            } else {
-              this.rankingBairros = [];
-            }
-          } catch (error) {
-            this.rankingBairros = [];
-            this.toastService.error('Erro ao processar dados do ranking de bairros');
-          } finally {
-            this.isLoading = false;
-          }
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.rankingBairros = [];
-          this.toastService.error('Erro ao carregar ranking de bairros');
-        },
-      });
+      // Se o campeonato mudou, recarregar a página para acionar o resolver novamente
+      if (newCampeonatoNome !== this.campeonatoNome) {
+        window.location.reload();
+      }
+    });
   }
 
   /**
    * Track by function para otimizar renderização de bairros
    */
-  trackByBairro(index: number, item: RankingBairro): string {
+  trackByBairro(index: number, item: LocalRankingBairro): string {
     return `${item.bairro.nome}-${item.bairro.cidade}-${item.posicao}`;
   }
 
   /**
    * Abre o ranking de usuários de um bairro
    */
-  openUserRankingForBairro(bairro: RankingBairro): void {
+  openUserRankingForBairro(bairro: LocalRankingBairro): void {
     this.selectedBairroForUserRanking = bairro;
     this.activeTab = 'usuarios';
   }

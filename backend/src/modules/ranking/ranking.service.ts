@@ -455,38 +455,18 @@ export class RankingService {
       throw new Error('Campeonato é obrigatório');
     }
 
-    // Pipeline: users → jogos (sem usar tabela palpites)
+    // Pipeline: filtrar usuários por cidade/estado/bairro e campeonato
     const bairrosPipeline: any[] = [
-      // 1. Filtrar usuários da cidade/estado com bairro
+      // 1. Filtrar usuários da cidade/estado com bairro e vinculados ao campeonato
       {
         $match: {
           cidade: cidade,
           estado: estado,
           bairro: { $exists: true, $ne: null, $nin: [''] },
+          campeonatos: campeonato,
         },
       },
-      // 2. Join com jogos para filtrar por campeonato
-      {
-        $lookup: {
-          from: 'jogos',
-          let: { userId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                campeonato: campeonato,
-              },
-            },
-          ],
-          as: 'jogos',
-        },
-      },
-      // 3. Filtrar apenas usuários que têm jogos do campeonato
-      {
-        $match: {
-          'jogos.0': { $exists: true },
-        },
-      },
-      // 4. Agrupar por bairro e somar totalPoints dos usuários
+      // 2. Agrupar por bairro e somar totalPoints dos usuários
       {
         $group: {
           _id: '$bairro',
@@ -498,7 +478,7 @@ export class RankingService {
           total_usuarios: { $sum: 1 },
         },
       },
-      // 5. Calcular média de pontuação
+      // 3. Calcular média de pontuação
       {
         $addFields: {
           media_pontuacao: {
@@ -510,11 +490,11 @@ export class RankingService {
           },
         },
       },
-      // 6. Ordenar por pontos totais
+      // 4. Ordenar por pontos totais
       {
         $sort: { pontos_totais: -1 },
       },
-      // 7. Paginação
+      // 5. Paginação
       {
         $skip: params.offset,
       },
@@ -583,14 +563,15 @@ export class RankingService {
       throw new Error('Campeonato é obrigatório');
     }
 
-    // Pipeline: users → jogos (sem usar tabela palpites)
+    // Pipeline: filtrar usuários por cidade/estado/bairro e campeonato
     const aggregationPipeline: any[] = [
-      // 1. Filtrar usuários por cidade/estado e que tenham bairro e perfil público
+      // 1. Filtrar usuários por cidade/estado, que tenham bairro, perfil público e vinculados ao campeonato
       {
         $match: {
           cidade: cidade,
           estado: estado,
           bairro: { $exists: true, $ne: null, $nin: [''] },
+          campeonatos: campeonato,
           $or: [
             { isPublicProfile: true },
             { isPublicProfile: { $exists: false } },
@@ -598,28 +579,7 @@ export class RankingService {
           ],
         },
       },
-      // 2. Join com jogos para filtrar por campeonato
-      {
-        $lookup: {
-          from: 'jogos',
-          let: { userId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                campeonato: campeonato,
-              },
-            },
-          ],
-          as: 'jogos',
-        },
-      },
-      // 3. Filtrar apenas usuários que têm jogos do campeonato
-      {
-        $match: {
-          'jogos.0': { $exists: true },
-        },
-      },
-      // 4. Ordenar por pontos totais do usuário
+      // 2. Ordenar por pontos totais do usuário
       {
         $sort: { totalPoints: -1 },
       },

@@ -58,6 +58,14 @@ export class Jogo {
   @Prop({ required: true })
   campeonato: string;
 
+  @ApiProperty({ description: 'Data de início do campeonato' })
+  @Prop({ required: false })
+  campeonatoStartDate?: string;
+
+  @ApiProperty({ description: 'Data de fim do campeonato' })
+  @Prop({ required: false })
+  campeonatoEndDate?: string;
+
   @ApiProperty({ description: 'ID da rodada' })
   @Prop({ type: Types.ObjectId, ref: 'Rodada', required: false })
   rodadaId?: Types.ObjectId;

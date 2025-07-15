@@ -131,6 +131,8 @@ export class FootballApiService {
         },
         data: dataAjustada.toISOString(),
         campeonato: jogo.competition?.name || 'Sem Campeonato',
+        campeonatoStartDate: jogo.season?.startDate || null,
+        campeonatoEndDate: jogo.season?.endDate || null,
         status: statusDetalhes.jogoFinalizado ? 'encerrado' : 'aberto',
         _statusOriginalAPI: statusOriginal,
         _statusDetalhes: {

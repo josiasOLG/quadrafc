@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
@@ -12,7 +13,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { User } from '../../../../shared/schemas/user.schema';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../auth/services/auth.service';
-import { RankingService } from '../../services/ranking.service';
+import { UserRankingResolverData } from '../../resolvers/user-ranking.resolver';
 
 interface RankingUsuario {
   posicao: number;
@@ -76,131 +77,55 @@ export class UserRankingComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private rankingService: RankingService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
-    // Primeiro, carregar o usuário atual
-    this.loadCurrentUser();
-
-    // Se já temos um bairro selecionado, carregar ranking imediatamente
-    if (this.selectedBairro) {
-      this.loadUserRanking();
-    }
+    this.loadDataFromResolver();
   }
 
-  private loadCurrentUser() {
-    this.authService.currentUser$.subscribe({
-      next: (user: User | null) => {
-        this.user = user;
-        // Após carregar o usuário, verificamos se devemos iniciar o carregamento do ranking
-        if (user && (!this.selectedBairro || !this.rankingUsuarios.length)) {
-          // Carregar ranking com os dados do usuário logado
-          this.loadUserRankingFromUserData();
-        }
-      },
-      error: (error: any) => {},
-    });
-  }
+  /**
+   * Carrega dados do resolver
+   */
+  private loadDataFromResolver(): void {
+    const resolverData = this.route.snapshot.data['userRankingData'] as UserRankingResolverData;
 
-  // Novo método para carregar o ranking a partir dos dados do usuário logado
-  private loadUserRankingFromUserData() {
-    if (!this.user || !this.user.cidade || !this.user.estado) {
-      console.warn('⚠️ Dados do usuário incompletos para carregar ranking');
-      return;
-    }
-
-    this.isLoading = true;
-    this.bairroSelecionado = this.user.bairro || null;
-
-    // Usando o endpoint com os dados do usuário logado
-    this.rankingService
-      .getTopUsuariosPorBairro(this.user.cidade, this.user.estado, this.campeonatoNome)
-      .subscribe({
-        next: (response) => {
-          this.processRankingResponse(response);
-        },
-        error: (error) => {
-          this.handleRankingError(error);
-        },
-      });
-  }
-
-  loadUserRanking() {
-    if (!this.selectedBairro) {
-      // Se não há bairro selecionado e temos um usuário, usar dados do usuário
-      if (this.user) {
-        this.loadUserRankingFromUserData();
+    if (resolverData.hasError) {
+      this.isLoading = false;
+      if (resolverData.errorMessage) {
+        this.toastService.warn(resolverData.errorMessage);
       }
       return;
     }
 
-    this.isLoading = true;
-    this.bairroSelecionado = this.selectedBairro.bairro.nome;
+    this.user = resolverData.user;
+    this.podioUsuarios = resolverData.podioUsuarios;
+    this.outrosUsuarios = resolverData.outrosUsuarios;
+    this.rankingUsuarios = resolverData.rankingUsuarios;
+    this.bairroSelecionado = resolverData.bairroSelecionado;
+    this.isLoading = false;
 
-    // Usando o novo endpoint para obter os top 5 usuários por bairro
-    this.rankingService
-      .getTopUsuariosPorBairro(
-        this.selectedBairro.bairro.cidade,
-        this.selectedBairro.bairro.estado,
-        this.campeonatoNome
-      )
-      .subscribe({
-        next: (response) => {
-          this.processRankingResponse(response);
-        },
-        error: (error) => {
-          this.handleRankingError(error);
-        },
-      });
+    // Escutar mudanças nos queryParams para recarregar quando necessário
+    this.route.queryParams.subscribe((params) => {
+      const newCampeonatoNome = params['campeonatoNome'] || null;
+
+      // Se o campeonato mudou, recarregar a página para acionar o resolver novamente
+      if (newCampeonatoNome !== this.campeonatoNome) {
+        window.location.reload();
+      }
+    });
   }
 
-  // Método auxiliar para processar a resposta do ranking
-  private processRankingResponse(response: any) {
-    if (response?.podio && response?.outros) {
-      this.podioUsuarios = this.convertUsuariosArray(response.podio);
-      this.outrosUsuarios = this.convertUsuariosArray(response.outros);
-
-      this.rankingUsuarios = [...this.podioUsuarios, ...this.outrosUsuarios];
-    } else {
-      this.resetRankingData();
-      this.toastService.error('Erro ao processar dados do ranking');
+  /**
+   * Método para carregar ranking quando o bairro selecionado muda via @Input
+   */
+  loadUserRanking() {
+    if (this.selectedBairro) {
+      this.bairroSelecionado = this.selectedBairro.bairro.nome;
+      // Como os dados já foram carregados pelo resolver, apenas atualizamos a exibição
+      // Se precisar de dados específicos para o bairro selecionado, pode implementar aqui
     }
-
-    this.isLoading = false;
-  }
-
-  // Método auxiliar para converter array de usuários para o formato do componente
-  private convertUsuariosArray(usuarios: any[]): RankingUsuario[] {
-    return usuarios.map((usuario: any, index: number) => ({
-      posicao: usuario.posicao || index + 1,
-      user: {
-        id: usuario._id,
-        nome: usuario.nome,
-        email: usuario.email || '',
-        avatar: usuario.avatarUrl || usuario.avatar || '',
-        bairro: usuario.bairro || '',
-      },
-      pontos_totais: usuario.totalPoints || usuario.pontos || 0,
-      palpites_corretos: usuario.palpites_corretos || 0,
-      palpites_totais: usuario.total_palpites || 0,
-      percentual_acerto: usuario.taxa_acerto || 0,
-    }));
-  }
-
-  // Método auxiliar para resetar dados do ranking
-  private resetRankingData() {
-    this.rankingUsuarios = [];
-    this.podioUsuarios = [];
-    this.outrosUsuarios = [];
-  }
-
-  // Método auxiliar para lidar com erros
-  private handleRankingError(error: any) {
-    this.resetRankingData();
-    this.isLoading = false;
-    this.toastService.error('Erro ao carregar ranking de usuários');
   }
 
   openUserDetailsModal(user: RankingUsuario) {

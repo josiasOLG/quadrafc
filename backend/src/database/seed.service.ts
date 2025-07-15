@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { JogosService } from '../modules/jogos/jogos.service';
 import { PalpitesService } from '../modules/palpites/palpites.service';
 import { RodadasService } from '../modules/rodadas/rodadas.service';
@@ -9,6 +9,7 @@ import { TransacoesMoedasService } from '../modules/transacoes-moedas/transacoes
 import { UsersService } from '../modules/users/users.service';
 import { Jogo, JogoDocument } from '../shared/schemas/jogo.schema';
 import { Palpite, PalpiteDocument } from '../shared/schemas/palpite.schema';
+import { User, UserDocument } from '../shared/schemas/user.schema';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -22,7 +23,8 @@ export class SeedService implements OnModuleInit {
     private palpitesService: PalpitesService,
     private transacoesMoedasService: TransacoesMoedasService,
     @InjectModel(Palpite.name) private palpiteModel: Model<PalpiteDocument>,
-    @InjectModel(Jogo.name) private jogoModel: Model<JogoDocument>
+    @InjectModel(Jogo.name) private jogoModel: Model<JogoDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>
   ) {}
 
   async onModuleInit() {
@@ -77,7 +79,7 @@ export class SeedService implements OnModuleInit {
 
       // 1. Criar usuários - ÚNICO PASSO NECESSÁRIO
       this.logger.log('👥 Executando seed de usuários...');
-      await this.seedUsers();
+      // await this.seedUsers();
 
       // 2. Criar palpites para usuários
       this.logger.log('🎯 Executando seed de palpites...');
@@ -279,7 +281,7 @@ export class SeedService implements OnModuleInit {
         'Sandro Henrique Ribeiro',
         'Thales Gabriel Martins',
         'Ubiratan dos Santos Gomes',
-        // Adicionando mais 30 nomes masculinos para totalizar 80
+        // Adicionando mais nomes masculinos para totalizar 150+
         'André Luiz Monteiro',
         'Arthur César Nogueira',
         'Benedito Santos Lima',
@@ -310,6 +312,70 @@ export class SeedService implements OnModuleInit {
         'Davi Eduardo Pereira',
         'Élton Gabriel Santos',
         'Fabrício Luis Cardoso',
+        'Gustavo Roberto Almeida',
+        'Hamilton dos Santos Pereira',
+        'Icaro Fernandes Costa',
+        'Jefferson Carlos Lima',
+        'Kennedy Eduardo Rocha',
+        'Luciano Gabriel Martins',
+        'Marcelo Antonio Silva',
+        'Nicolau Fernando Santos',
+        'Osvaldo Luis Barbosa',
+        'Paulo Roberto Gomes',
+        'Rodrigo César Oliveira',
+        'Sebastião Eduardo Reis',
+        'Teodoro Gabriel Cunha',
+        'Vinicius dos Santos Torres',
+        'William César Moreira',
+        'Ximenes Gabriel Lopes',
+        'Yves Antonio Caldeira',
+        'Zacharias Luis Machado',
+        'Alan Eduardo Carvalho',
+        'Bento Gabriel Pinto',
+        'Carlos Roberto Sales',
+        'Diogo Luis Moraes',
+        'Elias Eduardo Castro',
+        'Felipe Gabriel Azevedo',
+        'Geraldo dos Santos Freitas',
+        'Hermes César Ramos',
+        'Ivo Gabriel Santana',
+        'Jair Eduardo Campos',
+        'Kelvin dos Santos Rodrigues',
+        'Lauro Gabriel Fernandes',
+        'Milton César Moreira',
+        'Norberto Eduardo Nogueira',
+        'Oscar Gabriel Figueiredo',
+        'Plinio Luis Soares',
+        'Raul Eduardo Batista',
+        'Silvio Gabriel Maia',
+        'Tomaz César Leal',
+        'Urbano dos Santos Pacheco',
+        'Valdir Eduardo Barros',
+        'Waldemar Gabriel Moura',
+        'Xico dos Santos Viana',
+        'Ademir José Gonçalves',
+        'Basílio Carlos Mendes',
+        'Celso Roberto Araújo',
+        'Domingos Eduardo Gomes',
+        'Ernesto Gabriel Reis',
+        'Fábio dos Santos Teixeira',
+        'Gerson Luis Correia',
+        'Haroldo César Miranda',
+        'Ismael Gabriel Nascimento',
+        'Jaime dos Santos Monteiro',
+        'Lázaro Eduardo Vieira',
+        'Murilo Gabriel Caldeira',
+        'Newton dos Santos Machado',
+        'Oldair César Lopes',
+        'Paulino Gabriel Cunha',
+        'Ronaldo dos Santos Borges',
+        'Silas Eduardo Duarte',
+        'Teodósio Gabriel Melo',
+        'Valdomiro dos Santos Farias',
+        'Wanderlei César Carvalho',
+        'Xavier Eduardo Torres',
+        'Yago dos Santos Pinto',
+        'Zélio Gabriel Sales',
       ];
 
       const nomesFemininos = [
@@ -595,33 +661,50 @@ export class SeedService implements OnModuleInit {
   }
 
   /**
-   * Criar palpites para todos os usuários nos jogos fixos
+   * Criar palpites para todos os usuários nos jogos reais
    */
   private async seedPalpites(): Promise<void> {
     try {
       // Verificar se já existem palpites usando o modelo
       const existingPalpites = await this.palpiteModel.countDocuments();
       if (existingPalpites > 0) {
-        this.logger.log('Palpites já existem no banco de dados.');
+        this.logger.log(
+          '🎯 Palpites já existem no banco de dados - verificando campeonatos dos usuários...'
+        );
+
+        // Verificar se os usuários já têm campeonatos preenchidos
+        const usersComCampeonatos = await this.userModel.countDocuments({
+          campeonatos: { $exists: true, $ne: [] },
+        });
+
+        if (usersComCampeonatos > 0) {
+          this.logger.log(
+            `✅ ${usersComCampeonatos} usuários já possuem campeonatos - pulando atualização`
+          );
+          return;
+        }
+
+        this.logger.log('🔄 Atualizando campeonatos dos usuários existentes...');
+        await this.atualizarCampeonatosUsuarios();
         return;
       }
 
       this.logger.log('🎯 Iniciando criação de palpites...');
 
-      // Buscar todos os jogos reais do banco de dados
-      const jogos = await this.jogoModel.find().select('_id').exec();
+      // Buscar todos os jogos reais do banco de dados com informações do campeonato
+      const jogos = await this.jogoModel.find().select('_id campeonato').exec();
 
       if (jogos.length === 0) {
         this.logger.warn('❌ Nenhum jogo encontrado no banco de dados para criar palpites');
         return;
       }
 
-      // Extrair apenas os IDs dos jogos reais
-      const jogosIds = jogos.map((jogo) => jogo._id.toString());
+      // Log dos campeonatos únicos encontrados
+      const campeonatosUnicos = [...new Set(jogos.map((j) => j.campeonato).filter(Boolean))];
+      this.logger.log(`🏆 Campeonatos disponíveis: ${campeonatosUnicos.join(', ')}`);
 
-      // Buscar todos os usuários
-      const rankingUsers = await this.usersService.getRankingIndividual();
-      const users = rankingUsers.data;
+      // Buscar TODOS os usuários diretamente do banco sem limitação
+      const users = await this.userModel.find({}).select('_id nome').exec();
 
       if (users.length === 0) {
         this.logger.warn('❌ Nenhum usuário encontrado para criar palpites');
@@ -629,39 +712,48 @@ export class SeedService implements OnModuleInit {
       }
 
       this.logger.log(`👥 ${users.length} usuários encontrados`);
-      this.logger.log(`⚽ ${jogosIds.length} jogos reais disponíveis para palpites`);
+      this.logger.log(`⚽ ${jogos.length} jogos reais disponíveis para palpites`);
 
       let totalPalpitesCriados = 0;
       const palpitesParaInserir = [];
+      const usersParaAtualizar = new Map();
 
-      // Para cada usuário
+      // GARANTIR QUE TODOS OS USUÁRIOS FAÇAM PALPITES
       for (let i = 0; i < users.length; i++) {
         const user = users[i];
+        const userCampeonatos = new Set();
 
-        // Cada usuário fará palpites em uma quantidade aleatória de jogos (entre 10 e 25)
+        // MODIFICADO: Cada usuário fará palpites em uma quantidade aleatória de jogos (entre 5 e 15)
+        // Mas garantindo que TODOS os usuários façam pelo menos alguns palpites
         const quantidadeJogos = Math.min(
-          Math.floor(Math.random() * 16) + 10, // 10 a 25 jogos
-          jogosIds.length // Não pode exceder o total de jogos disponíveis
+          Math.floor(Math.random() * 11) + 5, // 5 a 15 jogos (reduzido para garantir que todos participem)
+          jogos.length // Não pode exceder o total de jogos disponíveis
         );
-        const jogosEscolhidos = this.shuffleArray([...jogosIds]).slice(0, quantidadeJogos);
+
+        // Se não há jogos suficientes, cada usuário fará palpite em TODOS os jogos disponíveis
+        const jogosEscolhidos =
+          jogos.length <= 15
+            ? [...jogos] // Todos os jogos se há poucos
+            : this.shuffleArray([...jogos]).slice(0, quantidadeJogos); // Seleção aleatória se há muitos
+
+        this.logger.debug(
+          `👤 Usuário ${i + 1}/${users.length} (${user.nome}): ${jogosEscolhidos.length} palpites`
+        );
 
         // Para cada jogo escolhido
-        for (const jogoId of jogosEscolhidos) {
+        for (const jogo of jogosEscolhidos) {
           // Gerar palpite aleatório seguindo o schema
           const golsTimeA = Math.floor(Math.random() * 4); // 0 a 3 gols
           const golsTimeB = Math.floor(Math.random() * 4); // 0 a 3 gols
 
-          // Pontuação aleatória de 0 a 100 como solicitado
-          const pontos = Math.floor(Math.random() * 101);
-
           const palpite = {
             userId: user._id,
-            jogoId: new Types.ObjectId(jogoId),
+            jogoId: jogo._id,
             palpite: {
               timeA: golsTimeA,
               timeB: golsTimeB,
             },
-            pontos: pontos,
+            pontos: 0, // Mantido em 0 conforme solicitado
             acertouPlacar: Math.random() > 0.85, // 15% de chance de acertar placar exato
             acertouResultado: Math.random() > 0.4, // 60% de chance de acertar resultado
             moedasGanhas: Math.floor(Math.random() * 50), // 0 a 49 moedas
@@ -669,6 +761,28 @@ export class SeedService implements OnModuleInit {
 
           palpitesParaInserir.push(palpite);
           totalPalpitesCriados++;
+
+          // Adicionar campeonato único à lista do usuário (verificação mais robusta)
+          if (jogo.campeonato && jogo.campeonato.trim() !== '') {
+            userCampeonatos.add(jogo.campeonato.trim());
+          }
+        }
+
+        // GARANTIR que TODOS os usuários sejam armazenados para atualização
+        // Mesmo que não tenham campeonatos válidos, registra para debug
+        const campeonatosArray = Array.from(userCampeonatos);
+        if (campeonatosArray.length > 0) {
+          usersParaAtualizar.set(user._id.toString(), campeonatosArray);
+
+          // Log de debug para os primeiros 5 usuários
+          if (i < 5) {
+            this.logger.debug(`👤 ${user.nome}: ${campeonatosArray.join(', ')}`);
+          }
+        } else {
+          // Log de warning se usuário não tem campeonatos
+          this.logger.warn(
+            `⚠️ Usuário ${user.nome} não recebeu campeonatos - jogos sem campeonato válido`
+          );
         }
 
         // Log de progresso a cada 20 usuários
@@ -677,16 +791,145 @@ export class SeedService implements OnModuleInit {
         }
       }
 
+      this.logger.log(
+        `📊 Resumo: ${users.length} usuários processados, ${usersParaAtualizar.size} receberão campeonatos`
+      );
+
       // Inserir todos os palpites de uma vez para melhor performance
+      this.logger.log('💾 Inserindo palpites no banco de dados...');
       await this.palpiteModel.insertMany(palpitesParaInserir);
 
+      // Atualizar propriedade campeonatos para cada usuário
+      this.logger.log(`🏆 Atualizando campeonatos para ${usersParaAtualizar.size} usuários...`);
+      let usersAtualizados = 0;
+      let errosUpdate = 0;
+
+      for (const [userId, campeonatos] of usersParaAtualizar) {
+        try {
+          const resultado = await this.userModel.findByIdAndUpdate(
+            userId,
+            {
+              $addToSet: {
+                campeonatos: { $each: campeonatos },
+              },
+            },
+            { new: true, select: 'nome campeonatos' }
+          );
+
+          if (resultado) {
+            usersAtualizados++;
+
+            // Log de debug para os primeiros 5 usuários
+            if (usersAtualizados <= 5) {
+              this.logger.debug(
+                `✅ ${resultado.nome}: ${resultado.campeonatos?.join(', ') || 'nenhum'}`
+              );
+            }
+          } else {
+            this.logger.warn(`⚠️ Usuário ${userId} não encontrado para atualização`);
+            errosUpdate++;
+          }
+        } catch (error) {
+          this.logger.error(`❌ Erro ao atualizar usuário ${userId}:`, error.message);
+          errosUpdate++;
+        }
+      }
+
       this.logger.log(`✅ ${totalPalpitesCriados} palpites criados com sucesso!`);
+      this.logger.log(
+        `🏆 ${usersAtualizados} de ${users.length} usuários atualizados com campeonatos únicos`
+      );
+      if (errosUpdate > 0) {
+        this.logger.warn(`⚠️ ${errosUpdate} erros durante atualização de usuários`);
+      }
+
+      // Verificação final - contar usuários sem campeonatos
+      const usersSemCampeonatos = users.length - usersAtualizados;
+      if (usersSemCampeonatos > 0) {
+        this.logger.warn(
+          `⚠️ ${usersSemCampeonatos} usuários ficaram sem campeonatos (possível problema nos dados de jogos)`
+        );
+      }
+
       this.logger.log(
         `📊 Média de ${(totalPalpitesCriados / users.length).toFixed(1)} palpites por usuário`
       );
     } catch (error) {
       this.logger.error('❌ Erro ao criar palpites:', error);
       throw error;
+    }
+  }
+
+  private async atualizarCampeonatosUsuarios(): Promise<void> {
+    try {
+      this.logger.log('🔄 Buscando todos os usuários para atualizar campeonatos...');
+
+      // Buscar TODOS os usuários diretamente
+      const todosOsUsuarios = await this.userModel.find({}).select('_id nome').exec();
+      this.logger.log(`👥 Total de ${todosOsUsuarios.length} usuários encontrados no banco`);
+
+      // Buscar todos os palpites com informações dos jogos
+      const palpitesComJogos = await this.palpiteModel.aggregate([
+        {
+          $lookup: {
+            from: 'jogos',
+            localField: 'jogoId',
+            foreignField: '_id',
+            as: 'jogo',
+          },
+        },
+        {
+          $unwind: '$jogo',
+        },
+        {
+          $group: {
+            _id: '$userId',
+            campeonatos: { $addToSet: '$jogo.campeonato' },
+          },
+        },
+      ]);
+
+      this.logger.log(`🎯 ${palpitesComJogos.length} usuários têm palpites no banco`);
+
+      let usersAtualizados = 0;
+
+      for (const item of palpitesComJogos) {
+        const campeonatosLimpos = item.campeonatos.filter((c) => c && c.trim() !== '');
+
+        if (campeonatosLimpos.length > 0) {
+          const resultado = await this.userModel.findByIdAndUpdate(
+            item._id,
+            {
+              $addToSet: {
+                campeonatos: { $each: campeonatosLimpos },
+              },
+            },
+            { new: true, select: 'nome campeonatos' }
+          );
+
+          if (resultado) {
+            usersAtualizados++;
+
+            // Log para os primeiros 5 usuários
+            if (usersAtualizados <= 5) {
+              this.logger.debug(
+                `✅ ${resultado.nome}: ${resultado.campeonatos?.join(', ') || 'nenhum'}`
+              );
+            }
+          }
+        }
+      }
+
+      this.logger.log(
+        `🔄 ${usersAtualizados} de ${todosOsUsuarios.length} usuários atualizados com campeonatos`
+      );
+
+      const usersSemPalpites = todosOsUsuarios.length - palpitesComJogos.length;
+      if (usersSemPalpites > 0) {
+        this.logger.warn(`⚠️ ${usersSemPalpites} usuários não têm palpites no banco`);
+      }
+    } catch (error) {
+      this.logger.error('❌ Erro ao atualizar campeonatos dos usuários:', error);
     }
   }
 
