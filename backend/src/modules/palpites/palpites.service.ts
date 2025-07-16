@@ -36,7 +36,7 @@ export class PalpitesService {
     }
 
     // Verificar se o jogo ainda está aberto para palpites
-    if (jogo.status !== 'aberto' || new Date() >= new Date(jogo.data)) {
+    if (new Date() >= new Date(jogo.data)) {
       throw new BadRequestException('Este jogo não está mais aberto para palpites');
     }
 
