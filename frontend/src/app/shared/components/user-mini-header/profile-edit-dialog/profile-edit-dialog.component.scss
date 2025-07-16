@@ -40,7 +40,7 @@
 .profile-edit-content {
   background: var(--qfc-bg-primary);
   position: relative;
-  overflow: hidden;
+  // overflow: hidden;
 }
 
 // ===================================
@@ -225,7 +225,7 @@
 // FORM FIELDS
 // ===================================
 .form-field {
-  margin-bottom: var(--qfc-spacing-lg);
+  // margin-bottom: var(--qfc-spacing-lg);
 
   .field-label {
     display: block;
@@ -276,14 +276,14 @@
   background: var(--qfc-bg-secondary);
   position: relative;
   z-index: 1;
-  padding-bottom: calc(var(--qfc-spacing-lg) + env(safe-area-inset-bottom, 20px));
+  // margin-bottom:400px;
 }
 
 .button-group {
   display: flex;
   gap: var(--qfc-spacing-md);
   width: 100%;
-
+  padding-bottom: 800px;
   .cancel-button {
     flex: 1;
     background: var(--qfc-bg-tertiary) !important;
@@ -368,23 +368,5 @@
 
   .button-group {
     flex-direction: column;
-  }
-}
-
-// ===================================
-// TEMA ESCURO
-// ===================================
-[data-theme='dark'] {
-  .profile-edit-content {
-    background: var(--qfc-bg-primary);
-  }
-
-  .profile-edit-header {
-    background: var(--qfc-border-primary);
-  }
-
-  .profile-edit-footer {
-    background: var(--qfc-bg-secondary);
-    border-top-color: var(--qfc-border-primary);
   }
 }

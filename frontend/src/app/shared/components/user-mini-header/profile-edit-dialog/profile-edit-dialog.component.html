@@ -44,7 +44,7 @@
                   (change)="onNativeFileSelect($event)" />
 
                 <!-- Botões de ação -->
-                <button
+                <!-- <button
                   type="button"
                   pButton
                   label="Tirar Foto"
@@ -52,7 +52,7 @@
                   class="camera-button"
                   [class.mobile-optimized]="isPWAMobile"
                   (click)="openCamera()"
-                  [disabled]="isLoading"></button>
+                  [disabled]="isLoading"></button> -->
 
                 <button
                   type="button"
@@ -112,7 +112,7 @@
           <button
             type="submit"
             pButton
-            label="Salvar alterações"
+            label="Salvar"
             icon="pi pi-check"
             class="save-button"
             [disabled]="!isFormValid || isLoading"
