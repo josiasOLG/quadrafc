@@ -46,8 +46,40 @@ export class Jogo {
   @Prop({ type: Resultado })
   resultado: Resultado;
 
-  @ApiProperty({ description: 'Status do jogo', enum: ['aberto', 'encerrado'] })
-  @Prop({ enum: ['aberto', 'encerrado'], default: 'aberto' })
+  @ApiProperty({
+    description: 'Status do jogo',
+    enum: [
+      'aberto',
+      'encerrado',
+      'agendado',
+      'confirmado',
+      'em_andamento',
+      'pausado',
+      'prorrogacao',
+      'penaltis',
+      'suspenso',
+      'adiado',
+      'cancelado',
+      'declarado',
+    ],
+  })
+  @Prop({
+    enum: [
+      'aberto',
+      'encerrado',
+      'agendado',
+      'confirmado',
+      'em_andamento',
+      'pausado',
+      'prorrogacao',
+      'penaltis',
+      'suspenso',
+      'adiado',
+      'cancelado',
+      'declarado',
+    ],
+    default: 'aberto',
+  })
   status: string;
 
   @ApiProperty({ description: 'Palpites associados ao jogo', type: [String] })

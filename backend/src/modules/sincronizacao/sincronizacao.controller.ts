@@ -20,8 +20,6 @@ export class SincronizacaoController {
   }
 
   @Post('verificar-jogos-finalizados')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
   @ApiOperation({ summary: 'Forçar verificação de jogos finalizados e processar palpites' })
   @ApiResponse({ status: 200, description: 'Verificação realizada com sucesso' })
   async verificarJogosFinalizados() {
@@ -30,8 +28,7 @@ export class SincronizacaoController {
   }
 
   @Post('verificar-jogos-finalizados-manual')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Forçar verificação manual de jogos finalizados de períodos passados' })
   @ApiResponse({ status: 200, description: 'Verificação manual realizada com sucesso' })
   async verificarJogosFinalizadosManual() {

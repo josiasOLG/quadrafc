@@ -77,9 +77,7 @@
                         class="team__logo"
                         (error)="onImageError($event)" />
                       <span class="team__name">{{ jogo.timeA.nome }}</span>
-                      <div
-                        *ngIf="(jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado"
-                        class="team__score">
+                      <div *ngIf="jogo.status === 'encerrado' && jogo.resultado" class="team__score">
                         {{ jogo.resultado.timeA || 0 }}
                       </div>
                     </div>
@@ -103,9 +101,7 @@
                         class="team__logo"
                         (error)="onImageError($event)" />
                       <span class="team__name">{{ jogo.timeB.nome }}</span>
-                      <div
-                        *ngIf="(jogo.status === 'finalizado' || jogo.status === 'encerrado') && jogo.resultado"
-                        class="team__score">
+                      <div *ngIf="jogo.status === 'encerrado' && jogo.resultado" class="team__score">
                         {{ jogo.resultado.timeB || 0 }}
                       </div>
                     </div>
@@ -142,7 +138,7 @@
                       *ngIf="shouldShowPalpiteButton(jogo, campeonato)"
                       class="palpite-button"
                       [class.palpite-button--disabled]="!campeonato.isActive"
-                      [disabled]="!campeonato.isActive || (jogo.status !== 'aberto' && jogo.status !== 'agendado')"
+                      [disabled]="!campeonato.isActive"
                       (click)="openPalpiteDialog(jogo, campeonato)">
                       <i class="pi pi-plus"></i>
                       {{ campeonato.isActive ? 'Palpitar' : 'Indisponível' }}

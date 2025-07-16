@@ -82,7 +82,7 @@ export class JogosService {
     return this.jogoModel
       .find({
         status: { $in: ['aberto', 'encerrado'] },
-        data: {
+        createdAt: {
           $gte: inicioMes,
           $lte: fimMes,
         },
@@ -378,7 +378,9 @@ export class JogosService {
       };
 
       const todosJogos = await this.jogoModel
-        .find({})
+        .find({
+          status: { $nin: ['adiado', 'cancelado'] },
+        })
         .populate('rodadaId')
         .populate(populateOptions)
         .exec();
@@ -525,6 +527,20 @@ export class JogosService {
                 rodadaId: null, // Será definido quando implementarmos as rodadas
               };
 
+              // Se o jogo já tem resultado (status FINISHED), adicionar o resultado
+              if (jogoAPI.status === 'encerrado' && jogoAPI.resultado) {
+                novoJogo.resultado = jogoAPI.resultado;
+                const campeonato = jogoAPI.campeonato || 'Sem Campeonato';
+                this.logger.log(
+                  `✅ Novo jogo salvo COM RESULTADO: ${jogoAPI.timeA.nome} ${jogoAPI.resultado.timeA} x ${jogoAPI.resultado.timeB} ${jogoAPI.timeB.nome} - ${campeonato}`
+                );
+              } else {
+                const campeonato = jogoAPI.campeonato || 'Sem Campeonato';
+                this.logger.log(
+                  `✅ Novo jogo salvo: ${jogoAPI.timeA.nome} vs ${jogoAPI.timeB.nome} - ${campeonato}`
+                );
+              }
+
               await this.create(novoJogo);
               estatisticas.jogosNovos++;
               totalJogosSalvos++;
@@ -532,16 +548,29 @@ export class JogosService {
               // Contar jogos por campeonato
               const campeonato = jogoAPI.campeonato || 'Sem Campeonato';
               jogosPorCampeonato[campeonato] = (jogosPorCampeonato[campeonato] || 0) + 1;
-
-              this.logger.log(
-                `✅ Novo jogo salvo: ${jogoAPI.timeA.nome} vs ${jogoAPI.timeB.nome} - ${campeonato}`
-              );
             } else {
-              // Atualizar jogo existente
-              await this.atualizarJogoExistente(jogoExistente, jogoAPI);
-              estatisticas.jogosAtualizados++;
+              // Atualizar jogo existente - verificar se precisa adicionar resultado
+              let jogoAtualizado = false;
 
-              this.logger.log(`🔄 Jogo atualizado: ${jogoAPI.timeA.nome} vs ${jogoAPI.timeB.nome}`);
+              // Se o jogo na API está finalizado e tem resultado, mas o jogo local não tem
+              if (jogoAPI.status === 'encerrado' && jogoAPI.resultado && !jogoExistente.resultado) {
+                await this.updateResultado(jogoExistente._id.toString(), jogoAPI.resultado);
+                jogoAtualizado = true;
+                this.logger.log(
+                  `🎯 Resultado adicionado ao jogo existente: ${jogoAPI.timeA.nome} ${jogoAPI.resultado.timeA} x ${jogoAPI.resultado.timeB} ${jogoAPI.timeB.nome}`
+                );
+              } else {
+                // Atualizar outras informações se necessário
+                await this.atualizarJogoExistente(jogoExistente, jogoAPI);
+                jogoAtualizado = true;
+              }
+
+              if (jogoAtualizado) {
+                estatisticas.jogosAtualizados++;
+                this.logger.log(
+                  `🔄 Jogo atualizado: ${jogoAPI.timeA.nome} vs ${jogoAPI.timeB.nome}`
+                );
+              }
             }
           } catch (error) {
             estatisticas.erros++;

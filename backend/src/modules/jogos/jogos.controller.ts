@@ -220,8 +220,7 @@ export class JogosController {
     return resultado;
   }
 
-  // Executa uma vez por dia às 04:00 para sincronizar jogos dos próximos 60 dias
-  @Cron('0 4 * * *', {
+  @Cron('0 6 * * *', {
     name: 'sincronizar-global-60-dias',
     timeZone: 'America/Sao_Paulo',
   })

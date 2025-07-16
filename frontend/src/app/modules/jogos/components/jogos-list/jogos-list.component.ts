@@ -23,6 +23,7 @@ import { User } from '../../../../shared/schemas/user.schema';
 import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { PalpitesService } from '../../../../shared/services/palpites.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { JOGO_STATUS_CORES, JOGO_STATUS_LABELS, JogoStatus } from '../../enums/jogo-status.enum';
 import { JogosService } from '../../services/jogos.service';
 import { PalpiteDialogComponent } from './palpite-dialog/palpite-dialog.component';
 import { WelcomeDialogComponent } from './welcome-dialog/welcome-dialog.component';
@@ -298,9 +299,12 @@ export class JogosListComponent implements OnInit {
     }
 
     // Se o status não permite palpite, não mostra o botão
-    if (jogo.status !== 'aberto' && jogo.status !== 'agendado') {
-      return false;
-    }
+    // Apenas permite palpites para jogos abertos ou agendados
+    // if (jogo.status !== JogoStatus.ABERTO && jogo.status !== JogoStatus.AGENDADO) {
+    //   return false;
+    // }
+
+    console.log('shouldShowPalpiteButton:', jogo, campeonato);
 
     return true;
   }
@@ -309,18 +313,38 @@ export class JogosListComponent implements OnInit {
     label: string;
     severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
   } {
-    switch (jogo.status) {
-      case 'agendado':
-      case 'aberto':
-        return { label: 'Agendado', severity: 'info' };
-      case 'ao_vivo':
-        return { label: 'Ao Vivo', severity: 'danger' };
-      case 'finalizado':
-      case 'encerrado':
-        return { label: 'Finalizado', severity: 'success' };
+    const status = jogo.status as JogoStatus;
+
+    // Usar o label do enum ou fallback para o valor original
+    const label = JOGO_STATUS_LABELS[status] || jogo.status;
+
+    // Mapear a cor do enum para severity do PrimeNG
+    const cor = JOGO_STATUS_CORES[status];
+    let severity: 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
+
+    switch (cor) {
+      case 'success':
+        severity = 'success';
+        break;
+      case 'info':
+        severity = 'info';
+        break;
+      case 'warning':
+        severity = 'warning';
+        break;
+      case 'danger':
+        severity = 'danger';
+        break;
+      case 'primary':
+        severity = 'info';
+        break;
+      case 'secondary':
       default:
-        return { label: 'Desconhecido', severity: 'secondary' };
+        severity = 'secondary';
+        break;
     }
+
+    return { label, severity };
   }
 
   getPalpiteStatus(jogo: JogoComPalpite): {
@@ -338,7 +362,7 @@ export class JogosListComponent implements OnInit {
     const palpite = jogo.palpites[0] as any;
 
     // Se o jogo ainda não terminou
-    if (jogo.status !== 'finalizado' && jogo.status !== 'encerrado') {
+    if (jogo.status !== JogoStatus.ENCERRADO) {
       return {
         label: 'Palpite enviado',
         severity: 'info',

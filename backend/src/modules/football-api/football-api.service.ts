@@ -133,7 +133,7 @@ export class FootballApiService {
         campeonato: jogo.competition?.name || 'Sem Campeonato',
         campeonatoStartDate: jogo.season?.startDate || null,
         campeonatoEndDate: jogo.season?.endDate || null,
-        status: statusDetalhes.jogoFinalizado ? 'encerrado' : 'aberto',
+        status: statusDetalhes.traduzido,
         _statusOriginalAPI: statusOriginal,
         _statusDetalhes: {
           podeAceitar: statusDetalhes.podeAceitar,
