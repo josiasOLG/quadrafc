@@ -32,7 +32,9 @@ async function createApp() {
   }
 
   const configService = app.get(ConfigService);
-  const reflector = app.get(Reflector); // Configurar express middlewares antes dos pipes do NestJS
+  const reflector = app.get(Reflector);
+
+  // Configurar express middlewares antes dos pipes do NestJS
   const expressApp = app.getHttpAdapter().getInstance();
 
   // Cookie parser
