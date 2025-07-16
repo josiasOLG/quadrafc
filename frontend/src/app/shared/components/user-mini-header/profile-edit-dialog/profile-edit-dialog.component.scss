@@ -131,9 +131,66 @@
 
 .avatar-actions {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--qfc-spacing-sm);
   justify-content: center;
+
+  .upload-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--qfc-spacing-xs);
+    width: 100%;
+    max-width: 200px;
+
+    .hidden-file-input {
+      display: none;
+    }
+
+    .camera-button,
+    .gallery-button {
+      width: 100%;
+      padding: var(--qfc-spacing-sm) var(--qfc-spacing-md) !important;
+      font-size: var(--qfc-font-size-sm) !important;
+      font-weight: var(--qfc-font-weight-medium) !important;
+      border-radius: var(--qfc-radius-md) !important;
+      transition: all 0.2s ease !important;
+
+      &.mobile-optimized {
+        min-height: 44px !important; // Tamanho de toque recomendado para mobile
+        font-size: var(--qfc-font-size-md) !important;
+      }
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px) !important;
+        box-shadow: var(--qfc-shadow-md) !important;
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0) !important;
+      }
+    }
+
+    .camera-button {
+      background: var(--qfc-primary) !important;
+      border: none !important;
+      color: white !important;
+
+      &:hover {
+        background: var(--qfc-primary-dark) !important;
+      }
+    }
+
+    .gallery-button {
+      background: var(--qfc-secondary) !important;
+      border: none !important;
+      color: white !important;
+
+      &:hover {
+        background: var(--qfc-secondary-dark) !important;
+      }
+    }
+  }
 
   ::ng-deep .avatar-upload-btn {
     .p-fileupload-choose {

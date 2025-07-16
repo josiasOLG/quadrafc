@@ -406,11 +406,7 @@ export class AuthService {
 
   updateProfileVisibility(isPublicProfile: boolean): Observable<User> {
     return this.httpService.patch<User>('users/profile-visibility', { isPublicProfile }).pipe(
-      tap((updatedUser) => {
-        // NÃO atualizar o currentUser aqui para evitar conflitos com JWT
-        // Apenas retornar o usuário atualizado para o componente
-        console.log('Usuario atualizado via API:', updatedUser);
-      }),
+      tap((updatedUser) => {}),
       catchError((error) => throwError(() => error))
     );
   }

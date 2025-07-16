@@ -69,7 +69,7 @@ export class UserMiniHeaderComponent {
   avatarUrl = computed(() => {
     const user = this.currentUser();
     const url = user?.foto_perfil || user?.avatarUrl || null;
-    console.log('🖼️ Avatar URL computed:', { url, user: user?.nome });
+
     return url;
   });
 

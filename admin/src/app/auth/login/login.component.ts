@@ -81,17 +81,11 @@ export class LoginComponent implements OnInit {
               detail: 'Login realizado com sucesso',
             });
 
-            // Redirecionar imediatamente
-            console.log('Navegando para:', this.returnUrl);
-            console.log('Dados do usuário após login:', this.authService.currentUser);
-
             // Forçar uma pequena pausa para garantir que o estado foi atualizado
             setTimeout(() => {
               this.router.navigate([this.returnUrl]).then(
                 (success) => {
-                  console.log('Navegação bem-sucedida:', success);
                   if (!success) {
-                    console.log('Navegação falhou, tentando rota padrão');
                     // Tentar navegação absoluta
                     window.location.href = '/dashboard';
                   }
@@ -101,7 +95,6 @@ export class LoginComponent implements OnInit {
             }, 100);
           },
           error: (error) => {
-            console.error('Erro no login:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Erro',
@@ -111,7 +104,6 @@ export class LoginComponent implements OnInit {
           },
         });
       } catch (zodError: any) {
-        console.error('Erro de validação:', zodError);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro de Validação',

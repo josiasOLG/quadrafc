@@ -55,9 +55,7 @@ export class AdvancedPwaService {
         });
 
       // Verificar imediatamente
-      this.swUpdate.checkForUpdate().then(() => {
-        console.log('🔄 PWA: Checked for updates');
-      });
+      this.swUpdate.checkForUpdate().then(() => {});
     }
   }
 
@@ -69,7 +67,6 @@ export class AdvancedPwaService {
       document.referrer.includes('android-app://');
 
     if (this.isStandalone) {
-      console.log('📱 PWA: Running in standalone mode');
       document.body.classList.add('pwa-standalone');
       this.setupStandaloneFeatures();
     }
@@ -105,15 +102,12 @@ export class AdvancedPwaService {
 
   async promptInstall(): Promise<boolean> {
     if (!this.deferredPrompt) {
-      console.log('❌ PWA: Install prompt not available');
       return false;
     }
 
     try {
       this.deferredPrompt.prompt();
       const { outcome } = await this.deferredPrompt.userChoice;
-
-      console.log(`👤 PWA: User choice: ${outcome}`);
 
       if (outcome === 'accepted') {
         this.deferredPrompt = null;
@@ -395,7 +389,6 @@ export class AdvancedPwaService {
 
   private trackInstallation(): void {
     // Analytics ou tracking da instalação
-    console.log('📊 PWA: Installation tracked');
 
     // Enviar evento para analytics se disponível
     if (typeof (window as any).gtag !== 'undefined') {
@@ -452,7 +445,6 @@ export class AdvancedPwaService {
   // Método para configurar notificações push
   async setupPushNotifications(): Promise<boolean> {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('❌ Push notifications not supported');
       return false;
     }
 
@@ -465,7 +457,6 @@ export class AdvancedPwaService {
         ),
       });
 
-      console.log('✅ Push subscription:', subscription);
       return true;
     } catch (error) {
       console.error('❌ Push subscription failed:', error);

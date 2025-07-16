@@ -8,8 +8,6 @@ export class SessionCleanupService {
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async handleSessionCleanup() {
-    console.log('Executando limpeza de sessões expiradas...');
     await this.sessionService.cleanExpiredSessions();
-    console.log('Limpeza de sessões concluída');
   }
 }

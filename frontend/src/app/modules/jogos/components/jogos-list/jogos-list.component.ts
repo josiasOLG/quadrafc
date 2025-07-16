@@ -304,8 +304,6 @@ export class JogosListComponent implements OnInit {
     //   return false;
     // }
 
-    console.log('shouldShowPalpiteButton:', jogo, campeonato);
-
     return true;
   }
 

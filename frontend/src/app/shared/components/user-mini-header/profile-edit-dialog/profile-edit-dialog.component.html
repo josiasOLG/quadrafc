@@ -32,15 +32,38 @@
             </div>
 
             <div class="avatar-actions">
-              <p-fileUpload
-                mode="basic"
-                accept="image/*"
-                [maxFileSize]="3145728"
-                chooseLabel="Escolher foto"
-                chooseIcon="pi pi-camera"
-                [customUpload]="true"
-                (onSelect)="onFileSelect($event)"
-                styleClass="avatar-upload-btn"></p-fileUpload>
+              <!-- Botão principal de upload com fallbacks para PWA móvel -->
+              <div class="upload-options">
+                <!-- Input nativo para compatibilidade máxima com PWA -->
+                <input
+                  #fileInput
+                  type="file"
+                  accept="image/*"
+                  [attr.capture]="isIOSPWA ? 'environment' : null"
+                  class="hidden-file-input"
+                  (change)="onNativeFileSelect($event)" />
+
+                <!-- Botões de ação -->
+                <button
+                  type="button"
+                  pButton
+                  label="Tirar Foto"
+                  icon="pi pi-camera"
+                  class="camera-button"
+                  [class.mobile-optimized]="isPWAMobile"
+                  (click)="openCamera()"
+                  [disabled]="isLoading"></button>
+
+                <button
+                  type="button"
+                  pButton
+                  label="Galeria"
+                  icon="pi pi-images"
+                  class="gallery-button"
+                  [class.mobile-optimized]="isPWAMobile"
+                  (click)="openGallery()"
+                  [disabled]="isLoading"></button>
+              </div>
 
               <button
                 *ngIf="previewUrl"

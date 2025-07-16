@@ -128,8 +128,6 @@ if (require.main === module) {
     const configService = app.get(ConfigService);
     const port = configService.get('PORT', 3000);
     await app.listen(port);
-    console.log(`🚀 QuadraFC Backend running on: http://localhost:${port}`);
-    console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
   }
   bootstrap();
 }
