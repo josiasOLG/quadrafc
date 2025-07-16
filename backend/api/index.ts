@@ -40,24 +40,9 @@ async function createApp() {
   // Cookie parser
   expressApp.use(cookieParser());
 
-  // Body parsers com limites maiores para upload de imagens
-  expressApp.use(
-    express.json({
-      limit: '10mb',
-      verify: (req: any, res, buf) => {
-        req.rawBody = buf;
-      },
-    })
-  );
-  expressApp.use(
-    express.urlencoded({
-      limit: '10mb',
-      extended: true,
-      verify: (req: any, res, buf) => {
-        req.rawBody = buf;
-      },
-    })
-  );
+  // Increase payload size limit for file uploads
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
