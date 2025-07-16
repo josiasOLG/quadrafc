@@ -4,15 +4,24 @@
   "builds": [
     {
       "src": "frontend/package.json",
-      "use": "@vercel/node"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/frontend"
+      }
     },
     {
       "src": "admin/package.json",
-      "use": "@vercel/node"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/admin"
+      }
     },
     {
-      "src": "backend/package.json",
-      "use": "@vercel/node"
+      "src": "backend/api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 30
+      }
     }
   ],
   "routes": [
@@ -22,11 +31,16 @@
     },
     {
       "src": "/api/(.*)",
-      "dest": "/backend/$1"
+      "dest": "/backend/api/index.ts"
     },
     {
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
-  ]
+  ],
+  "functions": {
+    "backend/api/index.ts": {
+      "maxDuration": 30
+    }
+  }
 }

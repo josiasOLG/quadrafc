@@ -2,6 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
 import { AppModule } from '../src/app.module';
 import { GlobalExceptionFilter } from '../src/shared/filters/global-exception.filter';
 import { ResponseTransformInterceptor } from '../src/shared/interceptors/response-transform.interceptor';
@@ -15,6 +17,7 @@ async function createApp() {
 
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn'],
+    bodyParser: false, // Desabilitar parser padrão para configurar manualmente
   });
 
   // Validate required environment variables for JWT
@@ -30,6 +33,31 @@ async function createApp() {
 
   const configService = app.get(ConfigService);
   const reflector = app.get(Reflector);
+
+  // Configurar express middlewares antes dos pipes do NestJS
+  const expressApp = app.getHttpAdapter().getInstance();
+
+  // Cookie parser
+  expressApp.use(cookieParser());
+
+  // Body parsers com limites maiores para upload de imagens
+  expressApp.use(
+    express.json({
+      limit: '10mb',
+      verify: (req: any, res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
+  expressApp.use(
+    express.urlencoded({
+      limit: '10mb',
+      extended: true,
+      verify: (req: any, res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -47,7 +75,7 @@ async function createApp() {
     })
   );
 
-  // CORS configuration for JWT tokens
+  // CORS configuration for JWT tokens e upload de imagens
   app.enableCors({
     origin: [
       'http://localhost:4200',
@@ -59,6 +87,7 @@ async function createApp() {
       'https://quadrafc-frontend.vercel.app',
       'https://quadrafc-admin.vercel.app',
       'http://192.168.18.5:4200',
+      'http://192.168.18.5:2001',
       // Add your custom domains here
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -70,8 +99,17 @@ async function createApp() {
       'Cache-Control',
       'Pragma',
       'Expires',
+      'X-iOS-PWA',
+      'X-iOS-PWA-Retry',
+      'X-iOS-PWA-Session-Refresh',
+      'X-iOS-PWA-Touch',
+      'X-Upload-Source',
+      'X-File-Type',
     ],
+    exposedHeaders: ['Set-Cookie'],
+    credentials: true,
     optionsSuccessStatus: 200,
+    maxAge: 86400, // 24 horas para pre-flight cache
   });
 
   // Global prefix
