@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
+import { ResolverLoadingInterceptor } from './core/interceptors/resolver-loading.interceptor';
 import { AuthService } from './modules/auth/services/auth.service';
 import { GlobalDialogComponent } from './shared/components/error-dialog/error-dialog.component';
+import { ResolverLoadingComponent } from './shared/components/resolver-loading/resolver-loading.component';
 import { SnackbarContainerComponent } from './shared/components/snackbar-container/snackbar-container.component';
 import { SplashScreenComponent } from './shared/components/splash-screen/splash-screen.component';
 
@@ -17,6 +19,7 @@ import { SplashScreenComponent } from './shared/components/splash-screen/splash-
     SplashScreenComponent,
     SnackbarContainerComponent,
     GlobalDialogComponent,
+    ResolverLoadingComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -25,8 +28,10 @@ export class AppComponent {
   title = 'QuadraFC';
   private isAppReady = false;
 
-  constructor(public authService: AuthService) {
-    // Adicionar um delay maior para garantir estabilidade completa
+  constructor(
+    public authService: AuthService,
+    private resolverLoadingInterceptor: ResolverLoadingInterceptor
+  ) {
     setTimeout(() => {
       this.isAppReady = true;
     }, 200);
