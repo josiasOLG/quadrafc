@@ -16,8 +16,7 @@ async function createApp() {
   }
 
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn'],
-    bodyParser: false, // Desabilitar parser padrão para configurar manualmente
+    bodyParser: true,
   });
 
   // Validate required environment variables for JWT
@@ -34,35 +33,17 @@ async function createApp() {
   const configService = app.get(ConfigService);
   const reflector = app.get(Reflector);
 
-  // Configurar express middlewares antes dos pipes do NestJS
-  const expressApp = app.getHttpAdapter().getInstance();
+  // Cookie parser middleware
+  app.use(cookieParser());
 
-  // Cookie parser
-  expressApp.use(cookieParser());
-
-  // Body parsers com limites maiores para upload de imagens
-  expressApp.use(
-    express.json({
-      limit: '10mb',
-      verify: (req: any, res, buf) => {
-        req.rawBody = buf;
-      },
-    })
-  );
-  expressApp.use(
-    express.urlencoded({
-      limit: '10mb',
-      extended: true,
-      verify: (req: any, res, buf) => {
-        req.rawBody = buf;
-      },
-    })
-  );
+  // Increase payload size limit for file uploads
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  // Response transform interceptor
+  // Global response transform interceptor
   app.useGlobalInterceptors(new ResponseTransformInterceptor(reflector));
 
   // Global validation pipe
