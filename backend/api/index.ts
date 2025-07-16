@@ -2,7 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
 import { AppModule } from '../src/app.module';
 import { GlobalExceptionFilter } from '../src/shared/filters/global-exception.filter';
@@ -32,9 +31,6 @@ async function createApp() {
 
   const configService = app.get(ConfigService);
   const reflector = app.get(Reflector);
-
-  // Cookie parser middleware
-  app.use(cookieParser());
 
   // Increase payload size limit for file uploads
   app.use(express.json({ limit: '10mb' }));
