@@ -28,7 +28,19 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<UserDocument | null> {
-    return this.userModel.findById(id).select('-passwordHash').exec();
+    return this.userModel
+      .findById(id)
+      .select('-passwordHash -__v -codigoVerificacaoEmail -expiracaoCodigoEmail')
+      .exec();
+  }
+
+  async findByIdForProfile(id: string): Promise<UserDocument | null> {
+    return this.userModel
+      .findById(id)
+      .select(
+        '-passwordHash -_id -__v -codigoVerificacaoEmail -expiracaoCodigoEmail -isPublicProfile -isAdmin -limitePalpitesDia -roles -totalPoints -ultimoResetPalpites -createdAt -contagemCompartilhamentos -ativo -assinaturaPremium'
+      )
+      .exec();
   }
 
   async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {

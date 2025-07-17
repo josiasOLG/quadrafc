@@ -34,7 +34,7 @@ export class UsersController {
   @ResponseMessage('Perfil do usuário recuperado com sucesso')
   @ApiOperation({ summary: 'Obter perfil do usuário logado' })
   async getProfile(@Request() req) {
-    return this.usersService.findById(req.user.id);
+    return this.usersService.findByIdForProfile(req.user.id);
   }
 
   @Get('ranking')
