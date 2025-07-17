@@ -153,15 +153,9 @@
             <label for="bairro" class="block text-900 font-medium mb-2">Bairro *</label>
 
             <!-- Se tem bairro direto do CEP - campo desabilitado -->
-            <div *ngIf="hasBairroFromCep()">
+            <div>
               <div class="p-inputgroup">
-                <input
-                  pInputText
-                  id="bairro"
-                  formControlName="bairro"
-                  readonly
-                  styleClass="w-full bg-gray-50"
-                  [class.p-disabled]="true" />
+                <input pInputText id="bairro" formControlName="bairro" styleClass="w-full bg-gray-50" />
                 <span class="p-inputgroup-addon">
                   <i class="pi pi-lock text-primary"></i>
                 </span>
@@ -170,34 +164,6 @@
                 <i class="pi pi-check text-green-500 mr-1"></i>
                 Bairro encontrado automaticamente pelo CEP
               </small>
-            </div>
-
-            <!-- Se NÃO tem bairro no CEP - input habilitado para digitação -->
-            <div *ngIf="!hasBairroFromCep()">
-              <div class="p-inputgroup">
-                <input
-                  pInputText
-                  id="bairro"
-                  formControlName="bairro"
-                  placeholder="Digite o nome do seu bairro"
-                  styleClass="w-full"
-                  (input)="onBairroInputChange()"
-                  [class.ng-invalid]="onboardingForm.get('bairro')?.invalid && onboardingForm.get('bairro')?.touched" />
-                <span class="p-inputgroup-addon" *ngIf="isValidatingBairro">
-                  <i class="pi pi-spin pi-spinner"></i>
-                </span>
-                <span class="p-inputgroup-addon" *ngIf="!isValidatingBairro">
-                  <i class="pi pi-edit text-primary"></i>
-                </span>
-              </div>
-
-              <small class="p-info block mt-1">
-                <i class="pi pi-info-circle text-blue-500 mr-1"></i>
-                Bairro não encontrado no CEP. Digite o nome do seu bairro.
-              </small>
-
-              <!-- Mensagem de validação de bairro -->
-              <small *ngIf="bairroError" class="p-warn block mt-1" [innerHTML]="bairroError"></small>
             </div>
 
             <!-- Mensagens de erro -->

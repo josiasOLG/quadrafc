@@ -13,6 +13,7 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../shared/decorators/public.decorator';
 import { ResponseMessage } from '../../shared/decorators/response-message.decorator';
 import { FootballApiService } from '../football-api/football-api.service';
+import { PaginacaoJogosDto } from './dto/paginacao-jogos.dto';
 import { JogosService } from './jogos.service';
 
 @ApiTags('jogos')
@@ -48,9 +49,40 @@ export class JogosController {
   @Get('data/:data')
   @Public()
   @ResponseMessage('Jogos da data organizados por campeonatos')
-  @ApiOperation({ summary: 'Listar jogos de uma data específica organizados por campeonatos' })
-  async findJogosByData(@Param('data') data: string) {
-    return this.jogosService.findByDataComCampeonatos(data, 60); // 60 dias para pegar mais jogos
+  @ApiOperation({
+    summary: 'Listar jogos de uma data específica organizados por campeonatos com paginação',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Página atual (inicia em 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Jogos por campeonato por página',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'campeonato',
+    required: false,
+    description: 'Nome do campeonato específico para paginação',
+  })
+  async findJogosByData(@Param('data') data: string, @Query() paginacaoDto: PaginacaoJogosDto) {
+    const { page, limit, campeonato } = paginacaoDto;
+
+    // Se algum parâmetro de paginação foi fornecido, usa paginação
+    if (page || limit || campeonato) {
+      return this.jogosService.findByDataComCampeonatos(data, 60, undefined, {
+        page: page || 1,
+        limit: limit || 10,
+        campeonato,
+      });
+    }
+
+    // Caso contrário, retorna todos os jogos (comportamento original)
+    return this.jogosService.findByDataComCampeonatos(data, 60);
   }
 
   @Get('data/:data/campeonatos')
@@ -59,6 +91,64 @@ export class JogosController {
   @ApiOperation({ summary: 'Listar jogos de uma data específica organizados por campeonatos' })
   async findJogosByDataComCampeonatos(@Param('data') data: string) {
     return this.footballApiService.getJogosPorDataComCampeonatos(data, true);
+  }
+
+  @Get('paginados')
+  @ApiOperation({
+    summary: 'Buscar jogos paginados por campeonato (para scroll infinito)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número da página (padrão: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Itens por página (padrão: 20, máx: 100)',
+  })
+  @ApiQuery({
+    name: 'campeonato',
+    required: false,
+    type: String,
+    description: 'Nome do campeonato específico',
+  })
+  @ApiQuery({
+    name: 'dataInicial',
+    required: false,
+    type: String,
+    description: 'Data inicial para busca (YYYY-MM-DD)',
+  })
+  async findJogosPaginados(@Query() paginacaoDto: PaginacaoJogosDto, @Request() req: any) {
+    // Validações
+    const page = Math.max(paginacaoDto.page || 1, 1);
+    const limit = Math.min(Math.max(paginacaoDto.limit || 20, 1), 100);
+    const dataInicial = paginacaoDto.dataInicial || new Date().toISOString().split('T')[0];
+
+    this.logger.log(
+      `🔍 Busca paginada - Página: ${page}, Limite: ${limit}, Campeonato: ${paginacaoDto.campeonato || 'Todos'}`
+    );
+
+    const userId = req.user?.id || req.user?.sub;
+
+    const resultado = await this.jogosService.findByDataComCampeonatos(
+      dataInicial,
+      60, // 60 dias para ter mais jogos disponíveis
+      userId,
+      {
+        page,
+        limit,
+        campeonato: paginacaoDto.campeonato,
+      }
+    );
+
+    this.logger.log(
+      `📊 Retornando página ${page} com ${resultado.campeonatos?.reduce((acc, c) => acc + (c.jogos?.length || 0), 0)} jogos`
+    );
+
+    return resultado;
   }
 
   @Get(':id')
@@ -120,9 +210,31 @@ export class JogosController {
   @ApiOperation({
     summary: 'Buscar jogos organizados por campeonatos com limite de quantidade de jogos',
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número da página (padrão: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Itens por página (padrão: limit do parâmetro, máx: 1000)',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'campeonato',
+    required: false,
+    type: String,
+    description: 'Nome do campeonato específico para paginação',
+    example: 'Brasileirão Série A',
+  })
   async findJogosPorCampeonatos(
     @Param('dataInicial') dataInicial: string,
     @Param('limite') limite: string,
+    @Query() paginacaoDto: PaginacaoJogosDto,
     @Request() req: any
   ) {
     const limiteNumber = parseInt(limite, 10);
@@ -143,13 +255,28 @@ export class JogosController {
     // Busca jogos organizados por campeonatos (usando 60 dias para pegar mais jogos disponíveis)
     // Passa o userId para filtrar apenas os palpites do usuário logado
     const userId = req.user?.id || req.user?.sub;
+
+    // Prepara opções de paginação
+    const paginacaoOptions = {
+      page: paginacaoDto.page || 1,
+      limit: Math.min(paginacaoDto.limit || limiteNumber, limiteNumber),
+      campeonato: paginacaoDto.campeonato,
+    };
+
     const resultadoCompleto = await this.jogosService.findByDataComCampeonatos(
       dataInicial,
       60, // Busca em 60 dias para ter mais jogos disponíveis
-      userId
+      userId,
+      paginacaoOptions
     );
 
-    // Aplica o limite de quantidade de jogos de forma sequencial pelos campeonatos
+    // Se foi usado paginação específica por campeonato, retorna o resultado direto
+    if (paginacaoDto.campeonato) {
+      this.logger.log(`📊 Retornando jogos paginados do campeonato: ${paginacaoDto.campeonato}`);
+      return resultadoCompleto;
+    }
+
+    // Para busca geral (sem campeonato específico), aplica o limite de quantidade de jogos
     let totalJogosLimitados = 0;
     const campeonatosLimitados = [];
 

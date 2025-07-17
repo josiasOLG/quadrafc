@@ -83,4 +83,25 @@ export class JogosService extends BaseApiService<Jogo, CreateJogoDto> {
   getJogosByDataComCampeonatos(data: string): Observable<any> {
     return this.get<any>(`data/${data}/campeonatos`);
   }
+
+  // Novos métodos para paginação
+  getJogosPaginados(params: {
+    page?: number;
+    limit?: number;
+    campeonato?: string;
+    dataInicial?: string;
+  }): Observable<any> {
+    return this.get<any>('paginados', params);
+  }
+
+  getJogosByDataPaginados(
+    data: string,
+    params: {
+      page?: number;
+      limit?: number;
+      campeonato?: string;
+    }
+  ): Observable<any> {
+    return this.get<any>(`data/${data}`, params);
+  }
 }

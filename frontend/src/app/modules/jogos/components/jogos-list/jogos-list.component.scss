@@ -11,7 +11,7 @@
   // Conteúdo principal com scroll nativo
   &__content {
     flex: 1;
-    overflow-y: auto;
+    // overflow-y: auto;
     padding: var(--qfc-spacing-md);
     padding-top: 0;
     -webkit-overflow-scrolling: touch; // Para scroll suave em iOS
@@ -255,7 +255,7 @@
 .games-grid {
   display: grid;
   gap: var(--qfc-spacing-md);
-  padding-bottom: var(--qfc-spacing-xl);
+  padding-bottom: 200px;
 }
 
 // ===================================

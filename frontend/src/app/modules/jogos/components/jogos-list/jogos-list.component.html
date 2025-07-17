@@ -54,7 +54,11 @@
             </div>
 
             <!-- Games Grid -->
-            <div class="games-grid" [ngClass]="{ 'games-grid--inactive': !campeonato.isActive }">
+            <div
+              class="games-grid"
+              [ngClass]="{ 'games-grid--inactive': !campeonato.isActive }"
+              (scroll)="onScroll($event, campeonato)"
+              style="max-height: 70vh; overflow-y: auto">
               <div
                 *ngFor="let jogo of campeonato.jogos; trackBy: trackByJogo"
                 class="game-card"
@@ -157,6 +161,19 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Loading more indicator -->
+              <div *ngIf="isLoadingMore(campeonato)" class="loading-more">
+                <div class="loading-more__spinner">
+                  <i class="pi pi-spin pi-spinner"></i>
+                </div>
+                <span class="loading-more__text">Carregando mais jogos...</span>
+              </div>
+
+              <!-- No more items indicator -->
+              <!-- <div *ngIf="!hasMoreJogos(campeonato) && campeonato.jogos.length > 0" class="no-more-items">
+                <span class="no-more-items__text">Todos os jogos foram carregados</span>
+              </div> -->
             </div>
           </p-tabPanel>
         </p-tabView>

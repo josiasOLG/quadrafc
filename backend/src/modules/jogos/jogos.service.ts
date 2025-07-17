@@ -362,10 +362,21 @@ export class JogosService {
   async findByDataComCampeonatos(
     dataInicial: string,
     diasNoFuturo: number = 7,
-    userId?: string
+    userId?: string,
+    paginacao?: { page?: number; limit?: number; campeonato?: string }
   ): Promise<any> {
     try {
       this.logger.log(`🔍 Buscando jogos a partir de: ${dataInicial} por ${diasNoFuturo} dias`);
+
+      // Preparar filtros base
+      const filtros: any = {
+        status: { $nin: ['adiado', 'cancelado'] },
+      };
+
+      // Se campeonato específico foi solicitado, filtra diretamente na query
+      if (paginacao?.campeonato) {
+        filtros.campeonato = paginacao.campeonato;
+      }
 
       // Busca TODOS os jogos do MongoDB primeiro (sem filtro de data)
       const populateOptions = {
@@ -377,13 +388,50 @@ export class JogosService {
         }),
       };
 
-      const todosJogos = await this.jogoModel
-        .find({
-          status: { $nin: ['adiado', 'cancelado'] },
-        })
+      let query = this.jogoModel
+        .find(filtros)
         .populate('rodadaId')
         .populate(populateOptions)
-        .exec();
+        .sort({ data: 1 }); // Ordenar por data
+
+      // Se é busca por campeonato específico e tem paginação, aplica limit e skip direto na query
+      if (paginacao?.campeonato && paginacao.page && paginacao.limit) {
+        const skip = (paginacao.page - 1) * paginacao.limit;
+        query = query.skip(skip).limit(paginacao.limit);
+
+        const jogosEncontrados = await query.exec();
+        const totalJogosCampeonato = await this.jogoModel.countDocuments(filtros);
+
+        const campeonatoData = {
+          nome: paginacao.campeonato,
+          jogos: jogosEncontrados,
+          total: totalJogosCampeonato,
+          campeonatoStartDate: jogosEncontrados[0]?.campeonatoStartDate || null,
+          campeonatoEndDate: jogosEncontrados[0]?.campeonatoEndDate || null,
+          paginacao: {
+            page: paginacao.page,
+            limit: paginacao.limit,
+            total: totalJogosCampeonato,
+            totalPages: Math.ceil(totalJogosCampeonato / paginacao.limit),
+            hasNext: paginacao.page * paginacao.limit < totalJogosCampeonato,
+            hasPrev: paginacao.page > 1,
+          },
+        };
+
+        return {
+          totalCampeonatos: 1,
+          totalJogos: totalJogosCampeonato,
+          campeonatos: [campeonatoData],
+          periodo: {
+            dataInicial,
+            dataFinal: new Date(dataInicial).toISOString().split('T')[0],
+          },
+          paginacao: campeonatoData.paginacao,
+        };
+      }
+
+      // Para busca geral, busca todos os jogos e organiza por campeonato
+      const todosJogos = await query.exec();
 
       // Organiza os jogos por campeonato
       const jogosPorCampeonato = {};
@@ -414,12 +462,36 @@ export class JogosService {
         }
       }
 
+      // Aplicar paginação se solicitada para busca geral
+      if (paginacao && !paginacao.campeonato) {
+        const { page = 1, limit = 10 } = paginacao;
+
+        // Paginação geral: aplica em todos os campeonatos
+        Object.keys(jogosPorCampeonato).forEach((nomeCampeonato) => {
+          const skip = (page - 1) * limit;
+          const jogosOriginal = jogosPorCampeonato[nomeCampeonato].jogos;
+          const jogosPaginados = jogosOriginal.slice(skip, skip + limit);
+
+          jogosPorCampeonato[nomeCampeonato].jogos = jogosPaginados;
+          jogosPorCampeonato[nomeCampeonato].paginacao = {
+            page,
+            limit,
+            total: jogosOriginal.length,
+            totalPages: Math.ceil(jogosOriginal.length / limit),
+            hasNext: skip + limit < jogosOriginal.length,
+            hasPrev: page > 1,
+          };
+        });
+      }
+
       // Converte para array
       const campeonatos = Object.values(jogosPorCampeonato);
 
       this.logger.log(`🏆 Campeonatos encontrados: ${campeonatos.length}`);
       campeonatos.forEach((campeonato: any) => {
-        this.logger.log(`- ${campeonato.nome}: ${campeonato.total} jogos`);
+        this.logger.log(
+          `- ${campeonato.nome}: ${campeonato.jogos.length}/${campeonato.total} jogos ${paginacao ? '(paginado)' : ''}`
+        );
       });
 
       return {
@@ -430,6 +502,7 @@ export class JogosService {
           dataInicial,
           dataFinal: new Date(dataInicial).toISOString().split('T')[0],
         },
+        ...(paginacao && { paginacao }),
       };
     } catch (error) {
       this.logger.error(

@@ -4,6 +4,20 @@ import axios from 'axios';
 import { Model } from 'mongoose';
 import { Bairro, BairroDocument } from '../../shared/schemas/bairro.schema';
 
+interface CepApiResponse {
+  cep: string;
+  logradouro: string;
+  complemento?: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+  ibge: string;
+  gia?: string;
+  ddd?: string;
+  siafi?: string;
+  erro?: boolean;
+}
+
 interface CepResponse {
   cep: string;
   logradouro: string;
@@ -26,7 +40,7 @@ interface CepWithBairros extends CepResponse {
 @Injectable()
 export class CepService {
   private readonly logger = new Logger(CepService.name);
-  private readonly apiUrl = 'https://viacep.com.br/ws';
+  private readonly apiUrl = 'https://opencep.com/v1';
 
   constructor(@InjectModel(Bairro.name) private bairroModel: Model<BairroDocument>) {}
 
@@ -38,26 +52,39 @@ export class CepService {
    */
   async buscarCep(cep: string): Promise<CepWithBairros | null> {
     try {
-      // Remove caracteres não numéricos
       const cepLimpo = cep.replace(/\D/g, '');
       if (cepLimpo.length !== 8) {
         this.logger.warn(`CEP inválido: ${cep}`);
         return null;
       }
 
-      const url = `${this.apiUrl}/${cepLimpo}/json/`;
+      const url = `${this.apiUrl}/${cepLimpo}`;
       this.logger.log(`Consultando CEP: ${cepLimpo}`);
 
-      const response = await axios.get<CepResponse>(url);
+      const response = await axios.get<CepApiResponse>(url);
 
-      if (response.data.erro) {
+      this.logger.log(`Response da API:`, JSON.stringify(response.data, null, 2));
+
+      if (!response.data || !response.data.cep) {
         this.logger.warn(`CEP não encontrado: ${cepLimpo}`);
         return null;
       }
 
-      const cepData: CepWithBairros = { ...response.data };
+      const apiData = response.data;
 
-      // Se não há bairro ou o bairro está vazio, busca bairros existentes na cidade
+      const cepData: CepWithBairros = {
+        cep: apiData.cep,
+        logradouro: apiData.logradouro || '',
+        complemento: apiData.complemento || '',
+        bairro: apiData.bairro || '',
+        localidade: apiData.localidade || '',
+        uf: apiData.uf || '',
+        ibge: apiData.ibge || '',
+        gia: apiData.gia || '',
+        ddd: apiData.ddd || '',
+        siafi: apiData.siafi || '',
+      };
+
       if (!cepData.bairro || cepData.bairro.trim() === '') {
         this.logger.log(
           `Bairro não encontrado no CEP ${cepLimpo}, buscando bairros existentes na cidade ${cepData.localidade}/${cepData.uf}`

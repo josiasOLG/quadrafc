@@ -78,6 +78,23 @@ interface CampeonatoOrganizado {
   campeonatoStartDate?: string;
   campeonatoEndDate?: string;
   isActive?: boolean;
+  paginacao?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+// Interface para controle de paginação por campeonato
+interface PaginacaoCampeonato {
+  page: number;
+  limit: number;
+  loading: boolean;
+  hasNext: boolean;
+  total: number;
 }
 
 @Component({
@@ -114,6 +131,10 @@ export class JogosListComponent implements OnInit {
   palpiteForm: FormGroup;
   isSubmittingPalpite = false;
 
+  // Controle de paginação
+  paginacaoPorCampeonato = new Map<string, PaginacaoCampeonato>();
+  limitePorPagina = 20;
+
   constructor(
     private fb: FormBuilder,
     private jogosService: JogosService,
@@ -142,51 +163,70 @@ export class JogosListComponent implements OnInit {
 
   private loadJogos(): void {
     this.isLoading = true;
+    this.campeonatos = [];
+    this.paginacaoPorCampeonato.clear();
 
-    // Busca jogos organizados por campeonatos
+    // Busca primeira página de todos os campeonatos
     const hoje = new Date().toISOString().split('T')[0];
 
-    // Primeiro tenta buscar via endpoint de campeonatos (limite de 50 jogos)
-    this.jogosService.getJogosPorCampeonatos(hoje, 900).subscribe({
-      next: (response: any) => {
-        if (response && response.campeonatos) {
-          this.campeonatos = response.campeonatos.map((campeonato: any) => ({
-            nome: campeonato.nome,
-            jogos: campeonato.jogos || [],
-            total: campeonato.total || campeonato.jogos?.length || 0,
-            campeonatoStartDate: campeonato.campeonatoStartDate,
-            campeonatoEndDate: campeonato.campeonatoEndDate,
-            isActive: this.isCampeonatoActive(
-              campeonato.campeonatoStartDate,
-              campeonato.campeonatoEndDate
-            ),
-          }));
+    this.jogosService
+      .getJogosPaginados({
+        page: 1,
+        limit: this.limitePorPagina,
+        dataInicial: hoje,
+      })
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.campeonatos) {
+            this.campeonatos = response.campeonatos.map((campeonato: any) => ({
+              nome: campeonato.nome,
+              jogos: campeonato.jogos || [],
+              total: campeonato.total || campeonato.jogos?.length || 0,
+              campeonatoStartDate: campeonato.campeonatoStartDate,
+              campeonatoEndDate: campeonato.campeonatoEndDate,
+              isActive: this.isCampeonatoActive(
+                campeonato.campeonatoStartDate,
+                campeonato.campeonatoEndDate
+              ),
+              paginacao: campeonato.paginacao,
+            }));
 
-          this.jogos = [];
-        } else {
-          this.campeonatos = [];
-        }
+            // Inicializa controle de paginação para cada campeonato
+            this.campeonatos.forEach((campeonato) => {
+              this.paginacaoPorCampeonato.set(campeonato.nome, {
+                page: 1,
+                limit: this.limitePorPagina,
+                loading: false,
+                hasNext: campeonato.paginacao?.hasNext || false,
+                total: campeonato.total,
+              });
+            });
+          } else {
+            this.campeonatos = [];
+          }
+          this.isLoading = false;
+        },
+        error: () => {
+          // Fallback para o método original
+          this.loadJogosLegacy();
+        },
+      });
+  }
+
+  private loadJogosLegacy(): void {
+    this.jogosService.getJogosByData(new Date()).subscribe({
+      next: (response: any) => {
+        this.jogos = response || [];
+        this.organizarJogosEmCampeonatos(this.jogos);
         this.isLoading = false;
       },
       error: () => {
-        // Fallback para o método original
-        this.jogosService.getJogosByData(new Date()).subscribe({
-          next: (response: any) => {
-            this.jogos = response || [];
-
-            // Organiza manualmente em campeonatos
-            this.organizarJogosEmCampeonatos(this.jogos);
-            this.isLoading = false;
-          },
-          error: () => {
-            this.globalDialogService.showError(
-              'Erro ao Carregar',
-              'Não foi possível carregar os jogos do dia'
-            );
-            this.campeonatos = [];
-            this.isLoading = false;
-          },
-        });
+        this.globalDialogService.showError(
+          'Erro ao Carregar',
+          'Não foi possível carregar os jogos do dia'
+        );
+        this.campeonatos = [];
+        this.isLoading = false;
       },
     });
   }
@@ -535,5 +575,68 @@ export class JogosListComponent implements OnInit {
     }
 
     return 'Campeonato não está ativo';
+  }
+
+  loadMoreJogos(campeonato: CampeonatoOrganizado): void {
+    const paginacao = this.paginacaoPorCampeonato.get(campeonato.nome);
+
+    if (!paginacao || paginacao.loading || !paginacao.hasNext) {
+      return;
+    }
+
+    paginacao.loading = true;
+    const proximaPagina = paginacao.page + 1;
+    const hoje = new Date().toISOString().split('T')[0];
+
+    this.jogosService
+      .getJogosPaginados({
+        page: proximaPagina,
+        limit: paginacao.limit,
+        campeonato: campeonato.nome,
+        dataInicial: hoje,
+      })
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.campeonatos && response.campeonatos.length > 0) {
+            const campeonatoResposta = response.campeonatos[0];
+            const novosJogos = campeonatoResposta.jogos || [];
+
+            // Adiciona os novos jogos ao campeonato existente
+            campeonato.jogos = [...campeonato.jogos, ...novosJogos];
+
+            // Atualiza controle de paginação
+            paginacao.page = proximaPagina;
+            paginacao.hasNext = campeonatoResposta.paginacao?.hasNext || false;
+          }
+
+          paginacao.loading = false;
+        },
+        error: () => {
+          paginacao.loading = false;
+          this.globalDialogService.showError(
+            'Erro ao Carregar',
+            'Não foi possível carregar mais jogos do campeonato'
+          );
+        },
+      });
+  }
+
+  onScroll(event: any, campeonato: CampeonatoOrganizado): void {
+    const element = event.target;
+    const threshold = 100; // Pixels before end to trigger load
+
+    if (element.scrollHeight - element.scrollTop <= element.clientHeight + threshold) {
+      this.loadMoreJogos(campeonato);
+    }
+  }
+
+  isLoadingMore(campeonato: CampeonatoOrganizado): boolean {
+    const paginacao = this.paginacaoPorCampeonato.get(campeonato.nome);
+    return paginacao?.loading || false;
+  }
+
+  hasMoreJogos(campeonato: CampeonatoOrganizado): boolean {
+    const paginacao = this.paginacaoPorCampeonato.get(campeonato.nome);
+    return paginacao?.hasNext || false;
   }
 }

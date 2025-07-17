@@ -102,13 +102,6 @@ export class RankingService extends BaseApiService<RankingUsuario, any> {
     return this.getPaginated<RankingBairro>('bairros-cidade', queryParams);
   }
 
-  // Ranking de bairros nacional (premium)
-  getRankingBairrosNacional(
-    params?: PaginationParams
-  ): Observable<{ data: RankingBairro[]; pagination: any }> {
-    return this.getPaginated<RankingBairro>('ranking/nacional', params);
-  }
-
   // Verificar se usuário tem acesso premium para ranking nacional
   verificarAcessoPremium(): Observable<{ temAcesso: boolean; custoDesbloqueio?: number }> {
     return this.get('verificar-premium');
