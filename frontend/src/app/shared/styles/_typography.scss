@@ -4,7 +4,7 @@
 // Garantir que toda a aplicação use a fonte Inter, exceto ícones
 
 *:not([class*='pi-']):not(.pi) {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: 'Inter', sans-serif !important;
 }
 
 // Aplicar Inter especificamente aos componentes PrimeNG
@@ -58,7 +58,7 @@
 .p-blockui,
 .p-defer,
 .p-focus-trap {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: 'Inter', sans-serif !important;
 }
 
 // Garantir que os ícones PrimeIcons mantenham sua fonte original
@@ -88,5 +88,5 @@ label,
 .subtitle,
 .content,
 .description {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: 'Inter', sans-serif !important;
 }

@@ -5,6 +5,7 @@ import { ToastModule } from 'primeng/toast';
 import { ResolverLoadingInterceptor } from './core/interceptors/resolver-loading.interceptor';
 import { AuthService } from './modules/auth/services/auth.service';
 import { GlobalDialogComponent } from './shared/components/error-dialog/error-dialog.component';
+import { PwaInstallDialogComponent } from './shared/components/pwa-install-dialog/pwa-install-dialog.component';
 import { ResolverLoadingComponent } from './shared/components/resolver-loading/resolver-loading.component';
 import { SnackbarContainerComponent } from './shared/components/snackbar-container/snackbar-container.component';
 import { SplashScreenComponent } from './shared/components/splash-screen/splash-screen.component';
@@ -20,6 +21,7 @@ import { SplashScreenComponent } from './shared/components/splash-screen/splash-
     SnackbarContainerComponent,
     GlobalDialogComponent,
     ResolverLoadingComponent,
+    PwaInstallDialogComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -46,21 +48,17 @@ export class AppComponent {
     const isInitialized = this.authService.isInitialized();
     const authState = this.authService.authState();
 
-    // Só considera "pronto" se está inicializado E o estado não é transitório
-    // Adicionalmente, garantir que se há um usuário, ele existe de fato
     const isStateStable = authState !== 'INITIAL' && authState !== 'LOADING';
 
     if (!isInitialized || !isStateStable) {
       return false;
     }
 
-    // Se está autenticado, garantir que o usuário está definido
     const isAuthenticated = authState === 'AUTHENTICATED' || authState === 'NEEDS_ONBOARDING';
     if (isAuthenticated) {
       return this.authService.currentUser() !== null;
     }
 
-    // Se não autenticado, não precisa de usuário
     return true;
   }
 }

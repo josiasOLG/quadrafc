@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { PwaInstallDialogService } from '../../../../shared/components/pwa-install-dialog/pwa-install-dialog.service';
 import { User } from '../../../../shared/schemas/user.schema';
 import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -25,6 +26,7 @@ export class ConfiguracoesComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly globalDialogService = inject(GlobalDialogService);
+  private readonly pwaInstallDialogService = inject(PwaInstallDialogService);
   private cdr = inject(ChangeDetectorRef);
 
   user: User | null = null;
@@ -100,7 +102,7 @@ export class ConfiguracoesComponent implements OnInit {
   }
 
   private initConfiguracoes(): void {
-    this.configuracoes = [
+    const configuracoesList: ConfiguracaoItem[] = [
       // Privacidade
       {
         id: 'profile-visibility',
@@ -111,17 +113,42 @@ export class ConfiguracoesComponent implements OnInit {
         icone: 'pi pi-eye',
         categoria: 'Privacidade',
       },
-
-      // Conta
-      {
-        id: 'logout',
-        titulo: 'Sair da Conta',
-        descricao: 'Fazer logout da aplicação',
-        tipo: 'button',
-        icone: 'pi pi-sign-out',
-        categoria: 'Conta',
-      },
     ];
+
+    // Adicionar botão de compartilhar link
+    configuracoesList.push({
+      id: 'share-link',
+      titulo: 'Compartilhar Link',
+      descricao:
+        'Compartilhe seu link com seus amigos do seu bairro para eles entrarem no seu bairro',
+      tipo: 'button',
+      icone: 'pi pi-share-alt',
+      categoria: 'Privacidade',
+    });
+
+    // Adicionar botão de instalar app apenas se puder ser mostrado
+    if (this.pwaInstallDialogService.canShow()) {
+      configuracoesList.push({
+        id: 'install-app',
+        titulo: 'Instalar App',
+        descricao: 'Acesso mais rápido e funciona offline',
+        tipo: 'button',
+        icone: 'pi pi-download',
+        categoria: 'Privacidade',
+      });
+    }
+
+    // Sempre adicionar logout por último
+    configuracoesList.push({
+      id: 'logout',
+      titulo: 'Sair da Conta',
+      descricao: 'Fazer logout da aplicação',
+      tipo: 'button',
+      icone: 'pi pi-sign-out',
+      categoria: 'Conta',
+    });
+
+    this.configuracoes = configuracoesList;
   }
 
   getConfiguracoesPorCategoria(categoria: string): ConfiguracaoItem[] {
@@ -152,6 +179,12 @@ export class ConfiguracoesComponent implements OnInit {
         break;
       case 'download-dados':
         this.downloadDados();
+        break;
+      case 'share-link':
+        this.openShareLink();
+        break;
+      case 'install-app':
+        this.openInstallDialog();
         break;
       case 'logout':
         this.confirmLogout();
@@ -363,5 +396,13 @@ export class ConfiguracoesComponent implements OnInit {
         });
       },
     });
+  }
+
+  private openInstallDialog(): void {
+    this.pwaInstallDialogService.show();
+  }
+
+  private openShareLink(): void {
+    this.router.navigate(['/compartilhar-link']);
   }
 }

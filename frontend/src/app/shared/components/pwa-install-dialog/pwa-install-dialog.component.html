@@ -1,0 +1,85 @@
+<!-- Dialog Único com Tabs -->
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [dismissableMask]="false"
+  [closable]="false"
+  [resizable]="false"
+  [draggable]="false"
+  styleClass="pwa-install-dialog">
+  <!-- Header -->
+  <ng-template pTemplate="header">
+    <div class="flex justify-content-end w-full">
+      <p-button
+        icon="pi pi-times"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        size="small"
+        (click)="close()"></p-button>
+    </div>
+  </ng-template>
+
+  <!-- Conteúdo com Tabs -->
+  <div class="p-4">
+    <div class="text-center mb-4">
+      <p-image
+        src="assets/icon.png"
+        alt="QuadraFC"
+        width="80"
+        height="80"
+        styleClass="border-circle shadow-3 mb-3"></p-image>
+      <h2 class="text-xl font-bold text-primary mb-2">Instale o QuadraFC</h2>
+      <p class="text-600">Acesso rápido no seu dispositivo</p>
+    </div>
+
+    <p-tabView>
+      <!-- Tab iOS -->
+      <p-tabPanel header="iPhone/iPad">
+        <div class="flex flex-column align-items-center">
+          <h4 class="text-center mb-3">Como instalar no iOS</h4>
+
+          <div class="video-container mb-4 w-full">
+            <iframe
+              width="100%"
+              height="200"
+              [src]="iosVideoUrl"
+              title="Como instalar no iOS"
+              frameborder="0"
+              allowfullscreen></iframe>
+          </div>
+
+          <p class="text-center text-600 text-sm">
+            Abra no Safari → Toque em compartilhar → "Adicionar à Tela de Início"
+          </p>
+        </div>
+      </p-tabPanel>
+
+      <!-- Tab Android -->
+      <p-tabPanel header="Android">
+        <div class="flex flex-column align-items-center">
+          <h4 class="text-center mb-3">Como instalar no Android</h4>
+
+          <div class="video-container mb-4 w-full">
+            <iframe
+              width="100%"
+              height="200"
+              [src]="androidVideoUrl"
+              title="Como instalar no Android"
+              frameborder="0"
+              allowfullscreen></iframe>
+          </div>
+
+          <p class="text-center text-600 text-sm">
+            Toque nos três pontos (⋮) → "Adicionar à tela inicial" ou "Instalar app"
+          </p>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+
+    <!-- Botões de Ação -->
+    <!-- <div class="flex flex-column gap-3 mt-4">
+      <p-button label="Entendi!" icon="pi pi-check" severity="success" styleClass="w-full" (click)="close()"></p-button>
+    </div> -->
+  </div>
+</p-dialog>

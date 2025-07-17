@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -7,6 +7,7 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 
+import { PwaInstallDialogService } from '../../../../shared/components/pwa-install-dialog/pwa-install-dialog.service';
 import { LoginDto, LoginSchema } from '../../../../shared/schemas/user.schema';
 import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
 import { AuthService } from '../../services/auth.service';
@@ -27,7 +28,7 @@ import { PasswordRecoveryDialogComponent } from './password-recovery-dialog/pass
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
   showPasswordRecoveryDialog = false;
@@ -37,12 +38,17 @@ export class LoginComponent {
     private fb: FormBuilder,
     public authService: AuthService,
     private globalDialogService: GlobalDialogService,
-    private router: Router
+    private router: Router,
+    private pwaInstallDialogService: PwaInstallDialogService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
+  }
+
+  ngOnInit(): void {
+    this.pwaInstallDialogService.show();
   }
 
   onSubmit(): void {
