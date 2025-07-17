@@ -30,7 +30,7 @@ export class AuthService {
       throw new ConflictException('Email já está em uso');
     }
 
-    // Criar usuário
+    // Criar usuário (o código único será gerado automaticamente no service)
     const user = await this.usersService.create(registerDto);
 
     // Gerar JWT

@@ -16,6 +16,7 @@ import { PaginationDto } from '../../shared/dto/pagination.dto';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../shared/guards/roles.guard';
 import { ResponseUtil } from '../../shared/utils/response.util';
+import { EntrarEmBairroDto } from './dto/entrar-em-bairro.dto';
 import { UpdateLimitePalpitesDto } from './dto/update-limite-palpites.dto';
 import { UpdateProfileVisibilityDto } from './dto/update-profile-visibility.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -169,5 +170,14 @@ export class UsersController {
   @ApiOperation({ summary: 'Alterar visibilidade do perfil (público/privado)' })
   async updateProfileVisibility(@Request() req, @Body() updateDto: UpdateProfileVisibilityDto) {
     return this.usersService.updateProfileVisibility(req.user.id, updateDto.isPublicProfile);
+  }
+
+  @Post('entrar-em-bairro')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ResponseMessage('Dados de localização atualizados com sucesso')
+  @ApiOperation({ summary: 'Entrar em bairro usando código de outro usuário' })
+  async entrarEmBairro(@Request() req, @Body() entrarEmBairroDto: EntrarEmBairroDto) {
+    return this.usersService.entrarEmBairro(req.user.id, entrarEmBairroDto.codigo);
   }
 }

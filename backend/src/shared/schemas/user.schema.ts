@@ -17,6 +17,10 @@ export class User {
   @Prop({ required: true })
   passwordHash: string;
 
+  @ApiProperty({ description: 'Código único do usuário gerado no registro' })
+  @Prop({ required: true, unique: true })
+  code: string;
+
   @ApiProperty({ description: 'Data de nascimento', required: false })
   @Prop({ required: false })
   data_nascimento?: Date;
@@ -84,6 +88,10 @@ export class User {
   @ApiProperty({ description: 'Contador de palpites feitos hoje' })
   @Prop({ default: 0 })
   palpitesHoje: number;
+
+  @ApiProperty({ description: 'Contagem de links compartilhados pelo usuário' })
+  @Prop({ default: 0 })
+  contagemCompartilhamentos: number;
 
   @ApiProperty({ description: 'Data do último reset do contador de palpites' })
   @Prop({ default: Date.now })

@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { RegisterDto } from '../../shared/dto/register.dto';
 import { User, UserDocument } from '../../shared/schemas/user.schema';
+import { CodeGeneratorUtil } from '../../shared/utils/code-generator.util';
 
 @Injectable()
 export class UsersService {
@@ -11,10 +12,12 @@ export class UsersService {
 
   async create(createUserDto: RegisterDto): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const uniqueCode = CodeGeneratorUtil.generateUniqueCode();
 
     const createdUser = new this.userModel({
       ...createUserDto,
       passwordHash: hashedPassword,
+      code: uniqueCode,
     });
 
     return createdUser.save();
@@ -513,6 +516,53 @@ export class UsersService {
     }
 
     return user;
+  }
+  async entrarEmBairro(userId: string, codigo: string): Promise<UserDocument> {
+    // Buscar usuário pelo código
+    const usuarioComCodigo = await this.userModel.findOne({ code: codigo }).exec();
+
+    if (!usuarioComCodigo) {
+      throw new NotFoundException('Código não encontrado');
+    }
+
+    // Verificar se o usuário tem dados de localização
+    if (!usuarioComCodigo.bairro || !usuarioComCodigo.cidade || !usuarioComCodigo.estado) {
+      throw new NotFoundException('Usuário do código não possui dados de localização completos');
+    }
+
+    // Verificar se o usuário já atingiu o limite de 5 usos de códigos
+    const usuarioLogado = await this.userModel.findById(userId).exec();
+    if (!usuarioLogado) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    const contagemAtual = usuarioLogado.contagemCompartilhamentos || 0;
+    if (contagemAtual >= 5) {
+      throw new ConflictException(
+        'Você já atingiu o limite de 5 usos de códigos de outros usuários'
+      );
+    }
+
+    // Atualizar dados de localização do usuário logado e incrementar contagem
+    const dadosAtualizacao = {
+      bairro: usuarioComCodigo.bairro,
+      cidade: usuarioComCodigo.cidade,
+      estado: usuarioComCodigo.estado,
+      pais: usuarioComCodigo.pais || 'Brasil',
+      cep: usuarioComCodigo.cep || undefined,
+      $inc: { contagemCompartilhamentos: 1 },
+    };
+
+    const usuarioAtualizado = await this.userModel
+      .findByIdAndUpdate(userId, dadosAtualizacao, { new: true })
+      .select('-passwordHash')
+      .exec();
+
+    if (!usuarioAtualizado) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return usuarioAtualizado;
   }
 
   async corrigirDadosInconsistentesPalpites(): Promise<{
