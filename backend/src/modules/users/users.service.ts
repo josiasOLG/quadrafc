@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
@@ -542,28 +542,19 @@ export class UsersService {
       throw new NotFoundException('Usuário do código não possui dados de localização completos');
     }
 
-    // Verificar se o usuário já atingiu o limite de 5 usos de códigos
-    const usuarioLogado = await this.userModel.findById(userId).exec();
-    if (!usuarioLogado) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
-
-    const contagemAtual = usuarioLogado.contagemCompartilhamentos || 0;
-    if (contagemAtual >= 5) {
-      throw new ConflictException(
-        'Você já atingiu o limite de 5 usos de códigos de outros usuários'
-      );
-    }
-
-    // Atualizar dados de localização do usuário logado e incrementar contagem
+    // Atualizar dados de localização do usuário logado
     const dadosAtualizacao = {
       bairro: usuarioComCodigo.bairro,
       cidade: usuarioComCodigo.cidade,
       estado: usuarioComCodigo.estado,
       pais: usuarioComCodigo.pais || 'Brasil',
       cep: usuarioComCodigo.cep || undefined,
-      $inc: { contagemCompartilhamentos: 1 },
     };
+
+    // Incrementar contagem de compartilhamentos no usuário do código
+    await this.userModel
+      .findByIdAndUpdate(usuarioComCodigo._id, { $inc: { contagemCompartilhamentos: 1 } })
+      .exec();
 
     const usuarioAtualizado = await this.userModel
       .findByIdAndUpdate(userId, dadosAtualizacao, { new: true })
