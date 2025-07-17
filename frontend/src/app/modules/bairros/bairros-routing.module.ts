@@ -1,16 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { BairrosSelectionComponent } from './components/bairros-selection/bairros-selection.component';
+import { CompartilharBairroComponent } from './components/compartilhar-bairro/compartilhar-bairro.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: BairrosSelectionComponent
-  }
+    component: CompartilharBairroComponent,
+    title: 'Compartilhar Bairro - QuadraFC',
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class BairrosRoutingModule { }
+export class BairrosRoutingModule {}

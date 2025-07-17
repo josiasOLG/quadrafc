@@ -54,6 +54,10 @@ export const routes: Routes = [
             (m) => m.PremiumStoreComponent
           ),
       },
+      {
+        path: 'entrar-bairro/compartilhar-link',
+        loadChildren: () => import('./modules/bairros/bairros.module').then((m) => m.BairrosModule),
+      },
     ],
   },
 

@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { ConfirmDialogData } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
-import { PwaInstallDialogService } from '../../../../shared/components/pwa-install-dialog/pwa-install-dialog.service';
-import { User } from '../../../../shared/schemas/user.schema';
-import { GlobalDialogService } from '../../../../shared/services/global-dialog.service';
-import { AuthService } from '../../../auth/services/auth.service';
+import {ChangeDetectorRef, Component, OnInit, inject} from '@angular/core';
+import {Router} from '@angular/router';
+import {ConfirmDialogData} from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import {PwaInstallDialogService} from '../../../../shared/components/pwa-install-dialog/pwa-install-dialog.service';
+import {User} from '../../../../shared/schemas/user.schema';
+import {GlobalDialogService} from '../../../../shared/services/global-dialog.service';
+import {AuthService} from '../../../auth/services/auth.service';
 
 interface ConfiguracaoItem {
   id: string;
@@ -403,6 +403,6 @@ export class ConfiguracoesComponent implements OnInit {
   }
 
   private openShareLink(): void {
-    this.router.navigate(['/compartilhar-link']);
+    this.router.navigate(['/entrar-bairro/compartilhar-link']);
   }
 }

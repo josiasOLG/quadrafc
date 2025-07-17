@@ -1,0 +1,30 @@
+<app-user-mini-header></app-user-mini-header>
+<div class="compartilhar-bairro surface-ground p-3">
+  <div class="w-full max-w-30rem">
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="text-2xl font-bold text-color mb-2">Compartilhar Bairro</h1>
+      <p class="text-color-secondary line-height-3">
+        Compartilhe seu código ou entre em um bairro usando código de amigos
+      </p>
+    </div>
+
+    <!-- Steps -->
+    <div class="mb-4">
+      <app-step-indicator [currentStep]="currentStep" [totalSteps]="2"></app-step-indicator>
+    </div>
+
+    <!-- Step 1: Mostrar Código -->
+    <div *ngIf="currentStep === 1">
+      <app-mostrar-codigo [userCode]="userCode" [loading]="loading" (nextStep)="goToNextStep()"></app-mostrar-codigo>
+    </div>
+
+    <!-- Step 2: Entrar no Bairro -->
+    <div *ngIf="currentStep === 2">
+      <app-entrar-bairro
+        [loading]="submitting"
+        (codeSubmitted)="onCodeSubmitted($event)"
+        (previousStep)="goToPreviousStep()"></app-entrar-bairro>
+    </div>
+  </div>
+</div>

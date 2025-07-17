@@ -144,60 +144,62 @@ body {
 // ===================================
 // CUSTOMIZAÇÃO GLOBAL DOS DIALOGS
 // ===================================
-::ng-deep .p-dialog {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--surface-200);
+::ng-deep {
+  .p-dialog {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--surface-200);
 
-  .p-dialog-header {
-    background: var(--surface-0);
-    border-bottom: 1px solid var(--surface-200);
-    padding: 1.5rem;
+    .p-dialog-header {
+      background: var(--surface-0);
+      border-bottom: 1px solid var(--surface-200);
+      padding: 1.5rem;
 
-    .p-dialog-title {
-      font-family: 'Inter', sans-serif !important;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-
-    .p-dialog-header-close {
-      background: transparent;
-      border: none;
-      color: var(--text-color-secondary);
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: var(--surface-100);
+      .p-dialog-title {
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600;
         color: var(--text-color);
       }
 
-      &:focus {
-        box-shadow: 0 0 0 0.2rem var(--primary-color-200);
-      }
+      .p-dialog-header-close {
+        background: transparent;
+        border: none;
+        color: var(--text-color-secondary);
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        transition: all 0.2s ease;
 
-      .p-button-icon {
-        font-size: 1rem;
+        &:hover {
+          background: var(--surface-100);
+          color: var(--text-color);
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 0.2rem var(--primary-color-200);
+        }
+
+        .p-button-icon {
+          font-size: 1rem;
+        }
       }
     }
-  }
 
-  .p-dialog-content {
-    background: var(--surface-0);
-    padding: 1.5rem;
-    font-family: 'Inter', sans-serif !important;
-  }
+    .p-dialog-content {
+      background: var(--surface-0);
+      padding: 1.5rem;
+      font-family: 'Inter', sans-serif !important;
+    }
 
-  .p-dialog-footer {
-    background: var(--surface-0);
-    border-top: 1px solid var(--surface-200);
-    padding: 1rem 1.5rem;
-  }
+    .p-dialog-footer {
+      background: var(--surface-0);
+      border-top: 1px solid var(--surface-200);
+      padding: 1rem 1.5rem;
+    }
 
-  .p-dialog-mask {
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: none;
+    .p-dialog-mask {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: none;
+    }
   }
 }
