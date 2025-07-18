@@ -42,10 +42,10 @@ export class AdvancedPwaService {
 
   private checkForUpdates(): void {
     if (this.swUpdate.isEnabled) {
-      // Verificar atualizações a cada 30 segundos
+      // Verificar atualizações a cada 6 horas (conforme recomendação Angular)
       setInterval(() => {
         this.swUpdate.checkForUpdate();
-      }, 30000);
+      }, 6 * 60 * 60 * 1000);
 
       // Escutar por atualizações disponíveis
       this.swUpdate.versionUpdates
@@ -54,8 +54,10 @@ export class AdvancedPwaService {
           this.showUpdateAvailable();
         });
 
-      // Verificar imediatamente
-      this.swUpdate.checkForUpdate().then(() => {});
+      // Verificar imediatamente na inicialização
+      this.swUpdate.checkForUpdate().catch(() => {
+        // Falha silenciosa na verificação inicial
+      });
     }
   }
 
@@ -450,7 +452,7 @@ export class AdvancedPwaService {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.subscribe({
+      await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: this.urlBase64ToUint8Array(
           'YOUR_VAPID_PUBLIC_KEY_HERE' // Substituir pela chave VAPID real

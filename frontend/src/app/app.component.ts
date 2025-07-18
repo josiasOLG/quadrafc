@@ -9,6 +9,7 @@ import { PwaInstallDialogComponent } from './shared/components/pwa-install-dialo
 import { ResolverLoadingComponent } from './shared/components/resolver-loading/resolver-loading.component';
 import { SnackbarContainerComponent } from './shared/components/snackbar-container/snackbar-container.component';
 import { SplashScreenComponent } from './shared/components/splash-screen/splash-screen.component';
+import { AdvancedPwaService } from './shared/services/advanced-pwa.service';
 
 @Component({
   selector: 'app-root',
@@ -32,7 +33,8 @@ export class AppComponent {
 
   constructor(
     public authService: AuthService,
-    private resolverLoadingInterceptor: ResolverLoadingInterceptor
+    private resolverLoadingInterceptor: ResolverLoadingInterceptor,
+    private advancedPwaService: AdvancedPwaService
   ) {
     setTimeout(() => {
       this.isAppReady = true;
