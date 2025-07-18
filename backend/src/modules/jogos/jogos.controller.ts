@@ -347,10 +347,6 @@ export class JogosController {
     return resultado;
   }
 
-  @Cron('0 6 * * *', {
-    name: 'sincronizar-global-60-dias',
-    timeZone: 'America/Sao_Paulo',
-  })
   @Post('sincronizar-global-60-dias')
   @Public()
   @ResponseMessage('Sincronização global de 60 dias executada com sucesso')

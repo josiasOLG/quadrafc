@@ -35,12 +35,17 @@ export class SincronizacaoService {
     }
   }
 
-  // Executa de 3 em 3 horas (8 vezes por dia) para economizar requisições à API
+  // Executa a cada 30 minutos para economizar requisições à API
+  // @Cron('*/60 * * * * *', {
+  //   name: 'verificar-jogos-finalizados',
+  //   timeZone: 'America/Sao_Paulo',
+  // })
   @Cron('0 */2 * * *', {
     name: 'verificar-jogos-finalizados',
     timeZone: 'America/Sao_Paulo',
   })
   async verificarJogosFinalizados() {
+    this.logger.log('Iniciando verificação automática de jogos finalizados...');
     try {
       const jogosParaVerificar = await this.jogosService.findJogosParaProcessar();
       if (jogosParaVerificar.length === 0) {
@@ -49,23 +54,25 @@ export class SincronizacaoService {
       }
 
       const hoje = new Date();
-      const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-      const ultimoDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      const dataInicio = new Date(hoje);
+      dataInicio.setDate(dataInicio.getDate() - 5); // 5 dias antes
+      const dataFim = new Date(hoje);
+      dataFim.setDate(dataFim.getDate() + 2); // 2 dias depois
 
       const jogosFinalizadosMap = new Map();
 
       // Dividir o período em blocos de 10 dias para atender à limitação da API
-      let dataAtual = new Date(primeiroDiaDoMes);
-      while (dataAtual <= ultimoDiaDoMes) {
-        const dataFim = new Date(dataAtual);
-        dataFim.setDate(dataFim.getDate() + 9); // 10 dias no total (incluindo o dia inicial)
+      let dataAtual = new Date(dataInicio);
+      while (dataAtual <= dataFim) {
+        const dataBloco = new Date(dataAtual);
+        dataBloco.setDate(dataBloco.getDate() + 9); // 10 dias no total (incluindo o dia inicial)
 
-        if (dataFim > ultimoDiaDoMes) {
-          dataFim.setTime(ultimoDiaDoMes.getTime());
+        if (dataBloco > dataFim) {
+          dataBloco.setTime(dataFim.getTime());
         }
 
         const dataInicioStr = dataAtual.toISOString().split('T')[0];
-        const dataFimStr = dataFim.toISOString().split('T')[0];
+        const dataFimStr = dataBloco.toISOString().split('T')[0];
 
         try {
           const jogosFinalizadosAPI = await this.footballApiService.getJogosFinalizadosPorPeriodo(
@@ -88,14 +95,25 @@ export class SincronizacaoService {
         // Avançar para o próximo bloco de 10 dias
         dataAtual.setDate(dataAtual.getDate() + 10);
       }
+
       for (const jogo of jogosParaVerificar) {
         try {
           const jogoFinalizado = jogosFinalizadosMap.get(jogo.codigoAPI);
+
+          if (!jogoFinalizado) {
+            continue;
+          }
+
           const placarFinal = {
             timeA: jogoFinalizado.score.fullTime.home || 0,
             timeB: jogoFinalizado.score.fullTime.away || 0,
           };
-          await this.jogosService.updateResultado(jogo._id.toString(), placarFinal);
+
+          this.logger.log(
+            `Processando jogo ${jogo.codigoAPI} com placar: ${placarFinal.timeA} x ${placarFinal.timeB}`
+          );
+
+          await this.jogosService.updateResultadoPorCodigoAPI(jogo.codigoAPI, placarFinal);
           await this.processarPalpites(jogo._id.toString(), placarFinal);
         } catch (error) {
           this.logger.debug(`Detalhes do jogo que causou erro:`, {
@@ -203,23 +221,25 @@ export class SincronizacaoService {
       this.logger.log(`Encontrados ${jogosParaVerificar.length} jogos para verificar.`);
 
       const hoje = new Date();
-      const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-      const ultimoDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      const dataInicio = new Date(hoje);
+      dataInicio.setDate(dataInicio.getDate() - 5); // 5 dias antes
+      const dataFim = new Date(hoje);
+      dataFim.setDate(dataFim.getDate() + 2); // 2 dias depois
 
       const jogosFinalizadosMap = new Map();
 
       // Dividir o período em blocos de 10 dias para atender à limitação da API
-      let dataAtual = new Date(primeiroDiaDoMes);
-      while (dataAtual <= ultimoDiaDoMes) {
-        const dataFim = new Date(dataAtual);
-        dataFim.setDate(dataFim.getDate() + 9); // 10 dias no total (incluindo o dia inicial)
+      let dataAtual = new Date(dataInicio);
+      while (dataAtual <= dataFim) {
+        const dataBloco = new Date(dataAtual);
+        dataBloco.setDate(dataBloco.getDate() + 9); // 10 dias no total (incluindo o dia inicial)
 
-        if (dataFim > ultimoDiaDoMes) {
-          dataFim.setTime(ultimoDiaDoMes.getTime());
+        if (dataBloco > dataFim) {
+          dataBloco.setTime(dataFim.getTime());
         }
 
         const dataInicioStr = dataAtual.toISOString().split('T')[0];
-        const dataFimStr = dataFim.toISOString().split('T')[0];
+        const dataFimStr = dataBloco.toISOString().split('T')[0];
 
         try {
           const jogosFinalizadosAPI = await this.footballApiService.getJogosFinalizadosPorPeriodo(
@@ -267,7 +287,7 @@ export class SincronizacaoService {
             timeB: jogoFinalizado.score.fullTime.away || 0,
           };
 
-          await this.jogosService.updateResultado(jogo._id.toString(), placarFinal);
+          await this.jogosService.updateResultadoPorCodigoAPI(jogo.codigoAPI, placarFinal);
           await this.processarPalpites(jogo._id.toString(), placarFinal);
 
           jogosProcessados++;
@@ -288,6 +308,30 @@ export class SincronizacaoService {
     } catch (error) {
       this.logger.error('Erro na verificação manual de jogos finalizados:', error.message);
       throw error;
+    }
+  }
+
+  @Cron('0 6 * * *', {
+    name: 'sincronizar-global-60-dias',
+    timeZone: 'America/Sao_Paulo',
+  })
+  async sincronizarGlobal60Dias(): Promise<void> {
+    this.logger.log('🌍 Iniciando sincronização global automática de 60 dias...');
+
+    try {
+      const hoje = new Date().toISOString().split('T')[0];
+
+      const resultado = await this.jogosService.sincronizarJogos60DiasComCampeonatos(hoje);
+
+      this.logger.log(
+        `✅ Sincronização global automática concluída: ${resultado.totalJogosSalvos} jogos salvos em ${resultado.totalCampeonatos} campeonatos`
+      );
+
+      this.logger.log(
+        `📊 Estatísticas: ${resultado.estatisticas.jogosNovos} novos, ${resultado.estatisticas.jogosAtualizados} atualizados, ${resultado.estatisticas.jogosRejeitados} rejeitados, ${resultado.estatisticas.erros} erros`
+      );
+    } catch (error) {
+      this.logger.error('❌ Erro na sincronização global automática de 60 dias:', error.message);
     }
   }
 

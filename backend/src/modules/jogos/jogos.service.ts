@@ -57,7 +57,18 @@ export class JogosService {
         id,
         {
           resultado,
-          status: 'encerrado',
+        },
+        { new: true }
+      )
+      .exec();
+  }
+
+  async updateResultadoPorCodigoAPI(codigoAPI: number, resultado: any): Promise<JogoDocument> {
+    return this.jogoModel
+      .findOneAndUpdate(
+        { codigoAPI },
+        {
+          resultado,
         },
         { new: true }
       )
@@ -76,15 +87,17 @@ export class JogosService {
 
   async findJogosParaProcessar(): Promise<JogoDocument[]> {
     const hoje = new Date();
-    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59, 999);
+    const dataInicio = new Date(hoje);
+    dataInicio.setDate(dataInicio.getDate() - 5); // 5 dias antes
+    const dataFim = new Date(hoje);
+    dataFim.setDate(dataFim.getDate() + 2); // 2 dias depois
 
     return this.jogoModel
       .find({
-        status: { $in: ['aberto', 'encerrado'] },
+        status: { $in: ['aberto', 'encerrado', 'confirmado'] },
         createdAt: {
-          $gte: inicioMes,
-          $lte: fimMes,
+          $gte: dataInicio,
+          $lte: dataFim,
         },
       })
       .exec();
