@@ -278,14 +278,15 @@ export class JogosListComponent implements OnInit {
 
     try {
       const formData = this.palpiteForm.value;
-      // Enviar no formato esperado pelo backend: { jogoId, timeA, timeB }
-      await this.palpitesService
-        .create({
-          jogoId: this.selectedJogo._id || '',
-          timeA: parseInt(formData.golsTimeA, 10),
-          timeB: parseInt(formData.golsTimeB, 10),
-        })
-        .toPromise();
+      const palpiteData = {
+        jogoId: this.selectedJogo._id || '',
+        timeA: parseInt(formData.golsTimeA, 10),
+        timeB: parseInt(formData.golsTimeB, 10),
+      };
+
+      const palpiteCriado = await this.palpitesService.create(palpiteData).toPromise();
+
+      this.updateJogoWithPalpite(this.selectedJogo, palpiteCriado);
 
       const props = {
         title: 'Palpite enviado',
@@ -298,7 +299,6 @@ export class JogosListComponent implements OnInit {
       this.globalDialogService.showSuccess(props);
 
       this.closePalpiteDialog();
-      this.loadJogos();
     } catch {
       // this.globalDialogService.showError(
       //   'Erro',
@@ -306,6 +306,46 @@ export class JogosListComponent implements OnInit {
       // );
     } finally {
       this.isSubmittingPalpite = false;
+    }
+  }
+
+  private updateJogoWithPalpite(jogo: JogoComPalpite, palpiteCriado: any): void {
+    const palpiteFormatado: Palpite = {
+      _id: palpiteCriado._id || '',
+      usuario: palpiteCriado.usuario || this.user?._id || '',
+      jogo: palpiteCriado.jogo || jogo._id || '',
+      tipo_palpite: 'placar_exato',
+      palpite: {
+        timeA: palpiteCriado.palpite?.timeA || palpiteCriado.timeA || 0,
+        timeB: palpiteCriado.palpite?.timeB || palpiteCriado.timeB || 0,
+      },
+      odds: palpiteCriado.odds || 1,
+      valor_aposta: palpiteCriado.valor_aposta || 0,
+      data_palpite: new Date(palpiteCriado.data_palpite || new Date()),
+      status: palpiteCriado.status || 'pendente',
+      valor_ganho: palpiteCriado.valor_ganho,
+      pontos_ganhos: palpiteCriado.pontos_ganhos || 0,
+      data_resultado: palpiteCriado.data_resultado
+        ? new Date(palpiteCriado.data_resultado)
+        : undefined,
+      multiplicador: palpiteCriado.multiplicador,
+      bonus_aplicado: palpiteCriado.bonus_aplicado,
+    };
+
+    // Atualiza o jogo na lista de campeonatos
+    this.campeonatos.forEach((campeonato) => {
+      const jogoIndex = campeonato.jogos.findIndex((j) => j._id === jogo._id);
+      if (jogoIndex !== -1) {
+        campeonato.jogos[jogoIndex].palpites = [palpiteFormatado];
+      }
+    });
+
+    // Atualiza também na lista geral se existir
+    if (this.jogos.length > 0) {
+      const jogoIndex = this.jogos.findIndex((j) => j._id === jogo._id);
+      if (jogoIndex !== -1) {
+        this.jogos[jogoIndex].palpites = [palpiteFormatado];
+      }
     }
   }
 

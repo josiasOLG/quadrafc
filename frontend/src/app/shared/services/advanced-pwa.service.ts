@@ -1,3 +1,4 @@
+import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
@@ -10,9 +11,11 @@ export class AdvancedPwaService {
   private isStandalone = false;
 
   constructor(private swUpdate: SwUpdate, @Inject(PLATFORM_ID) private platformId: object) {
-    this.initPWA();
-    this.checkForUpdates();
-    this.detectStandaloneMode();
+    if (isPlatformBrowser(this.platformId)) {
+      this.initPWA();
+      this.checkForUpdates();
+      this.detectStandaloneMode();
+    }
   }
 
   private initPWA(): void {
